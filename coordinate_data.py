@@ -473,23 +473,25 @@ def parse_parameters():
 
 if __name__=='__main__':
     p_dict = parse_parameters()
-    if p_dict['sslabels'] is None:
-        ss_labels = ['LABEL%d'%i for i in range(1,1+len(p_dict['ssfiles']))]
-    else:
-        ss_labels = p_dict['sslabels']
-    ssfiles = p_dict['ssfiles']
-    assert len(ss_labels) == len(ssfiles), "There number of labels doens't match the number of SS files"
-    
     assert p_dict['combfile'] is not None, 'Combined SS file is missing.'
     comb_hdf5_file = p_dict['combfile']
 
-    assert p_dict['1KGpath'] is not None, 'Path to 1K Genomes is missing.'
-    
-    for ss_file, ss_label in zip(ssfiles,ss_labels):
-        if p_dict['ssf_format']=='BASIC':
-            parse_sum_stats_basic(ss_file,comb_hdf5_file,ss_label,KGpath=p_dict['1KGpath'])
+    if p_dict['ssfiles'] is not None:                
+        ssfiles = p_dict['ssfiles']
+        if p_dict['sslabels'] is None:
+            ss_labels = ['LABEL%d'%i for i in range(1,1+len(p_dict['ssfiles']))]
         else:
-            raise Exception('Unknown GWAS summary statistics file format')
+            ss_labels = p_dict['sslabels']
+
+        assert len(ss_labels) == len(ssfiles), "There number of labels doens't match the number of SS files"
+        
+        assert p_dict['1KGpath'] is not None, 'Path to 1K Genomes is missing.'
+        
+        for ss_file, ss_label in zip(ssfiles,ss_labels):
+            if p_dict['ssf_format']=='BASIC':
+                parse_sum_stats_basic(ss_file,comb_hdf5_file,ss_label,KGpath=p_dict['1KGpath'])
+            else:
+                raise Exception('Unknown GWAS summary statistics file format')
 
     if p_dict['coordfile'] is not None:
         print 'Coordinating summary statistic datasets'
