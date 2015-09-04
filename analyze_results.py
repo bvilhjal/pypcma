@@ -1,0 +1,377 @@
+"""
+Analyze results..
+"""
+
+import pandas
+import scipy as sp
+import gzip
+import pylab
+import itertools as it
+import matplotlib
+
+def get_sid_pos_map(sids):
+    sids = set(sids)
+    sid_map = {}
+    chrom_pos_dict = {}
+    for chrom_i in range(1,23):
+        chrom_pos_dict[chrom_i] = [] 
+    for chrom_i in range(1,23):
+        fn = '/Users/bjarnivilhjalmsson/data/1Kgenomes/ALL_1000G_phase1integrated_v3_chr%d_impute.legend.gz'%chrom_i
+        with gzip.open(fn) as f:
+            f.next()
+            for line in f:
+                l = line.split()
+                sid = l[0]
+                if sid in sids:
+                    pos = int(l[1])
+                    sid_map[l[0]]={'pos':pos, 'chrom':chrom_i}
+                    chrom_pos_dict[chrom_i].append(pos)
+    return {'sid_map':sid_map, 'chrom_pos_dict':chrom_pos_dict}
+
+
+
+
+def plot_manhattan(result_file,fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT'):
+    """
+Generates a Manhattan plot for the PCMA results...
+    """
+    res = pandas.read_table(result_file)
+    sids = list(res.SNPid)
+    print 'Getting SNP positions from 1K Genomes data'
+    d = get_sid_pos_map(sids)
+    sid_map = d['sid_map']
+    chrom_pos_dict = d['chrom_pos_dict']
+    print 'Calculating X-axis offsets'
+    chrom_offset_dict = {}
+    x_tick_pos = []
+    x_tick_lab = []
+    x_offset = 0
+    for chrom_i in range(1,23):
+        chrom_offset_dict[chrom_i]=x_offset
+        old_x_offset = x_offset
+        x_offset += max(chrom_pos_dict[chrom_i])
+        x_tick_pos.append((old_x_offset+x_offset)/2.0)
+        x_tick_lab.append(str(chrom_i))
+    
+    print 'Calculating X-axis positions'
+    if method=='MVT':
+        ps = sp.array(res.pval)
+    elif method=='combPC':
+        ps = sp.array(res.combPC)
+    x_positions=sp.empty(len(ps))
+    chromosomes=sp.empty(len(ps))
+    for i, sid in enumerate(sids):
+        chrom_i=sid_map[sid]['chrom']
+        pos=sid_map[sid]['pos']
+        x_offset = chrom_offset_dict[chrom_i]
+        x_positions[i]=x_offset+pos
+        chromosomes[i]=chrom_i
+    
+    neg_log_ps = -sp.log10(ps)
+    ps_filter = neg_log_ps>3
+    filtered_log_ps = neg_log_ps[ps_filter]   
+    filtered_pos = x_positions[ps_filter] 
+    filtered_chroms = chromosomes[ps_filter]
+    
+    color_map = {1:{'x_pos':[],'ps':[]}, 2:{'x_pos':[],'ps':[]},
+                 3:{'x_pos':[],'ps':[]}, 4:{'x_pos':[],'ps':[]}}
+    for lps,pos,chrom in it.izip(filtered_log_ps,filtered_pos,filtered_chroms):
+        if chrom%2==0:
+            if lps<7.301029:
+                color_map[1]['x_pos'].append(pos)
+                color_map[1]['ps'].append(lps)
+            else:
+                color_map[3]['x_pos'].append(pos)
+                color_map[3]['ps'].append(lps)
+        else:
+            if lps<7.301029:
+                color_map[2]['x_pos'].append(pos)
+                color_map[2]['ps'].append(lps)
+            else:
+                color_map[4]['x_pos'].append(pos)
+                color_map[4]['ps'].append(lps)
+        
+    print 'Filtering and plotting'
+    with pylab.style.context('fivethirtyeight'):
+        pylab.figure(figsize=(14,5))
+        pylab.plot(color_map[1]['x_pos'],color_map[1]['ps'],'.',color='#1199EE',alpha=0.2)
+        pylab.plot(color_map[2]['x_pos'],color_map[2]['ps'],'.',color='#11BB00',alpha=0.2)
+        pylab.plot(color_map[3]['x_pos'],color_map[3]['ps'],'.',color='#AA99EE',alpha=0.7)
+        pylab.plot(color_map[4]['x_pos'],color_map[4]['ps'],'.',color='#AABB00',alpha=0.7)
+        pylab.ylabel('-log(P-value)')
+        pylab.xlabel('Chromosomes')
+        pylab.xticks(x_tick_pos,x_tick_lab)
+        pylab.tight_layout()
+        pylab.savefig(fig_filename)
+    pylab.clf()
+
+
+def get_log_quantiles(scores, num_dots=1000, max_val=8):
+    """
+    Uses scipy
+    """
+    scores = sp.copy(sp.array(scores))
+    scores.sort()
+    indices = sp.array(10 ** ((-sp.arange(1, num_dots + 1, dtype='single') / (num_dots + 1)) * max_val) \
+                * len(scores), dtype='int')
+    return -sp.log10(scores[indices])
+
+
+
+def _log_qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None, line_colors=None,
+            max_val=5, title=None, text=None, plot_label=None, ax=None, **kwargs):
+    storeFig = False
+    if ax is None:
+        f = pylab.figure(figsize=(5.4, 5))
+        storeFig = True
+    pylab.plot([0, max_val], [0, max_val], 'k--', alpha=0.5, linewidth=2.0)
+    num_dots = len(quantiles_list[0])
+    exp_quantiles = sp.arange(1, num_dots + 1, dtype='single') / (num_dots + 1) * max_val
+    for i, quantiles in enumerate(quantiles_list):
+        if line_colors:
+            c = line_colors[i]
+        else:
+            c = 'b'
+        if quantile_labels:
+            pylab.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
+        else:
+            pylab.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
+    pylab.ylabel("Observed $-log_{10}(P$-value$)$")
+    pylab.xlabel("Expected $-log_{10}(P$-value$)$")
+    if title:
+        pylab.title(title)
+    max_x = max_val
+    max_y = max(map(max, quantiles_list))
+    pylab.axis([-0.025 * max_x, 1.025 * max_x, -0.025 * max_y, 1.025 * max_y])
+    if quantile_labels:
+        fontProp = matplotlib.font_manager.FontProperties(size=10)
+        pylab.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
+    y_min, y_max = pylab.ylim()
+    if text:
+        f.text(0.05 * max_val, y_max * 0.9, text)
+    if plot_label:
+        f.text(-0.138 * max_val, y_max * 1.01, plot_label, fontsize=14)
+    pylab.tight_layout()
+    if storeFig == False:
+        return
+    if png_file != None:
+        f.savefig(png_file)
+    if pdf_file != None:
+        f.savefig(pdf_file, format='pdf')
+
+
+def get_quantiles(scores, num_dots=1000):
+    """
+    Uses scipy
+    """
+    scores = sp.copy(sp.array(scores))
+    scores.sort()
+    indices = [int(len(scores) * i / (num_dots + 2)) for i in range(1, num_dots + 1)]
+    return scores[indices]
+
+
+
+def _qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None, line_colors=None,
+            title=None, text=None, ax=None, plot_label=None, **kwargs):
+    storeFig = False
+    if ax is None:
+        f = pylab.figure(figsize=(5.4, 5))
+        storeFig = True
+    pylab.plot([0, 1], [0, 1], 'k--', alpha=0.5, linewidth=2.0)
+    num_dots = len(quantiles_list[0])
+    exp_quantiles = sp.arange(1, num_dots + 1, dtype='single') / (num_dots + 1)
+    for i, quantiles in enumerate(quantiles_list):
+        if line_colors:
+            c = line_colors[i]
+        else:
+            c = 'b'
+        if quantile_labels:
+            pylab.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
+        else:
+            pylab.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
+    pylab.ylabel("Observed $P$-value")
+    pylab.xlabel("Expected $P$-value")
+    if title:
+        pylab.title(title)
+    pylab.axis([-0.025, 1.025, -0.025, 1.025])
+    if quantile_labels:
+        fontProp = matplotlib.font_manager.FontProperties(size=10)
+        pylab.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
+    if text:
+        f.text(0.05, 0.9, text)
+    if plot_label:
+        f.text(-0.151, 1.04, plot_label, fontsize=14)
+    pylab.tight_layout()
+    if storeFig == False:
+        return
+    if png_file != None:
+        f.savefig(png_file)
+    if pdf_file != None:
+        f.savefig(pdf_file, format='pdf')
+
+def plot_QQ_plots(result_file,png_file_prefix='/Users/bjarnivilhjalmsson/data/tmp/test', num_dots=1000, max_neg_log_val=7,
+                  title=''):
+    """
+Generates a QQ plot of the PCMA results..
+    """
+    res = pandas.read_table(result_file)
+    mvt_ps = sp.array(res.pval)
+    combPC_ps = sp.array(res.combPC)
+    pvals_list = [mvt_ps, combPC_ps]
+    line_colors=['c','m']
+    result_labels=['MVT', 'comb. PC']
+    qs = []
+    log_qs = []
+    for pvals in pvals_list:
+        qs.append(get_quantiles(pvals, num_dots))
+        log_qs.append(get_log_quantiles(pvals, num_dots, max_neg_log_val))
+    _qqplot_(qs, png_file_prefix + '_qq.png', quantile_labels=result_labels,
+                line_colors=line_colors, num_dots=num_dots, title=title)
+    _log_qqplot_(log_qs, png_file_prefix + '_log_qq.png', quantile_labels=result_labels,
+                line_colors=line_colors, num_dots=num_dots, title=title, max_val=max_neg_log_val)
+
+
+
+
+def plot_overlap_ps(result_file, ss_file='/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt', 
+                   fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC_HGT.png', method='combPC', 
+                   ylabel='Comb. PC (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$', p_thres = 0.00001):
+    #Parse results ans SS file
+    res_table = pandas.read_table(result_file)
+    ss_table = pandas.read_table(ss_file)
+    #Parse 
+    res_sids = sp.array(res_table['SNPid'])
+    if method=='MVT':
+        comb_ps = sp.array(res_table['pval'])
+    elif method=='combPC':
+        comb_ps = sp.array(res_table['combPC'])
+    if 'MarkerName' in ss_table.keys():
+        ss_sids = sp.array(ss_table['MarkerName'])
+    elif 'SNP' in ss_table.keys():
+        ss_sids = sp.array(ss_table['SNP'])
+    else:
+        raise Exception("Don't know where to look for rs IDs")
+    marg_ps = sp.array(ss_table['p'])
+    
+    # Filtering boring p-values
+    res_p_filter = comb_ps<p_thres
+    res_sids = res_sids[res_p_filter]
+    comb_ps = comb_ps[res_p_filter]
+#     ss_p_filter = marg_ps<p_thres
+#     ss_sids = ss_sids[ss_p_filter]
+#     marg_ps = marg_ps[ss_p_filter]
+    
+    common_sids = sp.intersect1d(res_sids, ss_sids)
+    print 'Found %d SNPs in common'%(len(common_sids))
+    ss_filter = sp.in1d(ss_sids, common_sids)
+    res_filter = sp.in1d(res_sids, common_sids)
+    
+    ss_sids = ss_sids[ss_filter]
+    res_sids = res_sids[res_filter]
+    marg_ps = marg_ps[ss_filter]
+    comb_ps = comb_ps[res_filter]
+    
+    print 'Now sorting'
+    ss_index = sp.argsort(ss_sids)
+    res_index = sp.argsort(res_sids)
+    
+    marg_ps=-sp.log10(marg_ps[ss_index])
+    comb_ps=-sp.log10(comb_ps[res_index])
+    
+    with pylab.style.context('fivethirtyeight'):
+        pylab.plot(marg_ps,comb_ps,'b.',alpha=0.2)
+        (x_min,x_max) = pylab.xlim()
+        (y_min,y_max) = pylab.ylim()
+        
+        pylab.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
+        pylab.ylabel(ylabel)
+        pylab.xlabel(xlabel)
+        pylab.tight_layout()
+        pylab.savefig(fig_filename)
+    pylab.clf()
+        
+        
+def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt'], 
+                   fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC_HGT.png', method='combPC', 
+                   ylabel='Comb. PC (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$', p_thres = 0.00001):
+    #Parse results ans SS file
+    res_table = pandas.read_table(result_file)
+    marg_ps_list = []
+    #Parse 
+    res_sids = sp.array(res_table['SNPid'])
+    if method=='MVT':
+        comb_ps = sp.array(res_table['pval'])
+    elif method=='combPC':
+        comb_ps = sp.array(res_table['combPC'])
+    for ss_file in ss_files:
+        ss_table = pandas.read_table(ss_file)
+        if 'MarkerName' in ss_table.keys():
+            ss_sids = sp.array(ss_table['MarkerName'])
+        elif 'SNP' in ss_table.keys():
+            ss_sids = sp.array(ss_table['SNP'])
+        else:
+            raise Exception("Don't know where to look for rs IDs")
+        marg_ps = sp.array(ss_table['p'])
+        marg_ps_list.append(marg_ps)
+    min_pvals = sp.minimum(sp.array(marg_ps_list))
+    # Filtering boring p-values
+    res_p_filter = comb_ps<p_thres
+    res_sids = res_sids[res_p_filter]
+    comb_ps = comb_ps[res_p_filter]
+#     ss_p_filter = marg_ps<p_thres
+#     ss_sids = ss_sids[ss_p_filter]
+#     marg_ps = marg_ps[ss_p_filter]
+    
+    common_sids = sp.intersect1d(res_sids, ss_sids)
+    print 'Found %d SNPs in common'%(len(common_sids))
+    ss_filter = sp.in1d(ss_sids, common_sids)
+    res_filter = sp.in1d(res_sids, common_sids)
+    
+    ss_sids = ss_sids[ss_filter]
+    res_sids = res_sids[res_filter]
+    marg_ps = marg_ps[ss_filter]
+    comb_ps = comb_ps[res_filter]
+    
+    print 'Now sorting'
+    ss_index = sp.argsort(ss_sids)
+    res_index = sp.argsort(res_sids)
+    
+    marg_ps=-sp.log10(marg_ps[ss_index])
+    comb_ps=-sp.log10(comb_ps[res_index])
+    
+    with pylab.style.context('fivethirtyeight'):
+        pylab.plot(marg_ps,comb_ps,'b.',alpha=0.2)
+        (x_min,x_max) = pylab.xlim()
+        (y_min,y_max) = pylab.ylim()
+        
+        pylab.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
+        pylab.ylabel(ylabel)
+        pylab.xlabel(xlabel)
+        pylab.tight_layout()
+        pylab.savefig(fig_filename)
+    pylab.clf()
+        
+    
+# def count_ld_indep_regions.
+
+
+if __name__=='__main__':
+    plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
+    plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT')
+#     plot_overlap_ps('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt', ss_file='/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt', 
+#                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_HGT.png', method='MVT', 
+#                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$')
+#     plot_overlap_ps('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt', ss_file='/Users/bjarnivilhjalmsson/data/GIANT/GIANT_2015_HIP_COMBINED_EUR.txt', 
+#                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_HIP.png', method='MVT', 
+#                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='HIP $-log_{10}(P$-value$)$')
+#     plot_overlap_ps('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt', ss_file='/Users/bjarnivilhjalmsson/data/GIANT/SNP_gwas_mc_merge_nogc.tbl.uniq', 
+#                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_BMI.png', method='MVT', 
+#                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='BMI $-log_{10}(P$-value$)$')
+#     plot_overlap_ps('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt', ss_file='/Users/bjarnivilhjalmsson/data/GIANT/GIANT_2015_WC_COMBINED_EUR.txt', 
+#                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
+#                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
+
+
