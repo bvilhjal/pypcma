@@ -172,8 +172,11 @@ def LD_prune_ss(coord_hdf5_file, out_file, KG_file, r2_thres=0.2, ld_radius=1000
 
     h5f = h5py.File(coord_hdf5_file)
     sums_ids = h5f['sums_ids'][...]
+    zs_strings = [s+'_zs' for s in sums_ids]
+    ws_strings = [s+'_weights' for s in sums_ids]
+
     of = open(out_file,'w')
-    label_str = 'SID\t'+('\t'.join(sums_ids))+'\n'
+    label_str = 'SID\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
@@ -202,32 +205,63 @@ def LD_prune_ss(coord_hdf5_file, out_file, KG_file, r2_thres=0.2, ld_radius=1000
         filter_vector = ld_pruning(ld_table, max_ld=r2_thres, verbose=False)
         
         filtered_kg_sids = (kg_sids[kg_snp_filter])[filter_vector]
-        for sid in filtered_kg_sids:
-            zs = zscores[ss_sid_index_map[sid]]
-            out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n'
-            of.write(out_str)
+        if 'weights' in chr_g[sums_ids[0]].keys():
+            weights = []
+            for sums_id in sums_ids:
+                weights.append((chr_g[sums_id]['weights'][...]).tolist())        
+            weights = map(list,zip(*weights))  #transpose
+
+            assert len(sids)==len(zscores)==len(weights), 'WTF?'
+            for sid in filtered_kg_sids:
+                zs = zscores[ss_sid_index_map[sid]]
+                ws = weights[ss_sid_index_map[sid]]
+                out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\t'+('\t'.join(map(str,ws)))+'\n'
+                of.write(out_str)
+
+        else:
+            for sid in filtered_kg_sids:
+                zs = zscores[ss_sid_index_map[sid]]
+                out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n'
+                of.write(out_str)
         
         
 
 def write_out_ss_file(coord_hdf5_file, out_file):
     h5f = h5py.File(coord_hdf5_file)
     sums_ids = h5f['sums_ids'][...]
+    zs_strings = [s+'_zs' for s in sums_ids]
+    ws_strings = [s+'_weights' for s in sums_ids]
     of = open(out_file,'w')
-    label_str = 'SID\t'+('\t'.join(sums_ids))+'\n'
+    label_str = 'Chromosome\tPosition\tSID\tEUR_MAF\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
         chr_g = h5f[chrom_str]
         sids = chr_g['sids'][...]
+        positions = chr_g['positions'][...]
+        chromosomes = sp.repeat(chrom,len(positions))
+        eur_mafs = chr_g['eur_mafs'][...]
         zscores = []
         for sums_id in sums_ids:
-            zscores.append((chr_g[sums_id]['zs'][...]).tolist())
-        
+            zscores.append((chr_g[sums_id]['zs'][...]).tolist())        
         zscores = map(list,zip(*zscores))  #transpose
-        assert len(sids)==len(zscores), 'WTF?'
-        for sid, zs in it.izip(sids,zscores):
-            out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n'
-            of.write(out_str)
+
+        if 'weights' in chr_g[sums_ids[0]].keys():
+            weights = []
+            for sums_id in sums_ids:
+                weights.append((chr_g[sums_id]['weights'][...]).tolist())        
+            weights = map(list,zip(*weights))  #transpose
+
+            assert len(sids)==len(zscores)==len(weights), 'WTF?'
+            for chromosome, position, sid, eur_maf, zs, ws in it.izip(chromosomes,positions,sids,eur_mafs,zscores, weights):
+                out_str = ('%s\t%s\t%s\t%0.4f\t'%(chromosome, position, sid, eur_maf))+('\t'.join(map(str,zs)))+'\t'+('\t'.join(map(str,ws)))+'\n'
+                of.write(out_str)
+
+        else:
+            assert len(sids)==len(zscores), 'WTF?'
+            for chromosome, position, sid, eur_maf, zs in it.izip(chromosomes,positions,sids,eur_mafs,zscores):
+                out_str = ('%s\t%s\t%s\t%0.4f\t'%(chromosome, position, sid, eur_maf))+('\t'.join(map(str,zs)))+'\n'
+                of.write(out_str)
         of.flush() 
 
 
