@@ -189,7 +189,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -205,6 +205,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i
         
@@ -220,7 +222,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -236,6 +238,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i
         
@@ -251,7 +255,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -267,6 +271,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i
         
@@ -282,7 +288,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -298,6 +304,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i
         
@@ -313,7 +321,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -329,6 +337,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i
         
@@ -344,7 +354,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -360,6 +370,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i             
         elif header ==headers['SSGAC2']:
@@ -374,7 +386,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -390,6 +402,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i             
         elif header ==headers['CHIC']:
@@ -404,7 +418,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[],'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -420,6 +434,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i             
         
@@ -435,7 +451,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -451,6 +467,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i             
         
@@ -560,7 +578,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -576,9 +594,12 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
-        elif header==headers['CARDIoGRAM']:
+        elif header==headers['CARDIoGRAM']: 
+
             for line in f:
                 line_i +=1
                 l = line.split()
@@ -590,7 +611,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -606,6 +627,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = float(l[10]) +float(l[11])
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
         elif header==headers['DIAGRAM']:
@@ -620,7 +643,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -636,6 +659,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = float(l[9]) +float(l[10])
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
         elif header==headers['TAG']:
@@ -650,7 +675,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -666,6 +691,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
         elif header==headers['CD'] or header==headers['UC']:
@@ -680,7 +707,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -696,6 +723,8 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
         elif header==headers['GEFOS']:
@@ -710,7 +739,7 @@ def parse_sum_stats(filename,
                     eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
-                                             'positions': [], 'eur_maf':[]}
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
                     chrom_dict[chrom]['sids'].append(sid)
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
@@ -737,78 +766,44 @@ def parse_sum_stats(filename,
     assert not ss_id in h5f.keys(), 'Summary stats with this name are already in the HDF5 file?'
     ssg = h5f.create_group(ss_id)
     num_snps = 0
-    if header == headers['TESLOVICH']:
-        for chrom in chrom_dict.keys():
-            print 'Parsed summary stats for %d SNPs on chromosome %d'%(len(chrom_dict[chrom]['positions']),chrom)
-            sl = zip(chrom_dict[chrom]['positions'], chrom_dict[chrom]['sids'], chrom_dict[chrom]['nts'],
-                     chrom_dict[chrom]['ps'], chrom_dict[chrom]['zs'], chrom_dict[chrom]['eur_maf'], 
-                     chrom_dict[chrom]['weights'])
-            sl.sort()
-            ps = []
-            nts = []
-            sids = []
-            positions = []
-            zs = []
-            eur_mafs = []
-            weights = []
-            prev_pos = -1
-            for pos, sid, nt, p, z, eur_maf, weight in sl:
-                if pos == prev_pos:
-                    print 'duplicated position %d' % pos
-                    continue
-                else:
-                    prev_pos = pos
-                ps.append(p)
-                nts.append(nt)
-                sids.append(sid)
-                positions.append(pos)
-                zs.append(z)
-                eur_mafs.append(eur_maf)
-                weights.append(weight)
-            g = ssg.create_group('chrom_%d' % chrom)
-            g.create_dataset('ps', data=sp.array(ps))
-            num_snps +=len(sids)
-            g.create_dataset('nts', data=nts)
-            g.create_dataset('sids', data=sids)
-            g.create_dataset('eur_mafs', data=eur_mafs)
-            g.create_dataset('positions', data=positions)
-            g.create_dataset('zs', data=zs)
-            g.create_dataset('weights', data=weights)
-            h5f.flush()
-    else:
-        for chrom in chrom_dict.keys():
-            print 'Parsed summary stats for %d SNPs on chromosome %d'%(len(chrom_dict[chrom]['positions']),chrom)
-            sl = zip(chrom_dict[chrom]['positions'], chrom_dict[chrom]['sids'], chrom_dict[chrom]['nts'],
-                     chrom_dict[chrom]['ps'], chrom_dict[chrom]['zs'], chrom_dict[chrom]['eur_maf'])
-            sl.sort()
-            ps = []
-            nts = []
-            sids = []
-            positions = []
-            zs = []
-            eur_mafs = []
-            prev_pos = -1
-            for pos, sid, nt, p, z, eur_maf in sl:
-                if pos == prev_pos:
-                    print 'duplicated position %d' % pos
-                    continue
-                else:
-                    prev_pos = pos
-                ps.append(p)
-                nts.append(nt)
-                sids.append(sid)
-                positions.append(pos)
-                zs.append(z)
-                eur_mafs.append(eur_maf)
-            g = ssg.create_group('chrom_%d' % chrom)
-            g.create_dataset('ps', data=sp.array(ps))
-            num_snps +=len(sids)
-            g.create_dataset('nts', data=nts)
-            g.create_dataset('sids', data=sids)
-            g.create_dataset('eur_mafs', data=eur_mafs)
-            g.create_dataset('positions', data=positions)
-            g.create_dataset('zs', data=zs)
-            h5f.flush()
+    for chrom in chrom_dict.keys():
+        print 'Parsed summary stats for %d SNPs on chromosome %d'%(len(chrom_dict[chrom]['positions']),chrom)
+        sl = zip(chrom_dict[chrom]['positions'], chrom_dict[chrom]['sids'], chrom_dict[chrom]['nts'],
+                 chrom_dict[chrom]['ps'], chrom_dict[chrom]['zs'], chrom_dict[chrom]['eur_maf'], 
+                 chrom_dict[chrom]['weights'])
+        sl.sort()
+        ps = []
+        nts = []
+        sids = []
+        positions = []
+        zs = []
+        eur_mafs = []
+        weights = []
+        prev_pos = -1
+        for pos, sid, nt, p, z, eur_maf, weight in sl:
+            if pos == prev_pos:
+                print 'duplicated position %d' % pos
+                continue
+            else:
+                prev_pos = pos
+            ps.append(p)
+            nts.append(nt)
+            sids.append(sid)
+            positions.append(pos)
+            zs.append(z)
+            eur_mafs.append(eur_maf)
+            weights.append(weight)
+        g = ssg.create_group('chrom_%d' % chrom)
+        g.create_dataset('ps', data=sp.array(ps))
+        num_snps +=len(sids)
+        g.create_dataset('nts', data=nts)
+        g.create_dataset('sids', data=sids)
+        g.create_dataset('eur_mafs', data=eur_mafs)
+        g.create_dataset('positions', data=positions)
+        g.create_dataset('zs', data=zs)
+        g.create_dataset('weights', data=weights)
+        h5f.flush()
+    
     print 'In all, %d SNPs parsed from summary statistics file.'%num_snps
 
 
