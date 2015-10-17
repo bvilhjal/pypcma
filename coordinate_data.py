@@ -627,7 +627,7 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
-                    weight = float(l[10]) +float(l[11])
+                    weight = float(l[9]) +float(l[10])
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
