@@ -1128,7 +1128,7 @@ def parse_parameters():
         sys.exit(0)
     return p_dict
 
-def c(h5files, outfile):
+def concatenate_ss_h5files(h5files, outfile):
     oh5f = h5py.File(outfile)
     for h5file in h5files:
         ih5f = h5py.File(h5file)
