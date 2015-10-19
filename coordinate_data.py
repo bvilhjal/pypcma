@@ -163,7 +163,7 @@ def parse_sum_stats(filename,
             for line in f:
                 l = line.split()
                 sids.append(l[1])
-        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['RA']:
+        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS']:
             for line in f:
                 l = line.split()
                 sids.append(l[2])
@@ -1128,7 +1128,7 @@ def parse_parameters():
         sys.exit(0)
     return p_dict
 
-def concatenate_ss_h5files(h5files, outfile):
+def c(h5files, outfile):
     oh5f = h5py.File(outfile)
     for h5file in h5files:
         ih5f = h5py.File(h5file)
@@ -1137,7 +1137,7 @@ def concatenate_ss_h5files(h5files, outfile):
             issg = ih5f[ss_lab]
             for chrom in range(1,23):
                 chrom_str = 'chrom_%d' % chrom
-                ochrom_g = ossg[chrom_str]
+                ochrom_g = ossg.create_group(chrom_str)
                 ichrom_g = issg[chrom_str]
                 ochrom_g.create_dataset('ps', data=ichrom_g['ps'][...])
                 ochrom_g.create_dataset('nts', data=ichrom_g['nts'][...])
