@@ -99,7 +99,7 @@ def parse_1KG_snp_info(KGenomes_prefix='/Users/bjarnivilhjalmsson/data/1Kgenomes
 
 def get_sid_pos_map(sids, KGenomes_prefix):
     h5fn = '%ssnps.hdf5'%(KGenomes_prefix)
-    h5f = h5py.File(h5fn)
+    h5f = h5py.File(h5fn,'r')
     sid_map = {}
     for chrom_i in range(1,23):
         cg = h5f['chrom_%d' % chrom_i]
@@ -1001,12 +1001,12 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             out_chr_ss_g.create_dataset('weights', data = weights)
         
 
-def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True):
+def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filter_ambiguous_nts=True, only_common_snps=True):
     """
     
     """
-    snps_h5f = h5py.File('/Users/bjarnivilhjalmsson/data/1Kgenomes/snps.hdf5')
-    h5f = h5py.File(comb_hdf5_file)
+    snps_h5f = h5py.File(KGpath+'snps.hdf5','r')
+    h5f = h5py.File(comb_hdf5_file,'r')
     oh5f = h5py.File(coord_hdf5_file)
     sums_ids = h5f.keys()
     sums_ids = [x.encode('UTF8') for x in sums_ids]
@@ -1179,7 +1179,7 @@ if __name__=='__main__':
         print 'Coordinating summary statistic datasets'
         coord_hdf5_file = p_dict['coordfile']
         if p_dict['wmissing']:
-            coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file)
+            coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
         else:
             coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file)
     
