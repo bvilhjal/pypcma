@@ -162,12 +162,12 @@ def ld_pruning(ld_table, max_ld=0.5, verbose=False):
     return filter_vector
 
 
-def LD_prune_ss(coord_hdf5_file, out_file, KG_file, r2_thres=0.2, ld_radius=1000, ):
+def LD_prune_ss(coord_hdf5_file, out_file, KG_path, r2_thres=0.2, ld_radius=1000, ):
     """
     Uses 1K genome information by default.
     """
     print 'LDpruning SNPs..'
-    kg_h5f = h5py.File(KG_file)
+    kg_h5f = h5py.File(KG_path+'1K_genomes_v3.hdf5')
     indiv_filter = kg_h5f['indivs']['continent'][...]=='EUR'
 
     h5f = h5py.File(coord_hdf5_file)
@@ -276,7 +276,7 @@ def parse_parameters():
                           
     long_options_list = ['coordfile=', 'out=', '1KGpath=', 'LDradius=', 'LDthres=', 'nopruning', 'wmissing']
 
-    p_dict = {'coordfile':None, 'out':None, 'KGfile':'/Users/bjarnivilhjalmsson/data/1Kgenomes/1K_genomes_v3.hdf5', 
+    p_dict = {'coordfile':None, 'out':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
               'LDradius':100, 'LDthres':0.2, 'nopruning':False, 'wmissing':False}
 
     if len(sys.argv) > 1:
@@ -322,6 +322,6 @@ if __name__=='__main__':
     
     
     write_out_ss_file(coord_hdf5_file, zs_file)
-    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_file=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
+    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_path=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
     
     
