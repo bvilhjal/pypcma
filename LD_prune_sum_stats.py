@@ -274,7 +274,7 @@ def parse_parameters():
 #        sys.exit(2)
 
                           
-    long_options_list = ['coordfile=', 'out=', 'KGfile=', 'LDradius=', 'LDthres=', 'nopruning', 'wmissing']
+    long_options_list = ['coordfile=', 'out=', '1KGpath=', 'LDradius=', 'LDthres=', 'nopruning', 'wmissing']
 
     p_dict = {'coordfile':None, 'out':None, 'KGfile':'/Users/bjarnivilhjalmsson/data/1Kgenomes/1K_genomes_v3.hdf5', 
               'LDradius':100, 'LDthres':0.2, 'nopruning':False, 'wmissing':False}
@@ -296,7 +296,7 @@ def parse_parameters():
                 sys.exit(0)
             elif opt == "--coordfile": p_dict['coordfile'] = arg
             elif opt == "--out": p_dict['out'] = arg
-            elif opt == "--KGfile": p_dict['KGfile'] = arg
+            elif opt == "--1KGpath": p_dict['1KGpath'] = arg
             elif opt == "--LDradius": p_dict['LDradius'] = int(arg)
             elif opt == "--LDthres": p_dict['LDthres'] = float(arg)
             else:
@@ -318,10 +318,10 @@ if __name__=='__main__':
     zs_file = p_dict['out']+'_zs.txt'
     zs_file_ld_pruned = p_dict['out']+'_zs_ldpruned.txt'
 
-    assert p_dict['KGfile'] is not None, 'The 1K Genomes file is missing.'
+    assert p_dict['1KGpath'] is not None, 'The 1K Genomes file is missing.'
     
     
     write_out_ss_file(coord_hdf5_file, zs_file)
-    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_file=p_dict['KGfile'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
+    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_file=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
     
     
