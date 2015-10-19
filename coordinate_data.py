@@ -868,13 +868,13 @@ def parse_sum_stats(filename,
             weights.append(weight)
         g = ssg.create_group('chrom_%d' % chrom)
         g.create_dataset('ps', data=sp.array(ps))
-        num_snps +=len(sids)
         g.create_dataset('nts', data=nts)
         g.create_dataset('sids', data=sids)
         g.create_dataset('eur_mafs', data=eur_mafs)
         g.create_dataset('positions', data=positions)
         g.create_dataset('zs', data=zs)
         g.create_dataset('weights', data=weights)
+        num_snps +=len(sids)
         h5f.flush()
     
     print 'In all, %d SNPs parsed from summary statistics file.'%num_snps
@@ -1127,6 +1127,25 @@ def parse_parameters():
         print __doc__
         sys.exit(0)
     return p_dict
+
+def concatenate_ss_h5files(h5files, outfile):
+    oh5f = h5py.File(outfile)
+    for h5file in h5files:
+        ih5f = h5py.File(h5file)
+        for ss_lab in ih5f.keys():
+            ossg = oh5f.create_group(ss_lab)
+            issg = ih5f[ss_lab]
+            for chrom in range(1,23):
+                chrom_str = 'chrom_%d' % chrom
+                ochrom_g = ossg[chrom_str]
+                ichrom_g = issg[chrom_str]
+                ochrom_g.create_dataset('ps', data=ichrom_g['ps'][...])
+                ochrom_g.create_dataset('nts', data=ichrom_g['nts'][...])
+                ochrom_g.create_dataset('sids', data=ichrom_g['sids'][...])
+                ochrom_g.create_dataset('eur_mafs', data=ichrom_g['eur_mafs'][...])
+                ochrom_g.create_dataset('positions', data=ichrom_g['positions'][...])
+                ochrom_g.create_dataset('zs', data=ichrom_g['zs'][...])
+                ochrom_g.create_dataset('weights', data=ichrom_g['weights'][...])
 
 
 if __name__=='__main__':
