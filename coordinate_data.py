@@ -131,6 +131,8 @@ headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta
            'CD':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_5956', 'FRQ_U_14927', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
            'UC':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_6968', 'FRQ_U_20464', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
            'GEFOS':['chromosome', 'position', 'rs_number', 'reference_allele', 'other_allele', 'eaf', 'beta', 'se', 'beta_95L', 'beta_95U', 'z', 'p-value', '_-log10_p-value', 'q_statistic', 'q_p-value', 'i2', 'n_studies', 'n_samples', 'effects'],
+           'RA':['SNPID','Chr','Position(hg19)','A1','A2','OR(A1)','OR_95%CIlow','OR_95%CIup','P-val'],
+           'ASTHMA':['Chr', 'rs', 'position', 'Allele_1', 'Allele_2', 'freq_all_1_min', 'freq_all_1_max', 'OR_fix', 'ORl_fix', 'ORu_fix', 'P_fix'],
            }
 
 def parse_sum_stats(filename,
@@ -157,11 +159,11 @@ def parse_sum_stats(filename,
     with open(filename) as f:
         line = f.next()
         header = line.split()        
-        if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC']:
+        if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC'] or header==headers['ASTHMA']:
             for line in f:
                 l = line.split()
                 sids.append(l[1])
-        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS']:
+        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['RA']:
             for line in f:
                 l = line.split()
                 sids.append(l[2])
@@ -755,8 +757,79 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
+#           'RA':['SNPID','Chr','Position(hg19)','A1','A2','OR(A1)','OR_95%CIlow','OR_95%CIup','P-val'],
+#           'ASTHMA':['Chr', 'rs', 'position', 'Allele_1', 'Allele_2', 'freq_all_1_min', 'freq_all_1_max', 'OR_fix', 'ORl_fix', 'ORu_fix', 'P_fix'],
+        elif header==headers['RA']:
+            for line in f:
+                line_i +=1
+                l = line.split()
+                sid = l[0]
+                d = sid_map.get(sid,None)
+                if d is not None:
+                    pos = d['pos']
+                    chrom = d['chrom']
+                    eur_maf = d['eur_maf']
+                    if not chrom in chrom_dict.keys():
+                        chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
+                    chrom_dict[chrom]['sids'].append(sid)
+                    chrom_dict[chrom]['positions'].append(pos)
+                    chrom_dict[chrom]['eur_maf'].append(eur_maf)
+                    pval = float(l[8])
+                    chrom_dict[chrom]['ps'].append(pval)
+                    raw_beta = sp.log(float(l[5]))
+                    if random.random()>0.5:
+                        nt = [l[3], l[4]]
+                    else:
+                        nt = [l[4], l[3]]
+                        raw_beta = -raw_beta
+    
+                    chrom_dict[chrom]['nts'].append(nt)                
+                    z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
+                    chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
+                if line_i%100000==0:
+                    print line_i   
+        elif header==headers['ASTHMA']:
+            for line in f:
+                line_i +=1
+                l = line.split()
+                sid = l[1]
+                d = sid_map.get(sid,None)
+                if d is not None:
+                    pval = float(l[10])
+                    if pval == 0:
+                        continue
+                    pos = d['pos']
+                    chrom = d['chrom']
+                    eur_maf = d['eur_maf']
+                    if not chrom in chrom_dict.keys():
+                        chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
+                    chrom_dict[chrom]['sids'].append(sid)
+                    chrom_dict[chrom]['positions'].append(pos)
+                    chrom_dict[chrom]['eur_maf'].append(eur_maf)
+                    chrom_dict[chrom]['ps'].append(pval)
+                    raw_beta = sp.log(float(l[7]))
+                    if random.random()>0.5:
+                        nt = [l[3], l[4]]
+                    else:
+                        nt = [l[4], l[3]]
+                        raw_beta = -raw_beta
+    
+                    chrom_dict[chrom]['nts'].append(nt)                
+                    z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
+                    chrom_dict[chrom]['zs'].append(z)     
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['weights'].append(weight)
+                if line_i%100000==0:
+                    print line_i   
+
         else:
             raise Exception('Wrong or unknown file format')
     
