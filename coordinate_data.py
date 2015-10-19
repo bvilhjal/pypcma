@@ -770,6 +770,9 @@ def parse_sum_stats(filename,
                 sid = l[0]
                 d = sid_map.get(sid,None)
                 if d is not None:
+                    raw_beta = sp.log(float(l[5]))
+                    if raw_beta==0:
+                        continue
                     pos = d['pos']
                     chrom = d['chrom']
                     eur_maf = d['eur_maf']
@@ -781,7 +784,6 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     pval = float(l[8])
                     chrom_dict[chrom]['ps'].append(pval)
-                    raw_beta = sp.log(float(l[5]))
                     if random.random()>0.5:
                         nt = [l[3], l[4]]
                     else:
@@ -802,8 +804,9 @@ def parse_sum_stats(filename,
                 sid = l[1]
                 d = sid_map.get(sid,None)
                 if d is not None:
+                    raw_beta = sp.log(float(l[7]))
                     pval = float(l[10])
-                    if pval == 0:
+                    if raw_beta==0 or pval == 0:
                         continue
                     pos = d['pos']
                     chrom = d['chrom']
@@ -815,7 +818,6 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     chrom_dict[chrom]['ps'].append(pval)
-                    raw_beta = sp.log(float(l[7]))
                     if random.random()>0.5:
                         nt = [l[3], l[4]]
                     else:
