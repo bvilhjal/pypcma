@@ -60,11 +60,11 @@ def only_zs(in_file,out_file):
         
         with open(out_file,'w') as outf:
             out_str = '\t'.join(header[:weight_i])
-            out_file.write(out_str+'\n')
+            outf.write(out_str+'\n')
             for line in in_file:
                 l = line.split()
                 out_str = '\t'.join(l[:weight_i])
-                out_file.write(out_str+'\n')
+                outf.write(out_str+'\n')
     
 
 if __name__=='__main__':
