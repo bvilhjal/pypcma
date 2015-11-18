@@ -61,7 +61,7 @@ def only_zs(in_file,out_file):
         with open(out_file,'w') as outf:
             out_str = '\t'.join(header[:weight_i])
             outf.write(out_str+'\n')
-            for line in in_file:
+            for line in inf:
                 l = line.split()
                 out_str = '\t'.join(l[:weight_i])
                 outf.write(out_str+'\n')
@@ -75,10 +75,5 @@ if __name__=='__main__':
     out_file = p_dict['out']
 
     only_zs(in_file,out_file)
-    assert p_dict['1KGpath'] is not None, 'The 1K Genomes file is missing.'
-    
-    
-    write_out_ss_file(coord_hdf5_file, zs_file)
-    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_path=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
     
     
