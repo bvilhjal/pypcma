@@ -51,14 +51,14 @@ def parse_parameters():
 
 
 def only_zs(in_file,out_file):
-    with open(in_file) as inf:
+    with open(in_file,'r') as inf:
         header = inf.next()
         header = header.split()
         weight_i = 0
         while header[weight_i][-7:]!='weights':
             weight_i += 1
         
-        with open(out_file) as outf:
+        with open(out_file,'w') as outf:
             out_str = '\t'.join(header[:weight_i])
             out_file.write(out_str+'\n')
             for line in in_file:
