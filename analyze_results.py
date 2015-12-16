@@ -410,7 +410,7 @@ def plot_corr_mat_convergence(corr_mat_dict):
     
     # set ticks and tick labels
     ax.set_xlim((0, 2.4))
-    ax.set_xticks([0, 0.8,1.6,2.4])
+    ax.set_xticks([0.2, 0.8,1.6,2.4])
     ax.set_xticklabels(['0', '0.8', '1.6','2.4'])
     ax.set_ylim((-1.3, 1.3))
     ax.set_yticks([-1, 0, 1])
@@ -443,6 +443,8 @@ def plot_corr_mat_convergence(corr_mat_dict):
         
     for l in res_list:
         plt.plot(ts,l,alpha=0.3,color='b')
+    plt.ylabel('Correlation estimate')
+    plt.xlabel('Z-score threshold')
     
     # Finally, save the figure as a PNG.
     plt.savefig('test.png', bbox_inches='tight')    
