@@ -442,7 +442,7 @@ def plot_corr_mat_convergence(corr_mat_dict):
         ts.append(t)
         
     for l in res_list:
-        plt.plot(ts,l,alpha=0.3)
+        plt.plot(ts,l,alpha=0.3,color='b')
     
     # Finally, save the figure as a PNG.
     plt.savefig('test.png', bbox_inches='tight')    
