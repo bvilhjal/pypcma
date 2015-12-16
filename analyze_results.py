@@ -386,7 +386,7 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
     for t in ts:
         zz_corr_mat = sp.empty((num_ss,num_ss))
         out_file = res_prefix+('_t%0.1f'%t)+'.out'
-        if os.path.isfile(out_file):
+        try:
             with open(out_file,'r') as f:
                 while not (f.next()).startswith(' *** Zscore correlation matrix:'):
                     pass
@@ -395,6 +395,8 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
                     l = line.split()
                     zz_corr_mat[i]=sp.array(map(float,l))
             res_dict['t%0.1f'%t] = zz_corr_mat
+        except Exception:
+            pass
     print res_dict
     return res_dict
     
