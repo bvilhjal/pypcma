@@ -409,10 +409,10 @@ def plot_corr_mat_convergence(corr_mat_dict):
     fig, ax = plt.subplots(1, 1, figsize=(8.5, 6))
     
     # set ticks and tick labels
-    ax.set_xlim((0, 2.6))
-    ax.set_xticks([0, 1, 2])
-    ax.set_xticklabels(['0', '1', '2'])
-    ax.set_ylim((-1.35, 1.35))
+    ax.set_xlim((0, 2.4))
+    ax.set_xticks([0, 0.8,1.6,2.4])
+    ax.set_xticklabels(['0', '0.8', '1.6','2.4'])
+    ax.set_ylim((-1.3, 1.3))
     ax.set_yticks([-1, 0, 1])
     
     ax.spines['left'].set_bounds(-1, 1)
