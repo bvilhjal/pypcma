@@ -369,8 +369,34 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f --v --f > %s'%(pruned_file,ss_file,run_id,t,out_file))
 
 
-def parse_corr_matrices():
-    pass
+def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
+    """
+    """
+    import os
+    with open(ss_file,'r') as f:
+        header = f.next()
+        l = header.split()
+        ss_ids = l[1:]
+    
+    print ss_ids
+    num_ss = len(ss_ids)
+    
+    res_dict = {}
+    
+    for t in ts:
+        zz_corr_mat = sp.empty((num_ss,num_ss))
+        out_file = out_prefix+('_t%0.1f'%t)+'.out'
+        with open(out_file,'r') as f:
+            while not (f.next()).startswith(' *** Zscore correlation matrix:'):
+                for i in range(len(num_ss)):
+                    line = f.next()
+                    l = line.split()
+                    zz_corr_mat[i]=sp.array(map(float,l))
+                break
+        res_dict['t%0.1f'%t] = zz_corr_mat
+    print res_dict
+    return res_dict
+    
 
 if __name__=='__main__':
 #     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
@@ -388,5 +414,5 @@ if __name__=='__main__':
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
 
-    run_all_ts()
+    run_all_tsa()
 
