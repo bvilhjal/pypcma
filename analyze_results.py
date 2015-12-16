@@ -2,12 +2,16 @@
 Analyze results..
 """
 
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+# import matplotlib
+
 import pandas
 import scipy as sp
 import gzip
 import pylab
 import itertools as it
-# import matplotlib
 
 def get_sid_pos_map(sids):
     sids = set(sids)
@@ -401,9 +405,6 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
     return res_dict
 
 def plot_corr_mat_convergence(corr_mat_dict):
-    import matplotlib as mpl
-    mpl.use('Agg')
-    import matplotlib.pyplot as plt
     
     fig, ax = plt.subplots(1, 1, figsize=(12, 9))
     
