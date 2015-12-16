@@ -358,9 +358,23 @@ def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT
 # def count_ld_indep_regions.
 
 
+def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
+    """
+    
+    """
+    import os
+    for t in ts:
+        run_id = name+('_t%0.1f'%t)
+        out_file = out_prefix+('_t%0.1f'%t)+'.out'
+        os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f --v --f > %s'%(pruned_file,ss_file,run_id,t,out_file))
+
+
+def parse_corr_matrices():
+    pass
+
 if __name__=='__main__':
-    plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
-    plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT')
+#     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
+#     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT')
 #     plot_overlap_ps('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt', ss_file='/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt', 
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_HGT.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$')
@@ -374,4 +388,5 @@ if __name__=='__main__':
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
 
+    run_all_ts()
 
