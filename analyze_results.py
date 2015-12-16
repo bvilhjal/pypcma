@@ -404,7 +404,7 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
     print res_dict
     return res_dict
 
-def plot_corr_mat_convergence(corr_mat_dict):
+def plot_corr_mat_convergence(corr_mat_dict, title_str=''):
     
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     
@@ -446,8 +446,12 @@ def plot_corr_mat_convergence(corr_mat_dict):
     plt.ylabel('Correlation estimate')
     plt.xlabel('Z-score threshold')
     
+    plt.title(title_str)
+    
     # Finally, save the figure as a PNG.
     plt.savefig('test.png', bbox_inches='tight')    
+
+
 
 
 
