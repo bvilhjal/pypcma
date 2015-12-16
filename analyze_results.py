@@ -442,7 +442,7 @@ def plot_corr_mat_convergence(corr_mat_dict):
         ts.append(t)
         
     for l in res_list:
-        plt.plot(ts,l,alpha=0.3,color='dodgerblue')
+        plt.plot(ts,l,alpha=0.3,color='dodgerblue', linewidth=2)
     plt.ylabel('Correlation estimate')
     plt.xlabel('Z-score threshold')
     
