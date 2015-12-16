@@ -7,7 +7,7 @@ import scipy as sp
 import gzip
 import pylab
 import itertools as it
-import matplotlib
+# import matplotlib
 
 def get_sid_pos_map(sids):
     sids = set(sids)
@@ -399,7 +399,52 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
             pass
     print res_dict
     return res_dict
+
+def plot_corr_mat_convergence(corr_mat_dict):
+    import matplotlib as mpl
+    mpl.use('Agg')
+    import matplotlib.pyplot as plt
     
+    fig, ax = plt.subplots(1, 1, figsize=(12, 9))
+    
+    # Remove the plot frame lines. They are unnecessary here.
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    
+    # Ensure that the axis ticks only show up on the bottom and left of the plot.
+    # Ticks on the right and top of the plot are generally unnecessary.
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+    
+    # Limit the range of the plot to only where the data is.
+    # Avoid unnecessary whitespace.
+    plt.xlim(0, 3)
+    plt.ylim(-1,1)
+    
+    t_strs = corr_mat_dict.keys()
+    t_strs.sort()
+    corr_mat = corr_mat_dict[t_strs[0]]
+    num_ss = len(corr_mat)
+    res_list = [[] for i in range((num_ss-1)*(num_ss-2)/2)]
+    ts = []
+    for t_str in t_strs:
+        t = float(t_str[2:])
+        corr_mat = corr_mat_dict[t_str]
+        for i in range(num_ss):
+            for j in range(num_ss-i-1):
+                v = corr_mat[i,j]
+                res_list[i*num_ss+j].append(v)
+        ts.append(t)
+        
+    for l in res_list:
+        plt.plot(ts,l,alpha=0.3)
+    
+    # Finally, save the figure as a PNG.
+    plt.savefig('test.png', bbox_inches='tight')    
+
+
 
 if __name__=='__main__':
 #     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
