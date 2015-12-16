@@ -431,7 +431,7 @@ def plot_corr_mat_convergence(corr_mat_dict):
     res_list = [[] for i in range((num_ss)*(num_ss-1)/2)]
     ts = []
     for t_str in t_strs:
-        t = float(t_str[2:])
+        t = float(t_str[1:])
         corr_mat = corr_mat_dict[t_str]
         l_i = 0
         for i in range(num_ss):
