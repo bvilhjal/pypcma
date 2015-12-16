@@ -433,10 +433,12 @@ def plot_corr_mat_convergence(corr_mat_dict):
     for t_str in t_strs:
         t = float(t_str[2:])
         corr_mat = corr_mat_dict[t_str]
+        l_i = 0
         for i in range(num_ss):
             for j in range(num_ss-i-1):
                 v = corr_mat[i,j]
-                res_list[i*num_ss+j].append(v)
+                res_list[l_i].append(v)
+                l_i +=1
         ts.append(t)
         
     for l in res_list:
