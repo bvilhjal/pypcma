@@ -408,21 +408,21 @@ def plot_corr_mat_convergence(corr_mat_dict):
     
     fig, ax = plt.subplots(1, 1, figsize=(12, 9))
     
-    # Remove the plot frame lines. They are unnecessary here.
-    ax.spines['top'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
+    # set ticks and tick labels
+    ax.set_xlim((0, 3))
+    ax.set_xticks([0, 1, 2, 3])
+    ax.set_xticklabels(['0', '1', '2','3'])
+    ax.set_ylim((-1.4, 1.4))
+    ax.set_yticks([-1, 0, 1])
+    
+    ax.spines['left'].set_bounds(-1, 1)
+    # Hide the right and top spines
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    
-    # Ensure that the axis ticks only show up on the bottom and left of the plot.
-    # Ticks on the right and top of the plot are generally unnecessary.
-    ax.get_xaxis().tick_bottom()
-    ax.get_yaxis().tick_left()
-    
-    # Limit the range of the plot to only where the data is.
-    # Avoid unnecessary whitespace.
-    plt.xlim(0, 3)
-    plt.ylim(-1,1)
+    ax.spines['top'].set_visible(False)
+    # Only show ticks on the left and bottom spines
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+
     
     t_strs = corr_mat_dict.keys()
     t_strs.sort()
