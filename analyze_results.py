@@ -13,6 +13,8 @@ import gzip
 import pylab
 import itertools as it
 
+import h5py
+
 def get_sid_pos_map(sids):
     sids = set(sids)
     sid_map = {}
@@ -358,19 +360,68 @@ def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT
         pylab.savefig(fig_filename)
     pylab.clf()
         
+
+def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldetect-data/EUR/fourier_ls-', 
+                      out_hdf5_file='/Users/bjarnivilhjalmsson/REPOS/others/ldetect-data/EUR/fourier_ls.hdf5'):
+    of = h5py.File(out_hdf5_file)
+    for chrom in range(1,23):
+        chrom_str = 'chr%d'%chrom 
+        map_file = '%s%s.bed'%(file_prefix,chrom_str)
+        bin_limits = []
+        with open(map_file,'r') as f:
+            print f.next()
+            for line in f:
+                l = line.split()
+                bin_limits.append(int(l[1]))
+            bin_limits.append(int(l[2]))
+        of.create_dataset(chrom_str, data=sp.array(bin_limits))
+    of.close()
+        
+def parse_PCMA_results(ss_file,res_file):
+    #Parse ss file, get various information
+    ss_tab = pandas.read_table(ss_file)
+    l = list(ss_tab.columns)[4:]
+    num_ss = len(l)/2
+    ss_zs_ids = l[:num_ss]
+    ss_weights_ids = l[num_ss:]
+    assert sp.all(ss_tab['SID']==ss_tab['SID']), 'The summary statistics and PCMA results file do not match.'
     
-# def count_ld_indep_regions.
+    #Parse p-values from result file
+    res_tab = pandas.read_table(res_file)
+    
+
+def count_ld_indep_regions(ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
+    #parse results..
+    
+    #parse ldetect map
+    ldr = h5py.File(ld_reg_map,'r')
+    for chrom in range(1,23):
+        chrom_str = 'chr%d'chrom
+        chrom_bin_limits = ldr[chrom_str]
 
 
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
-    """
-    
+    """  
     """
     import os
+
+    with open(ss_file,'r') as f:
+        header = f.next()
+        l = header.split()
+        ss_ids = l[1:]
+    weights_fn = out_prefix+'ss_weights.txt'
+    with open(weights_fn,'w') as f:
+        f.write('Study    Weight\n')
+        for ss_id in ss_ids:
+            f.write('%s    %d\n'%(ss_id,1))
+    
+    
     for t in ts:
+        print 'Working on t=%0.2f'%t
         run_id = name+('_t%0.1f'%t)
         out_file = out_prefix+('_t%0.1f'%t)+'.out'
-        os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f --v --f > %s'%(pruned_file,ss_file,run_id,t,out_file))
+        os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f -w %s --v --f > %s'%(pruned_file, ss_file, run_id, t, out_file, weights_fn))
+        os.system('mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id)
 
 
 def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
