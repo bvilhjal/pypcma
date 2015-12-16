@@ -406,7 +406,7 @@ def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1
 
 def plot_corr_mat_convergence(corr_mat_dict):
     
-    fig, ax = plt.subplots(1, 1, figsize=(8.5, 6))
+    fig, ax = plt.subplots(1, 1, figsize=(8, 6))
     
     # set ticks and tick labels
     ax.set_xlim((0, 2.4))
