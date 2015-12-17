@@ -444,35 +444,36 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
         #assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
         for bin_i in range(bin_indices.max()+1):
             bin_filter = bin_indices==bin_i
-            min_marg_pv = (res_dict['min_marg_ps'][bin_filter]).min()
-            marg_hit = min_marg_pv<5E-8
-            comb_ps = res_dict['comb_ps'][bin_filter]
-            min_comb_pv = comb_ps.min()  
-            min_i = comb_ps.idxmin()  
-            min_sid = res_dict['sids'][min_i]
-            
-            comb_hit =comb_pv<5E-8
-
-            if marg_hit:
-                num_marg_hits+=1
-                if comb_hit:
-                    num_shared_hits +=1
-                    num_comb_hits +=1
-                else:
-                    num_missed_hits+=1
-            elif comb_hit:
-                num_new_hits+=1
-                num_comb_hits +=1
+            if sp.any(bin_filter):
+                min_marg_pv = (res_dict['min_marg_ps'][bin_filter]).min()
+                marg_hit = min_marg_pv<5E-8
+                comb_ps = res_dict['comb_ps'][bin_filter]
+                min_i = comb_ps.idxmin()  
+                min_comb_pv = comb_ps[min_i]
+                min_sid = res_dict['sids'][min_i]
                 
-                start_pos = chrom_bins[bin_i]
-                if bin_i<len(chrom_bins)-1:
-                    end_pos = chrom_bins[bin_i+1]
-                else:
-                    end_pos = -1
-                res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'min_comb_pv':min_comb_pv, 
-                                         'min_PC_pv': res_dict['pc_ps'].min(0), 'min_sid':min_sid,
-                                         'chromsome':chrom, 'positions_bin':(start_pos,end_pos)}
-                #More information on new hits somewhere
+                comb_hit =comb_pv<5E-8
+    
+                if marg_hit:
+                    num_marg_hits+=1
+                    if comb_hit:
+                        num_shared_hits +=1
+                        num_comb_hits +=1
+                    else:
+                        num_missed_hits+=1
+                elif comb_hit:
+                    num_new_hits+=1
+                    num_comb_hits +=1
+                    
+                    start_pos = chrom_bins[bin_i]
+                    if bin_i<len(chrom_bins)-1:
+                        end_pos = chrom_bins[bin_i+1]
+                    else:
+                        end_pos = -1
+                    res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'min_comb_pv':min_comb_pv, 
+                                             'min_PC_pv': res_dict['pc_ps'].min(0), 'min_sid':min_sid,
+                                             'chromsome':chrom, 'positions_bin':(start_pos,end_pos)}
+                    #More information on new hits somewhere
         
     print '\nResults summary: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
     print res_summary_dict
