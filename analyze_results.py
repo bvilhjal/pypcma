@@ -461,7 +461,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                 num_comb_hits +=1
                 
                 start_pos = chrom_bins[bin_i]
-                if bin_i<len(chrom_bins):
+                if bin_i<len(chrom_bins)-1:
                     end_pos = chrom_bins[bin_i+1]
                 else:
                     end_pos = -1
