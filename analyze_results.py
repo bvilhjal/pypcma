@@ -379,32 +379,40 @@ def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldete
         
 def parse_PCMA_results(ss_file,res_file):
     #Parse ss file, get various information
-    ss_tab = pandas.read_table(ss_file)
-    l = list(ss_tab.columns)[4:]
+    ss_df = pandas.read_table(ss_file)
+    l = list(ss_df.columns)[4:]
     num_ss = len(l)/2
     ss_zs_ids = l[:num_ss]
     ss_weights_ids = l[num_ss:]
-    assert sp.all(ss_tab['SID']==ss_tab['SID']), 'The summary statistics and PCMA results file do not match.'
+    assert sp.all(ss_df['SID']==ss_df['SID']), 'The summary statistics and PCMA results file do not match.'
     
     #Parse p-values from result file
-    res_tab = pandas.read_table(res_file)
+    res_df = pandas.read_table(res_file)
     
     #Partition things by chromosome
     chrom_res_dict = {}
     for chrom in range(1,23):
         chrom_str = 'chr%d'%chrom
-        chrom_res_dict[chrom_str] = {'zs'}
+        chrom_filter = ss_df['Chromosome']==chrom
+        chrom_ss_df = ss_df[chrom_filter]
+        chrom_res_df = res_df[chrom_filter]
+        chrom_res_dict[chrom_str] = {'zs':chrom_ss_df[ss_zs_ids],'weights':chrom_ss_df[ss_weights_ids], 'positions':chrom_ss_df['Position'], 
+                                     'sids':chrom_ss_df['SID'], 'maf':chrom_ss_df['EUR_MAF'], 'res_df':chrom_res_df}
+    return chrom_res_dict
 
-def count_ld_indep_regions(ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
+
+def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
     #parse results..
+    chrom_res_dict = parse_PCMA_results(ss_file,res_file)
     
     #parse ldetect map
     ldr = h5py.File(ld_reg_map,'r')
     for chrom in range(1,23):
-        chrom_str = 'chr%d'chrom
+        chrom_str = 'chr%d'%chrom
         chrom_bin_limits = ldr[chrom_str]
 
-
+        #Count things..
+        
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
     """  
     """
