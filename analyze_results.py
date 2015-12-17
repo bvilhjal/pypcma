@@ -396,8 +396,11 @@ def parse_PCMA_results(ss_file,res_file):
         chrom_filter = ss_df['Chromosome']==chrom
         chrom_ss_df = ss_df[chrom_filter]
         chrom_res_df = res_df[chrom_filter]
+        marg_ps = chrom_res_df[ss_zs_ids]
+        min_marg_ps = marg_ps.min(1)
         chrom_res_dict[chrom_str] = {'zs':chrom_ss_df[ss_zs_ids],'weights':chrom_ss_df[ss_weights_ids], 'positions':chrom_ss_df['Position'], 
-                                     'sids':chrom_ss_df['SID'], 'maf':chrom_ss_df['EUR_MAF'], 'res_df':chrom_res_df}
+                                     'sids':chrom_ss_df['SID'], 'maf':chrom_ss_df['EUR_MAF'], 'res_df':chrom_res_df.ix[:,1:-num_ss], 
+                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':chrom_res_df['pvCHI2']}
     return chrom_res_dict
 
 
@@ -405,14 +408,52 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
     #parse results..
     chrom_res_dict = parse_PCMA_results(ss_file,res_file)
     
+    #Filter for good SNPs?
+    
+    
+    
     #parse ldetect map
     ldr = h5py.File(ld_reg_map,'r')
+    
+    #
+    num_new_hits = 0
+    num_comb_hits = 0
+    num_marg_hits = 0
+    num_shared_hits = 0
+    num_missed_hits = 0
+    
+        
+    chrom_bin_dict = {} 
     for chrom in range(1,23):
         chrom_str = 'chr%d'%chrom
-        chrom_bin_limits = ldr[chrom_str]
-
-        #Count things..
+        res_dict = chrom_res_dict[chrom_str]
+        chrom_bins = ldr[chrom_str]
+        bin_indices = sp.digitize(res_dict['Position'], chrom_bins)
+        chrom_bin_dict[chrom_str]={'bin_indices':bin_indices, 'chrom_bins':chrom_bins, 'num_bins':len(chrom_bins)-1}
         
+    
+        #Count things..
+        assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
+        for bin_i in range(bin_indices.max()+1):
+            bin_filter = bin_indices==bin_i
+            min_marg_pv = (res_dict['min_marg_ps'][bin_filter]).min()
+            marg_hit = min_marg_pv<5E-8
+            comb_pv = (res_dict['comb_ps'][bin_filter]).min()            
+            comb_hit =comb_pv<5E-8
+
+            if marg_hit:
+                num_marg_hits+=1
+                if comb_hit:
+                    num_shared_hits +=1
+                    num_comb_hits +=1
+                else:
+                    num_missed_hits+=1
+            elif comb_hit:
+                num_new_hits+=1
+                num_comb_hits +=1
+        
+        print 'Chromosome %d, results so far: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
+                
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
     """  
     """
@@ -437,6 +478,7 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         print command_str
         os.system(command_str)
         command_str = 'mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id
+        print command_str
         os.system(command_str)
 
 
