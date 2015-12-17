@@ -456,7 +456,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                 num_new_hits+=1
                 num_comb_hits +=1
         
-        print 'Chromosome %d, results so far: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(chrom, num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
+    print 'Results summary: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
                 
                 
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
