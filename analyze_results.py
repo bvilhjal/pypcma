@@ -382,6 +382,8 @@ def parse_PCMA_results(ss_file,res_file):
     ss_df = pandas.read_table(ss_file)
     l = list(ss_df.columns)[4:]
     num_ss = len(l)/2
+    pc_ids = ['pvPC%d'%i for i in range(1,num_ss+1)]
+    
     ss_zs_ids = l[:num_ss]
     ss_weights_ids = l[num_ss:]
     assert sp.all(ss_df['SID']==ss_df['SID']), 'The summary statistics and PCMA results file do not match.'
@@ -400,7 +402,7 @@ def parse_PCMA_results(ss_file,res_file):
         min_marg_ps = marg_ps.min(1)
         chrom_res_dict[chrom_str] = {'zs':chrom_ss_df[ss_zs_ids],'weights':chrom_ss_df[ss_weights_ids], 'positions':chrom_ss_df['Position'], 
                                      'sids':chrom_ss_df['SID'], 'maf':chrom_ss_df['EUR_MAF'], 'res_df':chrom_res_df.ix[:,1:-num_ss], 
-                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':chrom_res_df['pvCHI2']}
+                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':chrom_res_df['pvCHI2'], 'pc_ps':chrom_res_df[pc_ids]}
     return chrom_res_dict
 
 
@@ -426,6 +428,8 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
     
         
     chrom_bin_dict = {} 
+    
+    res_summary_dict = {}
     for chrom in range(1,23):
         print 'Working on chromosome %d'%chrom
         chrom_str = 'chr%d'%chrom
@@ -455,9 +459,14 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
             elif comb_hit:
                 num_new_hits+=1
                 num_comb_hits +=1
-        
-    print 'Results summary: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
                 
+                res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'comb_pv':comb_pv, 
+                                         'min_PC_pv': res_dict['pc_ps'].min(0), 
+                                         'bin':(chrom_bins[bin_i], chrom_bins[bin_i+1])}
+                #More information on new hits somewhere
+        
+    print '\nResults summary: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
+    print res_summary_dict
                 
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
     """  
