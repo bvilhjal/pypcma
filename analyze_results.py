@@ -422,7 +422,7 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         header = f.next()
         l = header.split()
         ss_ids = l[1:]
-    weights_fn = out_prefix+'ss_weights.txt'
+    weights_fn = out_prefix+'_ss_weights.txt'
     with open(weights_fn,'w') as f:
         f.write('Study    Weight\n')
         for ss_id in ss_ids:
@@ -433,8 +433,11 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         print 'Working on t=%0.2f'%t
         run_id = name+('_t%0.1f'%t)
         out_file = out_prefix+('_t%0.1f'%t)+'.out'
-        os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f -w %s --v --f > %s'%(pruned_file, ss_file, run_id, t, out_file, weights_fn))
-        os.system('mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id)
+        command_str = '/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f -w %s --v --f > %s'%(pruned_file, ss_file, run_id, t, weights_fn, out_file)
+        print command_str
+        os.system(command_str)
+        command_str = 'mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id
+        os.system(command_str)
 
 
 
