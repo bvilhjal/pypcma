@@ -460,9 +460,14 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                 num_new_hits+=1
                 num_comb_hits +=1
                 
+                start_pos = chrom_bins[bin_i]
+                if bin_i<len(chrom_bins):
+                    end_pos = chrom_bins[bin_i+1]
+                else:
+                    end_pos = -1
                 res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'comb_pv':comb_pv, 
                                          'min_PC_pv': res_dict['pc_ps'].min(0), 
-                                         'bin':(chrom_bins[bin_i], chrom_bins[bin_i+1])}
+                                         'bin':(start_pos,end_pos)}
                 #More information on new hits somewhere
         
     print '\nResults summary: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
