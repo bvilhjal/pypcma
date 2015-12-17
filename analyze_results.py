@@ -389,6 +389,11 @@ def parse_PCMA_results(ss_file,res_file):
     #Parse p-values from result file
     res_tab = pandas.read_table(res_file)
     
+    #Partition things by chromosome
+    chrom_res_dict = {}
+    for chrom in range(1,23):
+        chrom_str = 'chr%d'%chrom
+        chrom_res_dict[chrom_str] = {'zs'}
 
 def count_ld_indep_regions(ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
     #parse results..
@@ -422,6 +427,7 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         out_file = out_prefix+('_t%0.1f'%t)+'.out'
         os.system('/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f -w %s --v --f > %s'%(pruned_file, ss_file, run_id, t, out_file, weights_fn))
         os.system('mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id)
+
 
 
 def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
