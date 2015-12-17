@@ -436,7 +436,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
     
         #Count things..
         print 'Counting hits'
-        assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
+        #assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
         for bin_i in range(bin_indices.max()+1):
             bin_filter = bin_indices==bin_i
             min_marg_pv = (res_dict['min_marg_ps'][bin_filter]).min()
