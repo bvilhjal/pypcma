@@ -452,7 +452,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                 min_comb_pv = comb_ps[min_i]
                 min_sid = res_dict['sids'][min_i]
                 
-                comb_hit =comb_pv<5E-8
+                comb_hit =min_comb_pv<5E-8
     
                 if marg_hit:
                     num_marg_hits+=1
