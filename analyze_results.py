@@ -446,7 +446,11 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
             bin_filter = bin_indices==bin_i
             min_marg_pv = (res_dict['min_marg_ps'][bin_filter]).min()
             marg_hit = min_marg_pv<5E-8
-            comb_pv = (res_dict['comb_ps'][bin_filter]).min()            
+            comb_ps = res_dict['comb_ps'][bin_filter]
+            min_comb_pv = comb_ps.min()  
+            min_i = comb_ps.idxmin()  
+            min_sid = res_dict['sids'][min_i]
+            
             comb_hit =comb_pv<5E-8
 
             if marg_hit:
@@ -465,8 +469,8 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                     end_pos = chrom_bins[bin_i+1]
                 else:
                     end_pos = -1
-                res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'comb_pv':comb_pv, 
-                                         'min_PC_pv': res_dict['pc_ps'].min(0), 
+                res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'min_comb_pv':min_comb_pv, 
+                                         'min_PC_pv': res_dict['pc_ps'].min(0), 'min_sid':min_sid,
                                          'chromsome':chrom, 'positions_bin':(start_pos,end_pos)}
                 #More information on new hits somewhere
         
