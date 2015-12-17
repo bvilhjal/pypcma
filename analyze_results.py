@@ -413,6 +413,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
     
     
     #parse ldetect map
+    print 'Loading ldetect map'
     ldr = h5py.File(ld_reg_map,'r')
     
     #
@@ -425,14 +426,16 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
         
     chrom_bin_dict = {} 
     for chrom in range(1,23):
+        print 'Working on chromosome %d'%chrom
         chrom_str = 'chr%d'%chrom
         res_dict = chrom_res_dict[chrom_str]
         chrom_bins = ldr[chrom_str]
-        bin_indices = sp.digitize(res_dict['Position'], chrom_bins)
+        bin_indices = sp.digitize(res_dict['positions'], chrom_bins)
         chrom_bin_dict[chrom_str]={'bin_indices':bin_indices, 'chrom_bins':chrom_bins, 'num_bins':len(chrom_bins)-1}
         
     
         #Count things..
+        print 'Counting hits'
         assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
         for bin_i in range(bin_indices.max()+1):
             bin_filter = bin_indices==bin_i
@@ -453,6 +456,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                 num_comb_hits +=1
         
         print 'Chromosome %d, results so far: \n# new hits: %d \n# missed hits: %d \n# of shared hits: %d \n# multivar. hits: %d \n# marg. hits: %d \n'%(num_new_hits, num_missed_hits, num_shared_hits, num_comb_hits, num_marg_hits)
+                
                 
 def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
     """  
