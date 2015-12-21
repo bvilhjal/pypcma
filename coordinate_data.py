@@ -1139,11 +1139,18 @@ def parse_parameters():
         sys.exit(0)
     return p_dict
 
-def concatenate_ss_h5files(h5files, outfile):
+def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
     oh5f = h5py.File(outfile)
     for h5file in h5files:
         ih5f = h5py.File(h5file)
-        for ss_lab in ih5f.keys():
+        if ss_labs is None:
+            ok_ss_labs = ih5f.keys()
+        else:
+            ok_ss_labs = []
+            for ss_lab in ih5f.keys():
+                if ss_lab in ss_labs:
+                    ok_ss_labs.append(ss_lab)
+        for ss_lab in ok_ss_labs:
             ossg = oh5f.create_group(ss_lab)
             issg = ih5f[ss_lab]
             for chrom in range(1,23):
