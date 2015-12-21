@@ -895,7 +895,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
         sums_ids = [x.encode('UTF8') for x in sums_ids]
     else:
         all_sums_ids = h5f.keys()
-        all_sums_ids = [x.encode('UTF8') for x in sums_ids]
+        all_sums_ids = [x.encode('UTF8') for x in all_sums_ids]
         sums_ids = []
         for ss_lab in all_sums_ids:
             if ss_lab in ss_labs:
