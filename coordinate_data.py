@@ -884,14 +884,22 @@ def parse_sum_stats(filename,
 
 
 
-def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True):
+def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True, ss_labs=None):
     """
     
     """
     h5f = h5py.File(comb_hdf5_file)
     oh5f = h5py.File(coord_hdf5_file)
-    sums_ids = h5f.keys()
-    sums_ids = [x.encode('UTF8') for x in sums_ids]
+    if ss_labs is None:
+        sums_ids = h5f.keys()
+        sums_ids = [x.encode('UTF8') for x in sums_ids]
+    else:
+        all_sums_ids = h5f.keys()
+        all_sums_ids = [x.encode('UTF8') for x in sums_ids]
+        sums_ids = []
+        for ss_lab in all_sums_ids:
+            if ss_lab in ss_labs:
+                sums_ids.append(ss_lab)
     print 'Combining datasets: '+' '.join(sums_ids)
     oh5f.create_dataset('sums_ids', data=sums_ids)
     for chrom in range(1,23):
@@ -1197,5 +1205,5 @@ if __name__=='__main__':
         if p_dict['wmissing']:
             coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
         else:
-            coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file)
+            coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'])
     
