@@ -1,6 +1,14 @@
 """
 Coordinate summary statistics datasets for performing multiple-trait analysis.
 
+In order to conduct the multiple-trait analysis the following steps are necessary.
+
+1. Parse the summary statistics and output in a internal hdf5 formatted file.
+2. Coordinate the summary statistics and output a coordinated file.
+    - At this step several filtering options are possible.
+3. LD-prune the summary statistics.
+4. Perform the PCMA analysis.
+
 Usage: 
 python coordinate_data.py --ssfiles=SUM_STATS_FILE1,SUM_STATS_FILE2,... --combfile=COMB_SS_FILE   
                           --sslabels=LABEL1,LABEL2,... --1KGpath=1KG_PATH  [--coordfile=COORD_FILE --ssf_format=SSF_FORMAT --wmissing]
@@ -884,9 +892,10 @@ def parse_sum_stats(filename,
 
 
 
-def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True, ss_labs=None):
+def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True, 
+                         ss_labs=None, weight_min=0.8, weight_max_diff=0.1):
     """
-    
+    Coordinate multiple summary statistics
     """
     h5f = h5py.File(comb_hdf5_file)
     oh5f = h5py.File(coord_hdf5_file)
@@ -900,7 +909,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
         for ss_lab in all_sums_ids:
             if ss_lab in ss_labs:
                 sums_ids.append(ss_lab)
-    print 'Combining datasets: '+' '.join(sums_ids)
+    print 'Coordinating summary statistics: '+' '.join(sums_ids)
     oh5f.create_dataset('sums_ids', data=sums_ids)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
@@ -941,8 +950,40 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     chr_g = h5f[sums_ids[0]][chrom_str]
                     sids = chr_g['sids'][...]
                     sids_map = sp.in1d(sids, common_sids)
-            else:
-                pass
+            
+            
+            if weight_min>0 or weight_max_diff<1:
+                #Filtering SNPs with weight differences.
+                ok_sids = set()
+                
+                #Max weight
+                n_snps = len(filtered_sids)
+                n_sums = len(sums_ids)
+                rel_weights_mat = sp.zeros((filtered_sids,sums_ids))
+                for s_i, sums_id in enumerate(sums_ids):
+                    chr_g = h5f[sums_id][chrom_str]
+                    d = {}
+                    weights=chr_g['weights'][...][sids_map]
+                    max_weight = weights.max()
+                    rel_weights_mat[:,s_i] = weights/float(max_weight)
+                
+                min_rel_weights = rel_weights_mat.min(1)
+                min_filter = min_rel_weights>weight_min
+                max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+                diff_filter = max_diffs<weight_max_diff
+                weights_filter = min_filter * diff_filter
+                
+                num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
+                print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
+                if num_filtered_snps>0:                    
+                    #Update SNP map
+                    common_sids = sp.array(list(ok_sids))
+                    chr_g = h5f[sums_ids[0]][chrom_str]
+                    sids = chr_g['sids'][...]
+                    sids_map = sp.in1d(sids, common_sids)
+                
+                    
+
         order_sids = chr_g['sids'][...][sids_map]
         positions = chr_g['positions'][...][sids_map]
         eur_mafs = chr_g['eur_mafs'][...][sids_map]
