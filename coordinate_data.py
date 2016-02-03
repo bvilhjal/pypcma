@@ -958,7 +958,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 #Max weight
                 n_snps = len(filtered_sids)
                 n_sums = len(sums_ids)
-                rel_weights_mat = sp.zeros((filtered_sids,sums_ids))
+                rel_weights_mat = sp.zeros((n_snps,n_sums))
                 for s_i, sums_id in enumerate(sums_ids):
                     chr_g = h5f[sums_id][chrom_str]
                     d = {}
