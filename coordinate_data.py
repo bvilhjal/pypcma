@@ -1141,52 +1141,6 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
             out_chr_ss_g.create_dataset('weights', data = final_weights)
 
 
-
-def parse_parameters():
-    """
-    Parse the parameters into a dict, etc.
-    """
-#    if len(sys.argv) == 1:
-#        print __doc__
-#        sys.exit(2)
-
-                          
-    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=','help', 'wmissing']
-
-    p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False}
-
-    if len(sys.argv) > 1:
-        try:
-            opts, args = getopt.getopt(sys.argv[1:], "h", long_options_list)
-    
-        except:
-            print "Some problems with parameters.  Please read the usage documentation carefully."
-            print "Use the -h option for usage information."
-#             traceback.print_exc()
-#             print __doc__
-            sys.exit(2)
-    
-        for opt, arg in opts:
-            if opt == "-h" or opt=="--h" or opt=='--help':
-                print __doc__
-                sys.exit(0)
-            elif opt =="--ssfiles": p_dict['ssfiles'] = arg.split(',')
-            elif opt =="--sslabels": p_dict['sslabels'] = arg.split(',')
-            elif opt == "--combfile": p_dict['combfile'] = arg
-            elif opt == "--coordfile": p_dict['coordfile'] = arg
-            elif opt == "--1KGpath": p_dict['1KGpath'] = arg
-            elif opt == "--ssf_format": p_dict['ssf_format'] = arg
-            elif opt == "--wmissing": p_dict['wmissing'] = True
-            else:
-                print "Unkown option:", opt
-                print "Use -h option for usage information."
-                sys.exit(2)
-    else:
-        print __doc__
-        sys.exit(0)
-    return p_dict
-
 def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
     oh5f = h5py.File(outfile)
     for h5file in h5files:
@@ -1212,6 +1166,65 @@ def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
                 ochrom_g.create_dataset('positions', data=ichrom_g['positions'][...])
                 ochrom_g.create_dataset('zs', data=ichrom_g['zs'][...])
                 ochrom_g.create_dataset('weights', data=ichrom_g['weights'][...])
+
+
+def do_analysis():
+    """
+    Runs coordnations of multiple datasets.
+    """
+    #PGC..
+    
+    
+
+
+def parse_parameters():
+    """
+    Parse the parameters into a dict, etc.
+    """
+#    if len(sys.argv) == 1:
+#        print __doc__
+#        sys.exit(2)
+
+                          
+    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=','help', 'wmissing', 
+                         'weight_min', 'weight_max_diff']
+
+    p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.8, 'weight_max_diff': 0.1}
+
+    if len(sys.argv) > 1:
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "h", long_options_list)
+    
+        except:
+            print "Some problems with parameters.  Please read the usage documentation carefully."
+            print "Use the -h option for usage information."
+#             traceback.print_exc()
+#             print __doc__
+            sys.exit(2)
+    
+        for opt, arg in opts:
+            if opt == "-h" or opt=="--h" or opt=='--help':
+                print __doc__
+                sys.exit(0)
+            elif opt =="--ssfiles": p_dict['ssfiles'] = arg.split(',')
+            elif opt =="--sslabels": p_dict['sslabels'] = arg.split(',')
+            elif opt == "--combfile": p_dict['combfile'] = arg
+            elif opt == "--coordfile": p_dict['coordfile'] = arg
+            elif opt == "--1KGpath": p_dict['1KGpath'] = arg
+            elif opt == "--ssf_format": p_dict['ssf_format'] = arg
+            elif opt == "--wmissing": p_dict['wmissing'] = True
+            elif opt == "--weight_min": p_dict['weight_min'] = float(arg)
+            elif opt == "--weight_max_diff": p_dict['weight_max_diff'] = float(arg)
+            else:
+                print "Unkown option:", opt
+                print "Use -h option for usage information."
+                sys.exit(2)
+    else:
+        print __doc__
+        sys.exit(0)
+    return p_dict
+
 
 
 if __name__=='__main__':
@@ -1245,5 +1258,6 @@ if __name__=='__main__':
         if p_dict['wmissing']:
             coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
         else:
-            coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'])
+            coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'], 
+                                 weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'])
     
