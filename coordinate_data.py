@@ -954,7 +954,6 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             
             if weight_min>0 or weight_max_diff<1:
                 #Filtering SNPs with weight differences.
-                ok_sids = set()
                 
                 #Max weight
                 n_snps = len(filtered_sids)
@@ -977,10 +976,11 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
                 if num_filtered_snps>0:                    
                     #Update SNP map
-                    common_sids = sp.array(list(ok_sids))
                     chr_g = h5f[sums_ids[0]][chrom_str]
                     sids = chr_g['sids'][...]
-                    sids_map = sp.in1d(sids, common_sids)
+                    ok_sids = sids[sids_map]
+                    ok_sids = ok_sids[weights_filter]
+                    sids_map = sp.in1d(sids, ok_sids)
                     
 
         order_sids = chr_g['sids'][...][sids_map]
