@@ -981,7 +981,6 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     chr_g = h5f[sums_ids[0]][chrom_str]
                     sids = chr_g['sids'][...]
                     sids_map = sp.in1d(sids, common_sids)
-                
                     
 
         order_sids = chr_g['sids'][...][sids_map]
