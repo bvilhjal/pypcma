@@ -961,7 +961,6 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 rel_weights_mat = sp.zeros((n_snps,n_sums))
                 for s_i, sums_id in enumerate(sums_ids):
                     chr_g = h5f[sums_id][chrom_str]
-                    d = {}
                     weights=chr_g['weights'][...][sids_map]
                     max_weight = weights.max()
                     rel_weights_mat[:,s_i] = weights/float(max_weight)
