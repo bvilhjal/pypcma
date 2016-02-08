@@ -992,6 +992,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
         out_chr_g.create_dataset('eur_mafs', data = eur_mafs)
         out_chr_g.create_dataset('nts', data = nts)
             
+            
         
         #Retrieve effect estimates for other summary statistics.
         for sums_id in sums_ids:
