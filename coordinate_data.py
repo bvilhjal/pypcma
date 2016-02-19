@@ -1208,8 +1208,8 @@ def parse_parameters():
 #        sys.exit(2)
 
                           
-    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=','help', 'wmissing', 
-                         'weight_min=', 'weight_max_diff=']
+    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=','weight_min=', 'weight_max_diff=', 'help', 'wmissing', 
+                         ]
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
               'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.8, 'weight_max_diff': 0.1}
