@@ -957,7 +957,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
         
         
-        if weight_min>0 or weight_max_diff<1:
+        if weight_min>=0 or weight_max_diff<1:
             #Filtering SNPs with weight differences.           
             #Calculating the relative weights
             n_snps = len(common_sids)
@@ -985,14 +985,16 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 rel_weights_mat[:,s_i] = weights/float(max_weight)
             print rel_weights_mat
             
-            #Calculating the minimum relative weight per SNP
-            min_rel_weights = rel_weights_mat.min(1)
-            min_filter = min_rel_weights>weight_min
 
             #Calculating the maximum difference in relative weights.
             max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-            diff_filter = max_diffs<weight_max_diff
-            weights_filter = min_filter * diff_filter
+            weights_filter = max_diffs<weight_max_diff
+           
+            #Calculating the minimum relative weight per SNP
+            if weight_min>0:
+                min_rel_weights = rel_weights_mat.min(1)
+                min_filter = min_rel_weights>weight_min
+                weights_filter = min_filter * weights_filter
             
             num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
             print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
