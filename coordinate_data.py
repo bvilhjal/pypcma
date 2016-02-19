@@ -979,8 +979,8 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     sids1 = sids1[snp_order]
                     weights = weights[snp_order]
                     
-                max_weight = weights.nanmax()
-                min_weight = weights.nanmin()
+                max_weight = sp.nanmax(weights)
+                min_weight = sp.nanmin(weights)
                 weights[sp.isnan(weights)]=min_weight
                 print max_weight
                 rel_weights_mat[:,s_i] = weights/float(max_weight)
