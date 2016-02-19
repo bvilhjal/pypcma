@@ -982,10 +982,20 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
                 weights[sp.isnan(weights)]=min_weight
-                print max_weight
+                
+                weights_sd = sp.std(weights)
+                mean_weight = sp.mean(weights)
+                outlier_filter = (weights-mean_weight)>3*weights_sd
+                weights[outlier_filter] = 3*weights_sd+mean_weight
+                outlier_filter = (weights-mean_weight)<-3*weights_sd
+                weights[outlier_filter] = -3*weights_sd+mean_weight
+
+                max_weight = sp.nanmax(weights)
+                min_weight = sp.nanmin(weights)
+                
                 rel_weights_mat[:,s_i] = weights/float(max_weight)
-            print rel_weights_mat
             
+
 
             #Calculating the maximum difference in relative weights.
             min_rel_weights = rel_weights_mat.min(1)
