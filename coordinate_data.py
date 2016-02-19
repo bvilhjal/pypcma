@@ -892,7 +892,7 @@ def parse_sum_stats(filename,
 
 
 
-def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True, only_common_snps=True, 
+def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
                          ss_labs=None, weight_min=0.8, weight_max_diff=0.1):
     """
     Coordinate multiple summary statistics
@@ -913,74 +913,91 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
     oh5f.create_dataset('sums_ids', data=sums_ids)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
-        if only_common_snps:
-            common_sids = set(h5f[sums_ids[0]][chrom_str]['sids'][...])
-            for sums_id in sums_ids[1:]:
-                chr_g = h5f[sums_id][chrom_str]
-                sids = chr_g['sids'][...]
-                print len(sids)
-                common_sids = common_sids.intersection(sids)
-            num_sids = len(common_sids)
-            common_sids = sp.array(list(common_sids))
-            print 'Found %d SNPs in common on chromosome %d'%(num_sids,chrom)
-    
-            #Use order and information from first summary stats dataset.
-            chr_g = h5f[sums_ids[0]][chrom_str]
+        common_sids = set(h5f[sums_ids[0]][chrom_str]['sids'][...])
+        for sums_id in sums_ids[1:]:
+            chr_g = h5f[sums_id][chrom_str]
             sids = chr_g['sids'][...]
-            sids_map = sp.in1d(sids, common_sids)
-            filtered_sids = sids[sids_map] 
+            print len(sids)
+            common_sids = common_sids.intersection(sids)
+        num_sids = len(common_sids)
+        common_sids = sp.array(list(common_sids))
+        print 'Found %d SNPs in common on chromosome %d'%(num_sids,chrom)
+
+        #Use order and information from first summary stats dataset.
+        #Store the OK sids in the common_sids, which we'll update accordingly..
         
-            if filter_ambiguous_nts:
-                #Filter SNPs with ambiguous NTs
-                ok_sids = set()
-                for sums_id in sums_ids:
-                    chr_g = h5f[sums_id][chrom_str]
-                    sids1 = chr_g['sids'][...]
-                    sids_map = sp.in1d(sids1, common_sids)
-                    nts1 = chr_g['nts'][...][sids_map]
-                    for sid, nt in it.izip(filtered_sids,nts1):
-                        nt_tuple = tuple(nt)
-                        if  nt_tuple in ok_nts:
-                            ok_sids.add(sid)
-                
-                print "%d SNPs were found with ambiguous or weird nucleotides in some dataset."%(len(sids) - len(ok_sids))
-                #If ambiguous SNPs found, then update the SNP map
-                if len(ok_sids)< len(common_sids):
-                    common_sids = sp.array(list(ok_sids))
-                    chr_g = h5f[sums_ids[0]][chrom_str]
-                    sids = chr_g['sids'][...]
-                    sids_map = sp.in1d(sids, common_sids)
+        chr_g = h5f[sums_ids[0]][chrom_str]
+        sids = chr_g['sids'][...]
+        sids_map = sp.in1d(sids, common_sids)
+        filtered_sids = sids[sids_map] 
+        assert len(filtered_sids)==len(common_sids),'WTF?'
+        common_sids = filtered_sids  #To ensure that they are ordered by position, etc.
+    
+        if filter_ambiguous_nts:
+            #Filter SNPs with ambiguous NTs
+            ok_sids = set()
+            for sums_id in sums_ids:
+                chr_g = h5f[sums_id][chrom_str]
+                sids1 = chr_g['sids'][...]
+                sids_map = sp.in1d(sids1, common_sids)
+                nts1 = chr_g['nts'][...][sids_map]
+                sids1 = sids1[sids_map]
+                assert len(sids1)==len(common_sids),'WTF?'
+                for sid, nt in it.izip(sids1,nts1):
+                    nt_tuple = tuple(nt)
+                    if  nt_tuple in ok_nts:
+                        ok_sids.add(sid)
             
-            
-            if weight_min>0 or weight_max_diff<1:
-                #Filtering SNPs with weight differences.
+            print "%d SNPs were found with ambiguous or weird nucleotides in some dataset."%(len(sids) - len(ok_sids))
+            #If ambiguous SNPs found, then update the SNP map
+            if len(ok_sids)< len(common_sids):
+                chr_g = h5f[sums_ids[0]][chrom_str]
+                sids = chr_g['sids'][...]
+                sids_map = sp.in1d(sids, sp.array(list(ok_sids)))
+                common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
+        
+        
+        if weight_min>0 or weight_max_diff<1:
+            #Filtering SNPs with weight differences.           
+            #Calculating the relative weights
+            n_snps = len(common_sids)
+            n_sums = len(sums_ids)
+            rel_weights_mat = sp.zeros((n_snps,n_sums))
+            for s_i, sums_id in enumerate(sums_ids):
+                chr_g = h5f[sums_id][chrom_str]
+                sids1 = chr_g['sids'][...]
+                sids_map1 = sp.in1d(sids1, common_sids)
+                weights=chr_g['weights'][...][sids_map1]
                 
-                #Max weight
-                n_snps = len(filtered_sids)
-                n_sums = len(sums_ids)
-                rel_weights_mat = sp.zeros((n_snps,n_sums))
-                for s_i, sums_id in enumerate(sums_ids):
-                    chr_g = h5f[sums_id][chrom_str]
-                    weights=chr_g['weights'][...][sids_map]
-                    max_weight = weights.max()
-                    rel_weights_mat[:,s_i] = weights/float(max_weight)
-                
-                min_rel_weights = rel_weights_mat.min(1)
-                min_filter = min_rel_weights>weight_min
-                max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-                diff_filter = max_diffs<weight_max_diff
-                weights_filter = min_filter * diff_filter
-                
-                num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
-                print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
-                if num_filtered_snps>0:                    
-                    #Update SNP map
-                    chr_g = h5f[sums_ids[0]][chrom_str]
-                    sids = chr_g['sids'][...]
-                    ok_sids = sids[sids_map]
-                    ok_sids = ok_sids[weights_filter]
-                    sids_map = sp.in1d(sids, ok_sids)
+                #Verify order..
+                if not sp.all(sids1==common_sids):
+                    print 'Need to re-order SNPs in summary statistics data %s'%sums_id
+                    snp_map = dict(it.izip(common_sids, range(len(sids1))))
+                    snp_order  = [snp_map[sid] for sid in sids1]
+                    sids1 = sids1[snp_order]
+                    weights = weights[snp_order]
                     
+                max_weight = weights.max()
+                rel_weights_mat[:,s_i] = weights/float(max_weight)
+            
+            #Calculating the minimum relative weight per SNP
+            min_rel_weights = rel_weights_mat.min(1)
+            min_filter = min_rel_weights>weight_min
+
+            #Calculating the maximum difference in relative weights.
+            max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+            diff_filter = max_diffs<weight_max_diff
+            weights_filter = min_filter * diff_filter
+            
+            num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
+            print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
+            if num_filtered_snps>0:                    
+                #Update SNP map
+                common_sids = common_sids[weights_filter]
+
+        chr_g = h5f[sums_ids[0]][chrom_str]
+        sids = chr_g['sids'][...]
+        sids_map = sp.in1d(sids, common_sids)
 
         order_sids = chr_g['sids'][...][sids_map]
         positions = chr_g['positions'][...][sids_map]
