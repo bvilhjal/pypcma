@@ -632,4 +632,4 @@ if __name__=='__main__':
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
 
-    run_t('/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs_ldpruned.txt','/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs.txt', 'IMMUNE_REL2', '/home/bjarni/PCMA/faststorage/2_DATA/IMMUNE_REL2')
+    run_t('/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs_ldpruned.txt','/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs.txt', 'IMMUNE_REL2', '/home/bjarni/PCMA/faststorage/2_RESULTS/IMMUNE_REL2')
