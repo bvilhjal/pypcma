@@ -988,12 +988,12 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             
 
             #Calculating the maximum difference in relative weights.
+            min_rel_weights = rel_weights_mat.min(1)
             max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
             weights_filter = max_diffs<weight_max_diff
            
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
-                min_rel_weights = rel_weights_mat.min(1)
                 min_filter = min_rel_weights>weight_min
                 weights_filter = min_filter * weights_filter
             
