@@ -893,7 +893,7 @@ def parse_sum_stats(filename,
 
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
-                         ss_labs=None, weight_min=0.8, weight_max_diff=0.1):
+                         ss_labs=None, weight_min=0.2, weight_max_diff=0.1):
     """
     Coordinate multiple summary statistics
     """
