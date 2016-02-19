@@ -963,6 +963,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             n_snps = len(common_sids)
             n_sums = len(sums_ids)
             rel_weights_mat = sp.zeros((n_snps,n_sums))
+            outlier_filter = sp.ones((n_snps),dtype='bool')
             for s_i, sums_id in enumerate(sums_ids):
                 chr_g = h5f[sums_id][chrom_str]
                 sids1 = chr_g['sids'][...]
@@ -985,22 +986,16 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 
                 weights_sd = sp.std(weights)
                 mean_weight = sp.mean(weights)
-                outlier_filter = (weights-mean_weight)>3*weights_sd
-                weights[outlier_filter] = 3*weights_sd+mean_weight
-                outlier_filter = (weights-mean_weight)<-3*weights_sd
-                weights[outlier_filter] = -3*weights_sd+mean_weight
-
-                max_weight = sp.nanmax(weights)
-                min_weight = sp.nanmin(weights)
+                outlier_filter = outlier_filter*((weights-mean_weight)<4*weights_sd)
+                outlier_filter = outlier_filter*((weights-mean_weight)>-4*weights_sd)
                 
-                rel_weights_mat[:,s_i] = weights/float(max_weight)
-            
+                rel_weights_mat[:,s_i] = weights/float(max_weight)            
 
 
             #Calculating the maximum difference in relative weights.
             min_rel_weights = rel_weights_mat.min(1)
             max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-            weights_filter = max_diffs<weight_max_diff
+            weights_filter = outlier_filter*(max_diffs<weight_max_diff)
            
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
