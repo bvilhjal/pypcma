@@ -615,6 +615,7 @@ def plot_corr_mat_convergence(corr_mat_dict, title_str=''):
 
 
 
+
 if __name__=='__main__':
 #     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC.png',method='combPC')
 #     plot_manhattan('/Users/bjarnivilhjalmsson/REPOS/pcma/Debug/PCMA_test.txt',fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT')
