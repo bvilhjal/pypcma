@@ -506,6 +506,31 @@ def run_all_ts(pruned_file, ss_file, name, out_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2
         print command_str
         os.system(command_str)
 
+def run_t(pruned_file, ss_file, name, out_prefix, t=1):
+    """  
+    """
+    import os
+
+    with open(ss_file,'r') as f:
+        header = f.next()
+        l = header.split()
+        ss_ids = l[1:]
+    weights_fn = out_prefix+'_ss_weights.txt'
+    with open(weights_fn,'w') as f:
+        f.write('Study    Weight\n')
+        for ss_id in ss_ids:
+            f.write('%s    %d\n'%(ss_id,1))
+    
+    
+    print 'Working on t=%0.2f'%t
+    run_id = name+('_t%0.1f'%t)
+    out_file = out_prefix+('_t%0.1f'%t)+'.out'
+    command_str = '/home/bjarni/PCMA/0_PROGS/PCMA/Debug/PCMA -p %s -i %s -n %s -t %0.1f -w %s --v --f > %s'%(pruned_file, ss_file, run_id, t, weights_fn, out_file)
+    print command_str
+    os.system(command_str)
+    command_str = 'mv PCMA_%s.txt /home/bjarni/PCMA/faststorage/2_RESULTS/'%run_id
+    print command_str
+    os.system(command_str)
 
 
 def parse_corr_matrices(ss_file, res_prefix, ts=[0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4]):
@@ -606,5 +631,4 @@ if __name__=='__main__':
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
 
-    run_all_tsa()
-
+    run_t('/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs_ldpruned.txt','/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL2_zs.txt', 'IMMUNE_REL2', '/home/bjarni/PCMA/faststorage/2_DATA/IMMUNE_REL2')
