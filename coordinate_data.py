@@ -980,6 +980,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     weights = weights[snp_order]
                     
                 max_weight = weights.max()
+                print max_weight
                 rel_weights_mat[:,s_i] = weights/float(max_weight)
             print rel_weights_mat
             
