@@ -968,7 +968,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 sids1 = chr_g['sids'][...]
                 sids_map1 = sp.in1d(sids1, common_sids)
                 weights=chr_g['weights'][...][sids_map1]
-                weights.nan_to_num(1)
+                nan_to_num(weights)
                 print weights
                 sids1 = sids1[sids_map1]
                 
