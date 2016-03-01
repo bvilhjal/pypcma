@@ -987,8 +987,9 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 
                 weights_sd = sp.std(weights)
                 mean_weight = sp.mean(weights)
-                outlier_filter = outlier_filter*((weights-mean_weight)<4*weights_sd)
-                outlier_filter = outlier_filter*((weights-mean_weight)>-4*weights_sd)
+                print mean_weight, weights_sd
+                outlier_filter = outlier_filter*((weights-mean_weight)<2*weights_sd)
+                outlier_filter = outlier_filter*((weights-mean_weight)>-2*weights_sd)
                 
                 rel_weights_mat[:,s_i] = weights/float(max_weight)            
 
