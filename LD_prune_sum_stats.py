@@ -162,7 +162,7 @@ def ld_pruning(ld_table, max_ld=0.5, verbose=False):
     return filter_vector
 
 
-def LD_prune_ss(coord_hdf5_file, out_file, KG_path, r2_thres=0.2, ld_radius=1000, ):
+def LD_prune_ss(coord_hdf5_file, out_file_prefix, KG_path, r2_thres=0.2, ld_radius=1000, ):
     """
     Uses 1K genome information by default.
     """
@@ -175,9 +175,12 @@ def LD_prune_ss(coord_hdf5_file, out_file, KG_path, r2_thres=0.2, ld_radius=1000
     zs_strings = [s+'_zs' for s in sums_ids]
     ws_strings = [s+'_weights' for s in sums_ids]
 
-    of = open(out_file,'w')
+    of = open(out_file_prefix+'.txt','w')
     label_str = 'SID\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
+    of_nw = open(out_file_prefix+'no_weights.txt','w')
+    label_str_nw = 'SID\t'+('\t'.join(zs_strings))+'\n'
+    of_nw.write(label_str_nw)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
         chr_g = h5f[chrom_str]
@@ -217,23 +220,30 @@ def LD_prune_ss(coord_hdf5_file, out_file, KG_path, r2_thres=0.2, ld_radius=1000
                 ws = weights[ss_sid_index_map[sid]]
                 out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\t'+('\t'.join(map(str,ws)))+'\n'
                 of.write(out_str)
+                of_nw.write(('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n')
 
         else:
             for sid in filtered_kg_sids:
                 zs = zscores[ss_sid_index_map[sid]]
                 out_str = ('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n'
                 of.write(out_str)
+                of_nw.write(('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n')
+        of.flush() 
+        of_nw.flush() 
         
         
 
-def write_out_ss_file(coord_hdf5_file, out_file):
+def write_out_ss_file(coord_hdf5_file, out_file_prefix):
     h5f = h5py.File(coord_hdf5_file)
     sums_ids = h5f['sums_ids'][...]
     zs_strings = [s+'_zs' for s in sums_ids]
     ws_strings = [s+'_weights' for s in sums_ids]
-    of = open(out_file,'w')
+    of = open(out_file_prefix+'.txt','w')
     label_str = 'Chromosome\tPosition\tSID\tEUR_MAF\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
+    of_nw = open(out_file_prefix+'no_weights.txt','w')
+    label_str_nw = 'SID\t'+('\t'.join(zs_strings))+'\n'
+    of_nw.write(label_str_nw)
     for chrom in range(1,23):
         chrom_str = 'chrom_%d' % chrom
         chr_g = h5f[chrom_str]
@@ -256,13 +266,16 @@ def write_out_ss_file(coord_hdf5_file, out_file):
             for chromosome, position, sid, eur_maf, zs, ws in it.izip(chromosomes,positions,sids,eur_mafs,zscores, weights):
                 out_str = ('%s\t%s\t%s\t%0.4f\t'%(chromosome, position, sid, eur_maf))+('\t'.join(map(str,zs)))+'\t'+('\t'.join(map(str,ws)))+'\n'
                 of.write(out_str)
+                of_nw.write(('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n')
 
         else:
             assert len(sids)==len(zscores), 'WTF?'
             for chromosome, position, sid, eur_maf, zs in it.izip(chromosomes,positions,sids,eur_mafs,zscores):
                 out_str = ('%s\t%s\t%s\t%0.4f\t'%(chromosome, position, sid, eur_maf))+('\t'.join(map(str,zs)))+'\n'
                 of.write(out_str)
+                of_nw.write(('%s\t'%(sid))+('\t'.join(map(str,zs)))+'\n')
         of.flush() 
+        of_nw.flush() 
 
 
 def parse_parameters():
@@ -315,13 +328,13 @@ if __name__=='__main__':
     coord_hdf5_file = p_dict['coordfile']
 
     assert p_dict['out'] is not None, 'Output prefix is missing.'
-    zs_file = p_dict['out']+'_zs.txt'
-    zs_file_ld_pruned = p_dict['out']+'_zs_ldpruned.txt'
+    zs_file_prefix = p_dict['out']+'_zs'
+    zs_file_prefix_ld_pruned = p_dict['out']+'_zs_ldpruned'
 
     assert p_dict['1KGpath'] is not None, 'The 1K Genomes file is missing.'
     
     
-    write_out_ss_file(coord_hdf5_file, zs_file)
-    LD_prune_ss(coord_hdf5_file, zs_file_ld_pruned, KG_path=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
+    write_out_ss_file(coord_hdf5_file, zs_file_prefix)
+    LD_prune_ss(coord_hdf5_file, zs_file_prefix_ld_pruned, KG_path=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
     
     
