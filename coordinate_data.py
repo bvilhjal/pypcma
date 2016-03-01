@@ -982,6 +982,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
+                print max_weight,min_weight
                 weights[sp.isnan(weights)]=min_weight
                 
                 weights_sd = sp.std(weights)
