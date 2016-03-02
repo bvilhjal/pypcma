@@ -893,7 +893,8 @@ def parse_sum_stats(filename,
 
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
-                         ss_labs=None, weight_min=0.2, weight_max_diff=0.1):
+                         ss_labs=None, weight_min=0.2, weight_max_diff=0.1, 
+                         outlier_thres=0.1):
     """
     Coordinate multiple summary statistics
     """
@@ -957,7 +958,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
         
         
-        if weight_min>=0 or weight_max_diff<1:
+        if weight_min>0 or weight_max_diff<1 or outlier_thres>0:
             #Filtering SNPs with weight differences.           
             #Calculating the relative weights
             n_snps = len(common_sids)
@@ -980,22 +981,38 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     sids1 = sids1[snp_order]
                     weights = weights[snp_order]
                     
+                    
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
+                print max_weight,min_weight
                 weights[sp.isnan(weights)]=min_weight
+
+                if sp.isinf(max_weight):
+                    inf_filter = sp.isinf(weights)
+                    not_inf_weights = weights[~inf_filter]
+                    max_weight = sp.nanmax(not_inf_weights)
+                    weights[inf_filter]=max_weight
+                                    
+                #Outlier filter
+                if outlier_thres>0:
+#                     weights_sd = sp.std(weights)
+                    median_weight = sp.median(weights)
+                    print min_weight,median_weight,max_weight
+                    outlier_filter = outlier_filter*(weights<median_weight+outlier_thres*max_weight)
+                    outlier_filter = outlier_filter*(weights>median_weight-outlier_thres*max_weight)
                 
-                weights_sd = sp.std(weights)
-                mean_weight = sp.mean(weights)
-                outlier_filter = outlier_filter*((weights-mean_weight)<4*weights_sd)
-                outlier_filter = outlier_filter*((weights-mean_weight)>-4*weights_sd)
-                
-                rel_weights_mat[:,s_i] = weights/float(max_weight)            
+                rel_weights_mat[:,s_i] = weights/float(max_weight)       
 
 
             #Calculating the maximum difference in relative weights.
-            min_rel_weights = rel_weights_mat.min(1)
-            max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-            weights_filter = outlier_filter*(max_diffs<weight_max_diff)
+            if weight_min>0:
+                min_rel_weights = rel_weights_mat.min(1)
+                max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+                weights_filter = max_diffs<weight_max_diff
+            else:
+                weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
+            if outlier_thres>0:
+                weights_filter = outlier_filter*weights_filter
            
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
@@ -1216,11 +1233,11 @@ def parse_parameters():
 #        sys.exit(2)
 
                           
-    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=','weight_min=', 'weight_max_diff=', 'help', 'wmissing', 
-                         ]
+    long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=', 'weight_min=', 'weight_max_diff=', 
+                         'outlier_thres=', 'help', 'wmissing', ]
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.8, 'weight_max_diff': 0.1}
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1}
 
     if len(sys.argv) > 1:
         try:
@@ -1246,6 +1263,7 @@ def parse_parameters():
             elif opt == "--wmissing": p_dict['wmissing'] = True
             elif opt == "--weight_min": p_dict['weight_min'] = float(arg)
             elif opt == "--weight_max_diff": p_dict['weight_max_diff'] = float(arg)
+            elif opt == "--outlier_thres": p_dict['outlier_thres'] = float(arg)
             else:
                 print "Unkown option:", opt
                 print "Use -h option for usage information."
@@ -1289,5 +1307,6 @@ if __name__=='__main__':
             coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
         else:
             coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'], 
-                                 weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'])
+                                 weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'], 
+                                 outlier_thres=p_dict['outlier_thres'])
     
