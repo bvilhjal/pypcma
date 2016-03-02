@@ -981,10 +981,11 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     sids1 = sids1[snp_order]
                     weights = weights[snp_order]
                     
-                nan_filter = sp.isnan(weights)
-                if sp.any(nan_filter):
+                inf_filter = sp.isinf(weights)
+                if sp.any(inf_filter):
+                    print 'found %d INFs'%sp.sum(inf_filter)
                     min_val = sp.nanmin(weights)
-                    weights[nan_filter]=min_val
+                    weights[inf_filter]=min_val
                     
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
