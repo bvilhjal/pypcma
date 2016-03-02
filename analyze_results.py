@@ -471,7 +471,7 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
                     else:
                         end_pos = -1
                     res_summary_dict[bin_i]={'min_marg_pv':min_marg_pv, 'min_comb_pv':min_comb_pv, 
-                                             'min_PC_pv': res_dict['pc_ps'].min(0), 'min_sid':min_sid,
+                                             'min_PC_pv': res_dict['pc_ps'][min_i].min(), 'min_sid':min_sid,
                                              'chromsome':chrom, 'positions_bin':(start_pos,end_pos)}
                     #More information on new hits somewhere
         
