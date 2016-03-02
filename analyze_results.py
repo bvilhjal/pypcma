@@ -632,5 +632,5 @@ if __name__=='__main__':
 #                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/ps_MVT_WC.png', method='MVT', 
 #                    ylabel='MVT (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='WC $-log_{10}(P$-value$)$')
 
-    run_all_ts('/home/bjarni/PCMA/faststorage/1_DATA/GIANT_2_zs_ldprunedno_weights.txt','/home/bjarni/PCMA/faststorage/1_DATA/GIANT_2_zsno_weights.txt', 'GIANT2', '/home/bjarni/PCMA/faststorage/2_RESULTS/GIANT2')
-    count_ld_indep_regions('/home/bjarni/PCMA/faststorage/1_DATA/GIANT_2_zs.txt', '/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_GIANT2_t0.6.txt', ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5')
+    run_all_ts('/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL_4_zs_ldprunedno_weights.txt','/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL_4_zsno_weights.txt', 'IMMUNE_REL4', '/home/bjarni/PCMA/faststorage/2_RESULTS/IMMUNE_REL4')
+    count_ld_indep_regions('/home/bjarni/PCMA/faststorage/1_DATA/IMMUNE_REL_4_zs.txt', '/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_IMMUNE_REL4_t0.8.txt', ld_reg_map = '/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5')
