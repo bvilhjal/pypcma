@@ -996,7 +996,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 if outlier_thres>0:
 #                     weights_sd = sp.std(weights)
                     median_weight = sp.median(weights)
-                    print median_weight
+                    print min_weight,median_weight,max_weight
                     outlier_filter = outlier_filter*(weights<median_weight+outlier_thres*max_weight)
                     outlier_filter = outlier_filter*(weights>median_weight-outlier_thres*max_weight)
                 
