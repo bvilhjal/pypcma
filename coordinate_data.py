@@ -989,8 +989,8 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
 
                 if sp.isinf(max_weight):
                     inf_filter = sp.isinf(weights)
-                    not_inf_weights = weights[sp.negative(inf_filter)]
-                    max_weight = not_inf_weights.nanmax()
+                    not_inf_weights = weights[~inf_filter]
+                    max_weight = sp..nanmax(not_inf_weights)
                     weights[inf_filter]=max_weight
                                     
                 #Outlier filter
