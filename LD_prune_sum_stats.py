@@ -2,7 +2,7 @@
 LDpruning GWAS summary statistics datasets for estimating trait correlations.
 
 Usage: 
-python LD_prune_sum_stats.py --coordfile=COORD_FILE  --out=OUT_FILE_PREFIX  --LDradius=LD_RADIUS --LDthres=LD_THRES --KGfile=1KG_FILE  
+python LD_prune_sum_stats.py --coordfile=COORD_FILE  --out=OUT_FILE_PREFIX  --LDradius=LD_RADIUS --LDthres=LD_THRES --1KGpath=1KG_PATH  
                          [--nopruning  --wmissing]
  
  - COORD_FILE is a HDF5 with all summary statistics coordinated, i.e. where rsIDs and nucleotides have been coordinated across 
@@ -178,7 +178,7 @@ def LD_prune_ss(coord_hdf5_file, out_file_prefix, KG_path, r2_thres=0.2, ld_radi
     of = open(out_file_prefix+'.txt','w')
     label_str = 'SID\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
-    of_nw = open(out_file_prefix+'no_weights.txt','w')
+    of_nw = open(out_file_prefix+'_no_weights.txt','w')
     label_str_nw = 'SID\t'+('\t'.join(zs_strings))+'\n'
     of_nw.write(label_str_nw)
     for chrom in range(1,23):
@@ -241,7 +241,7 @@ def write_out_ss_file(coord_hdf5_file, out_file_prefix):
     of = open(out_file_prefix+'.txt','w')
     label_str = 'Chromosome\tPosition\tSID\tEUR_MAF\t'+('\t'.join(zs_strings))+'\t'+('\t'.join(ws_strings))+'\n'
     of.write(label_str)
-    of_nw = open(out_file_prefix+'no_weights.txt','w')
+    of_nw = open(out_file_prefix+'_no_weights.txt','w')
     label_str_nw = 'SID\t'+('\t'.join(zs_strings))+'\n'
     of_nw.write(label_str_nw)
     for chrom in range(1,23):
