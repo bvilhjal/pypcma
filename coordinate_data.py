@@ -998,9 +998,12 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
 
 
             #Calculating the maximum difference in relative weights.
-            min_rel_weights = rel_weights_mat.min(1)
-            max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-            weights_filter = max_diffs<weight_max_diff
+            if weight_min>0:
+                min_rel_weights = rel_weights_mat.min(1)
+                max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+                weights_filter = max_diffs<weight_max_diff
+            else:
+                weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
             if outlier_thres>0:
                 weights_filter = outlier_filter*weights_filter
            
