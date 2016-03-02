@@ -894,7 +894,7 @@ def parse_sum_stats(filename,
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
                          ss_labs=None, weight_min=0.2, weight_max_diff=0.1, 
-                         outlier_thres=2):
+                         outlier_thres=0.1):
     """
     Coordinate multiple summary statistics
     """
@@ -995,11 +995,11 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                                     
                 #Outlier filter
                 if outlier_thres>0:
-                    weights_sd = sp.std(weights)
+#                     weights_sd = sp.std(weights)
                     median_weight = sp.median(weights)
                     print min_weight,median_weight,max_weight
-                    outlier_filter = outlier_filter*(weights<median_weight+outlier_thres*weights_sd)
-                    outlier_filter = outlier_filter*(weights>median_weight-outlier_thres*weights_sd)
+                    outlier_filter = outlier_filter*(weights<median_weight+outlier_thres*max_weight)
+                    outlier_filter = outlier_filter*(weights>median_weight-outlier_thres*max_weight)
                 
                 rel_weights_mat[:,s_i] = weights/float(max_weight)       
 
