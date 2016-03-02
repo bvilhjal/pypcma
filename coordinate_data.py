@@ -987,11 +987,12 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 print max_weight,min_weight
                 weights[sp.isnan(weights)]=min_weight
 
-                inf_filter = sp.isinf(weights)
-                if sp.any(inf_filter):
-                    print 'found %d INFs'%sp.sum(inf_filter)
-                    weights[inf_filter]=min_weight
-                
+                if sp.isinf(max_weight):
+                    inf_filter = sp.isinf(weights)
+                    not_inf_weights = weights[sp.negative(inf_filter)]
+                    max_weight = not_inf_weights.nanmax()
+                    weights[inf_filter]=max_weight
+                                    
                 #Outlier filter
                 if outlier_thres>0:
 #                     weights_sd = sp.std(weights)
