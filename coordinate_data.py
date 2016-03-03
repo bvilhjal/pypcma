@@ -958,7 +958,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
         
         
-        if weight_min>0 or weight_max_diff<1 or outlier_thres>0:
+        if weight_min>0 or weight_max_diff<1 or outlier_thres>0 or sd_thres>0:
             #Filtering SNPs with weight differences.           
             #Calculating the relative weights
             n_snps = len(common_sids)
