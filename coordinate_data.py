@@ -1240,10 +1240,10 @@ def parse_parameters():
 
                           
     long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=', 'weight_min=', 'weight_max_diff=', 
-                         'outlier_thres=', 'help', 'wmissing', ]
+                         'outlier_thres=', 'sd_thres=', 'help', 'wmissing', ]
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1}
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0}
 
     if len(sys.argv) > 1:
         try:
@@ -1270,6 +1270,7 @@ def parse_parameters():
             elif opt == "--weight_min": p_dict['weight_min'] = float(arg)
             elif opt == "--weight_max_diff": p_dict['weight_max_diff'] = float(arg)
             elif opt == "--outlier_thres": p_dict['outlier_thres'] = float(arg)
+            elif opt == "--sd_thres": p_dict['sd_thres'] = float(arg)
             else:
                 print "Unkown option:", opt
                 print "Use -h option for usage information."
@@ -1314,5 +1315,5 @@ if __name__=='__main__':
         else:
             coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'], 
                                  weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'], 
-                                 outlier_thres=p_dict['outlier_thres'])
+                                 outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'])
     
