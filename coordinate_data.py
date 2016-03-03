@@ -894,7 +894,7 @@ def parse_sum_stats(filename,
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
                          ss_labs=None, weight_min=0.2, weight_max_diff=0.1, 
-                         outlier_thres=0.1, sd_thres=0):
+                         outlier_thres=0.1, sd_thres=0, iq_range=None):
     """
     Coordinate multiple summary statistics
     """
@@ -958,7 +958,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
         
         
-        if weight_min>0 or weight_max_diff<1 or outlier_thres>0 or sd_thres>0:
+        if weight_min>0 or weight_max_diff<1 or outlier_thres>0 or sd_thres>0 or iq_range is not None:
             #Filtering SNPs with weight differences.           
             #Calculating the relative weights
             n_snps = len(common_sids)
@@ -1005,6 +1005,11 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     print 'Weights SD: ',weights_sd
                     outlier_filter = outlier_filter*(weights<median_weight+weights_sd*sd_thres)
                     outlier_filter = outlier_filter*(weights>median_weight-weights_sd*sd_thres)
+                elif iq_range is not None:
+                    w_min, w_max = sp.percentile(weights, [iq_range[0] ,iq_range[1]])
+                    outlier_filter = outlier_filter*(weights>w_min)
+                    outlier_filter = outlier_filter*(weights<w_max)
+                    
                     
                 
                 rel_weights_mat[:,s_i] = weights/float(max_weight)       
@@ -1017,7 +1022,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 weights_filter = max_diffs<weight_max_diff
             else:
                 weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
-            if outlier_thres>0 or sd_thres>0:
+            if outlier_thres>0 or sd_thres>0 or iq_range is not None:
                 weights_filter = outlier_filter*weights_filter                 
             
             #Calculating the minimum relative weight per SNP
@@ -1240,10 +1245,10 @@ def parse_parameters():
 
                           
     long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=', 'weight_min=', 'weight_max_diff=', 
-                         'outlier_thres=', 'sd_thres=', 'help', 'wmissing', ]
+                         'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', ]
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0}
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0, 'iq_range':None}
 
     if len(sys.argv) > 1:
         try:
@@ -1271,6 +1276,7 @@ def parse_parameters():
             elif opt == "--weight_max_diff": p_dict['weight_max_diff'] = float(arg)
             elif opt == "--outlier_thres": p_dict['outlier_thres'] = float(arg)
             elif opt == "--sd_thres": p_dict['sd_thres'] = float(arg)
+            elif opt == "--iq_range": p_dict['iq_range'] = map(float,arg.split(','))
             else:
                 print "Unkown option:", opt
                 print "Use -h option for usage information."
@@ -1315,5 +1321,5 @@ if __name__=='__main__':
         else:
             coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'], 
                                  weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'], 
-                                 outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'])
+                                 outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'], iq_range=p_dict['iq_range'])
     
