@@ -1017,9 +1017,9 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 weights_filter = max_diffs<weight_max_diff
             else:
                 weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
-            if outlier_thres>0:
-                weights_filter = outlier_filter*weights_filter
-           
+            if outlier_thres>0 or sd_thres>0:
+                weights_filter = outlier_filter*weights_filter                 
+            
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
                 min_filter = min_rel_weights>weight_min
