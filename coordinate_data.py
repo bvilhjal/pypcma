@@ -766,8 +766,10 @@ def parse_sum_stats(filename,
     
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
-                    chrom_dict[chrom]['zs'].append(z)     
-                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    chrom_dict[chrom]['zs'].append(z)
+#                     weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+#                     weight = (z/beta)**2
+                    weight = float(l[16])  # Number of studies used.
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
@@ -1290,21 +1292,27 @@ def parse_parameters():
         sys.exit(0)
     return p_dict
 
+def parse_all_sum_stats():
+    """
+    Code for parsing all of the summary stastics on the cluster.
+    """
+
+
 
 
 if __name__=='__main__':
     p_dict = parse_parameters()
     assert p_dict['combfile'] is not None, 'Combined SS file is missing.'
     comb_hdf5_file = p_dict['combfile']
-    if os.path.isfile(comb_hdf5_file):
-        if p_dict['ow']:
-            print 'Overwriting the combfile: %s'%comb_hdf5_file
-            os.remove(comb_hdf5_file)
-        else:
-            print 'The combfile %s already exists.  Please use the overwrite parameter.'%comb_hdf5_file
-            sys.exit(0)
 
     if p_dict['ssfiles'] is not None:                
+        if os.path.isfile(comb_hdf5_file):
+            if p_dict['ow']:
+                print 'Overwriting the combfile: %s'%comb_hdf5_file
+                os.remove(comb_hdf5_file)
+            else:
+                print 'The combfile %s already exists.  Please use the overwrite parameter.'%comb_hdf5_file
+                sys.exit(0)
         ssfiles = p_dict['ssfiles']
         if p_dict['sslabels'] is None:
             ss_labels = ['LABEL%d'%i for i in range(1,1+len(p_dict['ssfiles']))]
@@ -1342,3 +1350,5 @@ if __name__=='__main__':
                                  weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'], 
                                  outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'], iq_range=p_dict['iq_range'])
     
+
+
