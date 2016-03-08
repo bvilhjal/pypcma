@@ -970,7 +970,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             n_snps = len(common_sids)
             n_sums = len(sums_ids)
             rel_weights_mat = sp.zeros((n_snps,n_sums))
-            outlier_filter = sp.ones((n_snps),dtype='bool')
+            weights_filter =sp.ones((n_snps),dtype='bool')
             for s_i, sums_id in enumerate(sums_ids):
                 chr_g = h5f[sums_id][chrom_str]
                 sids1 = chr_g['sids'][...]
@@ -1004,17 +1004,17 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                                     
                 #Outlier filter
                 if outlier_thres>0:
-                    outlier_filter = outlier_filter*(weights<median_weight+outlier_thres*max_weight)
-                    outlier_filter = outlier_filter*(weights>median_weight-outlier_thres*max_weight)
+                    weights_filter = weights_filter*(weights<median_weight+outlier_thres*max_weight)
+                    weights_filter = weights_filter*(weights>median_weight-outlier_thres*max_weight)
                 elif sd_thres>0:
                     weights_sd = sp.std(weights)
                     print 'Weights SD: ',weights_sd
-                    outlier_filter = outlier_filter*(weights<median_weight+weights_sd*sd_thres)
-                    outlier_filter = outlier_filter*(weights>median_weight-weights_sd*sd_thres)
+                    weights_filter = weights_filter*(weights<median_weight+weights_sd*sd_thres)
+                    weights_filter = weights_filter*(weights>median_weight-weights_sd*sd_thres)
                 elif iq_range is not None:
                     w_min, w_max = sp.percentile(weights, [iq_range[0] ,iq_range[1]])
-                    outlier_filter = outlier_filter*(weights>w_min)
-                    outlier_filter = outlier_filter*(weights<w_max)
+                    weights_filter = weights_filter*(weights>w_min)
+                    weights_filter = weights_filter*(weights<w_max)
                     
                     
                 
@@ -1032,11 +1032,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
 
                 max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
                 if weight_max_diff<1:
-                    weights_filter = max_diffs<weight_max_diff
-            else:
-                weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
-            if outlier_thres>0 or sd_thres>0 or iq_range is not None:
-                weights_filter = outlier_filter*weights_filter                 
+                    weights_filter = (max_diffs<weight_max_diff)*weights_filter
             
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
