@@ -1029,9 +1029,9 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 max_weight = sp.nanmax(rel_weights_mat)
                 min_weight = sp.nanmin(rel_weights_mat)
                 min_filter = min_rel_weights>weight_min
-                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
+                print 'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
                 weights_filter = min_filter * weights_filter
-                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
+                print 'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
 
                 print 'Median weight: %0.2f; Minimum weight: %0.2f; Maximum weight: %0.2f'%(median_weight,min_weight,max_weight)
 
