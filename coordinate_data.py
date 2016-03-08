@@ -1035,12 +1035,10 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
 
                 print 'Median weight: %0.2f; Minimum weight: %0.2f; Maximum weight: %0.2f'%(median_weight,min_weight,max_weight)
 
-                max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-                if weight_max_diff<1:
-                    weights_filter = (max_diffs<weight_max_diff)*weights_filter
-            
-            if weight_min>0:
-        
+            max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+            if weight_max_diff<1:
+                weights_filter = (max_diffs<weight_max_diff)*weights_filter
+                
             num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
             print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
             if num_filtered_snps>0:                    
