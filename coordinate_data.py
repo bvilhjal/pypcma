@@ -900,7 +900,7 @@ def parse_sum_stats(filename,
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
                          ss_labs=None, weight_min=0.2, weight_max_diff=0.1, 
-                         outlier_thres=0.1, sd_thres=0, iq_range=None):
+                         outlier_thres=0, sd_thres=0, iq_range=None):
     """
     Coordinate multiple summary statistics
     """
@@ -1031,8 +1031,8 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 print 'Median weight: %0.2f; Minimum weight: %0.2f; Maximum weight: %0.2f'%(median_weight,min_weight,max_weight)
 
                 max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
-                print 'weight_max_diff:',weight_max_diff
-                weights_filter = max_diffs<weight_max_diff
+                if weight_max_diff<1:
+                    weights_filter = max_diffs<weight_max_diff
             else:
                 weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
             if outlier_thres>0 or sd_thres>0 or iq_range is not None:
