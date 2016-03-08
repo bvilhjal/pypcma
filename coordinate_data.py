@@ -171,6 +171,8 @@ def parse_sum_stats(filename,
         
         line = f.next()
         header = line.split()        
+        print header
+        print header == headers['ICBP']
         if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC'] or header==headers['ASTHMA']:
             for line in f:
                 l = line.split()
