@@ -845,6 +845,44 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
+        elif header==headers['ICBP']:
+            for line in f:
+                line_i +=1
+                l = line.split()
+                sid = l[1]
+                d = sid_map.get(sid,None)
+                if d is not None:
+#                     raw_beta = sp.log(float(l[7]))
+                    pval = float(l[3])
+                    if pval == 0:
+                        continue
+                    pos = d['pos']
+                    chrom = d['chrom']
+                    eur_maf = d['eur_maf']
+                    if not chrom in chrom_dict.keys():
+                        chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
+                    chrom_dict[chrom]['sids'].append(sid)
+                    chrom_dict[chrom]['positions'].append(pos)
+                    chrom_dict[chrom]['eur_maf'].append(eur_maf)
+                    chrom_dict[chrom]['ps'].append(pval)
+                    if random.random()>0.5:
+                        nt = [l[11], l[12]]
+                        sign = 1
+                    else:
+                        nt = [l[12], l[11]]
+                        raw_beta = -raw_beta
+                        sign = -1
+                    if l[16]==nt[1] or opp_strand_dict[l[16]]==nt[1]:
+                        sign = -1*sign
+                    
+                    chrom_dict[chrom]['nts'].append(nt)                
+                    z = sign * stats.norm.ppf(pval/2.0)
+                    chrom_dict[chrom]['zs'].append(z)     
+                    weight = float(l[17])
+                    chrom_dict[chrom]['weights'].append(weight)
+                if line_i%100000==0:
+                    print line_i   
 
         else:
             raise Exception('Wrong or unknown file format')
