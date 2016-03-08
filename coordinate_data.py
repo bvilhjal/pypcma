@@ -35,6 +35,7 @@ python coordinate_data.py --ssfiles=SUM_STATS_FILE1,SUM_STATS_FILE2,... --combfi
     chr1    rs142557973    T    C    731718    1.01949    0.3298  
     ..
     ..
+
    
  2015 (c) Bjarni J Vilhjalmsson: bjarni.vilhjalmsson@gmail.com
           and 
@@ -50,6 +51,7 @@ import time
 from sys import argv
 import random
 import getopt
+import os 
 
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
@@ -1245,10 +1247,11 @@ def parse_parameters():
 
                           
     long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=', 'weight_min=', 'weight_max_diff=', 
-                         'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', ]
+                         'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', 'ow']
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0, 'iq_range':None}
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0, 
+              'iq_range':None, 'ow':False}
 
     if len(sys.argv) > 1:
         try:
@@ -1277,6 +1280,7 @@ def parse_parameters():
             elif opt == "--outlier_thres": p_dict['outlier_thres'] = float(arg)
             elif opt == "--sd_thres": p_dict['sd_thres'] = float(arg)
             elif opt == "--iq_range": p_dict['iq_range'] = map(float,arg.split(','))
+            elif opt == "--ow": p_dict['ow'] = True
             else:
                 print "Unkown option:", opt
                 print "Use -h option for usage information."
@@ -1292,6 +1296,13 @@ if __name__=='__main__':
     p_dict = parse_parameters()
     assert p_dict['combfile'] is not None, 'Combined SS file is missing.'
     comb_hdf5_file = p_dict['combfile']
+    if os.path.isfile(comb_hdf5_file):
+        if p_dict['ow']:
+            print 'Overwriting the combfile: %s'%comb_hdf5_file
+            os.remove(comb_hdf5_file)
+        else:
+            print 'The combfile %s already exists.  Please use the overwrite parameter.'%comb_hdf5_file
+            sys.exit(0)
 
     if p_dict['ssfiles'] is not None:                
         ssfiles = p_dict['ssfiles']
@@ -1316,6 +1327,14 @@ if __name__=='__main__':
     if p_dict['coordfile'] is not None:
         print 'Coordinating summary statistic datasets'
         coord_hdf5_file = p_dict['coordfile']
+        if os.path.isfile(coord_hdf5_file):
+        if p_dict['ow']:
+            print 'Overwriting the coord_hdf5_file: %s'%coord_hdf5_file
+            os.remove(coord_hdf5_file)
+        else:
+            print 'The coord_hdf5_file %s already exists.  Please use the overwrite parameter.'%coord_hdf5_file
+            sys.exit(0)
+
         if p_dict['wmissing']:
             coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
         else:
