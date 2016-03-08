@@ -1021,12 +1021,17 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 rel_weights_mat[:,s_i] = weights/float(max_weight)       
 
 
+            #Calculating the minimum relative weight per SNP
             #Calculating the maximum difference in relative weights.
             if weight_min>0:
                 min_rel_weights = rel_weights_mat.min(1)
                 median_weight = sp.median(rel_weights_mat)
                 max_weight = sp.nanmax(rel_weights_mat)
                 min_weight = sp.nanmin(rel_weights_mat)
+                min_filter = min_rel_weights>weight_min
+                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
+                weights_filter = min_filter * weights_filter
+                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
 
                 print 'Median weight: %0.2f; Minimum weight: %0.2f; Maximum weight: %0.2f'%(median_weight,min_weight,max_weight)
 
@@ -1034,12 +1039,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 if weight_max_diff<1:
                     weights_filter = (max_diffs<weight_max_diff)*weights_filter
             
-            #Calculating the minimum relative weight per SNP
             if weight_min>0:
-                min_filter = min_rel_weights>weight_min
-                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
-                weights_filter = min_filter * weights_filter
-                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
         
             num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
             print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
