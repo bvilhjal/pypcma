@@ -1017,6 +1017,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     print 'Filtering with thresholds:',w_min, w_max
                     weights_filter = weights_filter*(weights>=w_min)
                     weights_filter = weights_filter*(weights<=w_max)
+                    print 'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
                     
                     
                 
