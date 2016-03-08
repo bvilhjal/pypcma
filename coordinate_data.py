@@ -143,6 +143,7 @@ headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta
            'GEFOS':['chromosome', 'position', 'rs_number', 'reference_allele', 'other_allele', 'eaf', 'beta', 'se', 'beta_95L', 'beta_95U', 'z', 'p-value', '_-log10_p-value', 'q_statistic', 'q_p-value', 'i2', 'n_studies', 'n_samples', 'effects'],
            'RA':['SNPID','Chr','Position(hg19)','A1','A2','OR(A1)','OR_95%CIlow','OR_95%CIup','P-val'],
            'ASTHMA':['Chr', 'rs', 'position', 'Allele_1', 'Allele_2', 'freq_all_1_min', 'freq_all_1_max', 'OR_fix', 'ORl_fix', 'ORu_fix', 'P_fix'],
+           'ICBP': ['ID', 'Analysis', 'ID', 'SNP', 'ID', 'P-value', 'Rank', 'Plot', 'data', 'Chr', 'ID', 'Chr', 'Position', 'Submitted', 'SNP', 'ID', 'ss2rs', 'rs2genome', 'Allele1', 'Allele2', 'Minor', 'allele', 'pHWE', 'Call', 'Rate', 'Effect', 'SE', 'R-Squared', 'Coded', 'Allele', 'Sample', 'size', 'Bin', 'ID']
            }
 
 def parse_sum_stats(filename,
@@ -167,13 +168,14 @@ def parse_sum_stats(filename,
     print 'Retrieving 1K genomes positions..'
     sids = []
     with open(filename) as f:
+        
         line = f.next()
         header = line.split()        
         if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC'] or header==headers['ASTHMA']:
             for line in f:
                 l = line.split()
                 sids.append(l[1])
-        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS']:
+        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP']:
             for line in f:
                 l = line.split()
                 sids.append(l[2])
@@ -1252,7 +1254,7 @@ def parse_parameters():
                          'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', 'ow']
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0.1, 'sd_thres':0, 
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0, 'sd_thres':0, 
               'iq_range':None, 'ow':False}
 
     if len(sys.argv) > 1:
@@ -1296,7 +1298,7 @@ def parse_all_sum_stats():
     """
     Code for parsing all of the summary stastics on the cluster.
     """
-
+    gefoss_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=FA,FN,LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
 
 
 
@@ -1313,6 +1315,7 @@ if __name__=='__main__':
             else:
                 print 'The combfile %s already exists.  Please use the overwrite parameter.'%comb_hdf5_file
                 sys.exit(0)
+                
         ssfiles = p_dict['ssfiles']
         if p_dict['sslabels'] is None:
             ss_labels = ['LABEL%d'%i for i in range(1,1+len(p_dict['ssfiles']))]
