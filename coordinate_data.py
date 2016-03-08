@@ -1023,8 +1023,8 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
 
             #Calculating the minimum relative weight per SNP
             #Calculating the maximum difference in relative weights.
+            min_rel_weights = rel_weights_mat.min(1)
             if weight_min>0:
-                min_rel_weights = rel_weights_mat.min(1)
                 median_weight = sp.median(rel_weights_mat)
                 max_weight = sp.nanmax(rel_weights_mat)
                 min_weight = sp.nanmin(rel_weights_mat)
