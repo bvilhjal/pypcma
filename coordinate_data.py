@@ -1031,6 +1031,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 print 'Median weight: %0.2f; Minimum weight: %0.2f; Maximum weight: %0.2f'%(median_weight,min_weight,max_weight)
 
                 max_diffs = sp.absolute(rel_weights_mat.max(1)-min_rel_weights)
+                print 'weight_max_diff:',weight_max_diff
                 weights_filter = max_diffs<weight_max_diff
             else:
                 weights_filter = sp.ones(len(rel_weights_mat),dtype='bool8')
