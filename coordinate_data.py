@@ -1328,12 +1328,12 @@ if __name__=='__main__':
         print 'Coordinating summary statistic datasets'
         coord_hdf5_file = p_dict['coordfile']
         if os.path.isfile(coord_hdf5_file):
-        if p_dict['ow']:
-            print 'Overwriting the coord_hdf5_file: %s'%coord_hdf5_file
-            os.remove(coord_hdf5_file)
-        else:
-            print 'The coord_hdf5_file %s already exists.  Please use the overwrite parameter.'%coord_hdf5_file
-            sys.exit(0)
+            if p_dict['ow']:
+                print 'Overwriting the coord_hdf5_file: %s'%coord_hdf5_file
+                os.remove(coord_hdf5_file)
+            else:
+                print 'The coord_hdf5_file %s already exists.  Please use the overwrite parameter.'%coord_hdf5_file
+                sys.exit(0)
 
         if p_dict['wmissing']:
             coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, p_dict['1KGpath'])
