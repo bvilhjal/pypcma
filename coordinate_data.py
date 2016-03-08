@@ -899,7 +899,7 @@ def parse_sum_stats(filename,
 
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
-                         ss_labs=None, weight_min=0.2, weight_max_diff=0.1, 
+                         ss_labs=None, weight_min=0, weight_max_diff=0, 
                          outlier_thres=0, sd_thres=0, iq_range=None):
     """
     Coordinate multiple summary statistics
@@ -1257,7 +1257,7 @@ def parse_parameters():
                          'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', 'ow']
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
-              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.5, 'weight_max_diff': 1, 'outlier_thres':0, 'sd_thres':0, 
+              'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.0, 'weight_max_diff': 0, 'outlier_thres':0, 'sd_thres':0, 
               'iq_range':None, 'ow':False}
 
     if len(sys.argv) > 1:
