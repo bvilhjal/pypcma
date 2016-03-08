@@ -1012,11 +1012,11 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     weights_filter = weights_filter*(weights<median_weight+weights_sd*sd_thres)
                     weights_filter = weights_filter*(weights>median_weight-weights_sd*sd_thres)
                 elif iq_range is not None:
-                    w_min, w_max = sp.percentile(weights, [iq_range[0] ,iq_range[1]])
+                    w_min, w_max = sp.percentile(sp.array(weights,dtype='single'), [iq_range[0] ,iq_range[1]])
                     print iq_range
                     print 'Filtering with thresholds:',w_min, w_max
-                    weights_filter = weights_filter*(weights>w_min)
-                    weights_filter = weights_filter*(weights<w_max)
+                    weights_filter = weights_filter*(weights>=w_min)
+                    weights_filter = weights_filter*(weights<=w_max)
                     
                     
                 
