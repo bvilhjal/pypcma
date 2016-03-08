@@ -1041,7 +1041,9 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             #Calculating the minimum relative weight per SNP
             if weight_min>0:
                 min_filter = min_rel_weights>weight_min
+                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
                 weights_filter = min_filter * weights_filter
+                'Filter ratio:',sp.sum(weights_filter)/float(len(weights_filter))
         
             num_filtered_snps = len(weights_filter)-sp.sum(weights_filter)
             print 'Filter %d SNPs due to insufficient sample size/weights or to large sample size/weights differences.'%num_filtered_snps
