@@ -1348,9 +1348,13 @@ def parse_all_sum_stats():
     """
     Code for parsing all of the summary stastics on the cluster.
     """
-    gefoss_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=FA,FN,LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
-
-
+    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=FA,FN,LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
+    gefoss_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --iq_range=90,100 --min_maf=0.02 --ow'
+    gefoss_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --LDradius=250 --out=/faststorage/project/PCMA/1_DATA/GEFOS --LDthres=0.2'    
+    
+    icbp_parse_str = '%run coordinate_data.py --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP --sslabels=sb,db,pp,map --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    icbp_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --iq_range=50,100 --min_maf=0.02 --ow'
+    icbp_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --LDradius=100 --out=/faststorage/project/PCMA/1_DATA/ICBP --LDthres=0.2'
 
 if __name__=='__main__':
     p_dict = parse_parameters()
