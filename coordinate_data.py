@@ -867,14 +867,14 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['positions'].append(pos)
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     chrom_dict[chrom]['ps'].append(pval)
-                    if random.random()>0.5:
-                        nt = [l[11], l[12]]
-                        sign = 1
-                    else:
-                        nt = [l[12], l[11]]
-                        sign = -1
+#                     if random.random()>0.5:
+                    nt = [l[11], l[12]]
+                    sign = 1
+#                     else:
+#                         nt = [l[12], l[11]]
+#                         sign = -1
                     if coding_allele==nt[1] or opp_strand_dict[coding_allele]==nt[1]:
-                        sign = -1*sign
+                        sign = -1#*sign
                     
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sign * stats.norm.ppf(pval/2.0)
