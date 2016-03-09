@@ -871,7 +871,6 @@ def parse_sum_stats(filename,
                         sign = 1
                     else:
                         nt = [l[12], l[11]]
-                        raw_beta = -raw_beta
                         sign = -1
                     if l[16]==nt[1] or opp_strand_dict[l[16]]==nt[1]:
                         sign = -1*sign
