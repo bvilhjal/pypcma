@@ -937,7 +937,7 @@ def parse_sum_stats(filename,
 
 def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=True,
                          ss_labs=None, weight_min=0, weight_max_diff=1, 
-                         outlier_thres=0, sd_thres=0, iq_range=None):
+                         outlier_thres=0, sd_thres=0, iq_range=None, min_maf=0):
     """
     Coordinate multiple summary statistics
     """
@@ -1001,7 +1001,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 common_sids = sids[sids_map]  #To ensure that they are ordered by the order in the first sum stats
         
         
-        if weight_min>0 or weight_max_diff<1 or outlier_thres>0 or sd_thres>0 or iq_range is not None:
+        if weight_min>0 or weight_max_diff<1 or outlier_thres>0 or sd_thres>0 or min_maf>0 or iq_range is not None:
             #Filtering SNPs with weight differences.           
             #Calculating the relative weights
             n_snps = len(common_sids)
@@ -1013,7 +1013,8 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                 sids1 = chr_g['sids'][...]
                 sids_map1 = sp.in1d(sids1, common_sids)
                 weights=chr_g['weights'][...][sids_map1]
-                print weights
+                eur_mafs=chr_g['eur_mafs'][...][sids_map1]
+#                 print weights
                 sids1 = sids1[sids_map1]
                 
                 #Verify order..
@@ -1023,8 +1024,12 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     snp_order  = [snp_map[sid] for sid in sids1]
                     sids1 = sids1[snp_order]
                     weights = weights[snp_order]
+                    eur_mafs=eur_mafs[snp_order]
                     
-                    
+                #Filter mafs
+                if min_maf>0:
+                    weights_filter = weights_filter*(eur_mafs<min_maf)
+                
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
                 print max_weight,min_weight
@@ -1294,11 +1299,11 @@ def parse_parameters():
 
                           
     long_options_list = ['ssfiles=', 'combfile=', 'coordfile=', 'sslabels=', '1KGpath=', 'ssf_format=', 'weight_min=', 'weight_max_diff=', 
-                         'outlier_thres=', 'sd_thres=', 'iq_range=', 'help', 'wmissing', 'ow']
+                         'outlier_thres=', 'sd_thres=', 'iq_range=', 'min_maf=','help', 'wmissing', 'ow']
 
     p_dict = {'ssfiles':None, 'combfile':None, 'coordfile':None, 'sslabels':None, '1KGpath':'/Users/bjarnivilhjalmsson/data/1Kgenomes/', 
               'ssf_format':'BASIC', 'wmissing':False, 'weight_min': 0.0, 'weight_max_diff': 1, 'outlier_thres':0, 'sd_thres':0, 
-              'iq_range':None, 'ow':False}
+              'iq_range':None, 'ow':False, 'min_maf':0.01}
 
     if len(sys.argv) > 1:
         try:
@@ -1327,6 +1332,7 @@ def parse_parameters():
             elif opt == "--outlier_thres": p_dict['outlier_thres'] = float(arg)
             elif opt == "--sd_thres": p_dict['sd_thres'] = float(arg)
             elif opt == "--iq_range": p_dict['iq_range'] = map(float,arg.split(','))
+            elif opt == "--min_maf": p_dict['min_maf'] = float(arg)
             elif opt == "--ow": p_dict['ow'] = True
             else:
                 print "Unkown option:", opt
@@ -1394,7 +1400,8 @@ if __name__=='__main__':
         else:
             coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, ss_labs=p_dict['sslabels'], 
                                  weight_min=p_dict['weight_min'], weight_max_diff=p_dict['weight_max_diff'], 
-                                 outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'], iq_range=p_dict['iq_range'])
+                                 outlier_thres=p_dict['outlier_thres'], sd_thres=p_dict['sd_thres'], iq_range=p_dict['iq_range'],
+                                 min_maf=p_dict['min_maf'])
     
 
 
