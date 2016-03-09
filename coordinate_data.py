@@ -1028,7 +1028,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
                     
                 #Filter mafs
                 if min_maf>0:
-                    weights_filter = weights_filter*(eur_mafs<min_maf)
+                    weights_filter = weights_filter*(eur_mafs>min_maf)
                 
                 max_weight = sp.nanmax(weights)
                 min_weight = sp.nanmin(weights)
