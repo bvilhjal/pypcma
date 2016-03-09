@@ -851,7 +851,8 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sid = l[2]
                 d = sid_map.get(sid,None)
-                if d is not None:
+                coding_allele = l[16]
+                if d is not None and coding_allele in valid_nts:
 #                     raw_beta = sp.log(float(l[7]))
                     pval = float(l[3])
                     if pval == 0:
@@ -872,7 +873,7 @@ def parse_sum_stats(filename,
                     else:
                         nt = [l[12], l[11]]
                         sign = -1
-                    if l[16]==nt[1] or opp_strand_dict[l[16]]==nt[1]:
+                    if coding_allele==nt[1] or opp_strand_dict[coding_allele]==nt[1]:
                         sign = -1*sign
                     
                     chrom_dict[chrom]['nts'].append(nt)                
