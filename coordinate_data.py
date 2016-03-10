@@ -875,6 +875,8 @@ def parse_sum_stats(filename,
 #                         sign = -1
                     if coding_allele==nt[1] or opp_strand_dict[coding_allele]==nt[1]:
                         sign = -1#*sign
+                    else:
+                        assert coding_allele==nt[0] or opp_strand_dict[coding_allele]==nt[0]
                     
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sign * stats.norm.ppf(pval/2.0)
