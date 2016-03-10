@@ -852,8 +852,8 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sid = l[2]
                 d = sid_map.get(sid,None)
-                coded_allele = l[16]
-                if d is not None and coding_allele in valid_nts:
+#                 coded_allele = l[16]
+                if d is not None:# and coded_allele in valid_nts:
 #                     raw_beta = sp.log(float(l[7]))
                     pval = float(l[3])
                     if pval == 0:
