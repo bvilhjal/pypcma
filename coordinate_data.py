@@ -179,9 +179,13 @@ def parse_sum_stats(filename,
             line_count =0
             for line in f:
                 line_count +=1
-                if line_count<200000:
+                if line_count<100000:
                     l = line.split()
                     sids.append(l[2])
+                elif random.random()<0.1:
+                    l = line.split()
+                    sids.append(l[2])
+                        
         else:
             for line in f:
                 l = line.split()
