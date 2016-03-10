@@ -176,15 +176,15 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sids.append(l[1])
         elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP']:
-            line_count =0
+#             line_count =0
             for line in f:
-                line_count +=1
-                if line_count<100000:
-                    l = line.split()
-                    sids.append(l[2])
-                elif random.random()<0.1:
-                    l = line.split()
-                    sids.append(l[2])
+#                 line_count +=1
+#                 if line_count<100000:
+                l = line.split()
+                sids.append(l[2])
+#                 elif random.random()<0.1:
+#                     l = line.split()
+#                     sids.append(l[2])
                         
         else:
             for line in f:
