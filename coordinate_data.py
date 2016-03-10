@@ -873,9 +873,9 @@ def parse_sum_stats(filename,
                     sign = 1
 #                     else:
 #                         sign = -1
-#                     if coded_allele==nt[1] or opp_strand_dict[coded_allele]==nt[1]:
-#                         nt = [l[12], l[11]]
-#                         sign = -1#*sign
+                    if coded_allele==nt[1] or opp_strand_dict[coded_allele]==nt[1]:
+                        nt = [l[12], l[11]]
+                        sign = -1#*sign
 #                     else:
 #                         assert coded_allele==nt[0] or opp_strand_dict[coded_allele]==nt[0]
                     
