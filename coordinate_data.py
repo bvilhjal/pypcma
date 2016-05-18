@@ -41,6 +41,49 @@ python coordinate_data.py --ssfiles=SUM_STATS_FILE1,SUM_STATS_FILE2,... --combfi
           and 
           Hugues Aschard: haschard@hsph.harvard.edu
 """
+
+
+"""
+Bulick-Sullivan et al., NG 2015:
+  
+Summary statistic data sets. We selected traits for inclusion in the analysis
+for the main text via the following procedure:
+1. Begin with all publicly available non-sex-stratified European-only
+summary statistics.
+2. Remove studies that do not provide signed summary statistics.
+3. Remove studies not imputed to at least phase 2 of HapMap.
+4. Remove studies that adjust for heritable covariates.
+5. Remove all traits with a heritability z score below 4. Genetic correlation
+estimates for traits with a heritability z score below 4 are generally
+too noisy to report.
+6. Prune clusters of correlated phenotypes (for example, obesity
+classes 1–3) by picking the trait from each cluster with the highest
+heritability z score.
+We then applied the following filters (implemented in the script munge_
+sumstats.py included with ldsc):
+1. For studies that provide a measure of imputation quality, filter to INFO
+above 0.9.
+2. For studies that provide sample MAF, filter to sample MAF above 1%.
+3. To restrict to well-imputed SNPs in studies that do not provide a measure
+of imputation quality, filter to SNPs in the HapMap 3 panel61 with a 1000 
+Genomes Project EUR (European) MAF above 5%, which tend to be well
+imputed in most studies. This step should be skipped if INFO scores are
+available for all studies.
+4. If the sample size varies from SNP to SNP, remove SNPs with an effective
+sample size less than 0.67 times the 90th percentile of sample size.
+5. For meta-analyses with specialty chips (for example, the Metabochip),
+remove SNPs with a sample size above the maximum GWAS sample size.
+6. Remove indels and structural variants.
+7. Remove strand-ambiguous SNPs.
+8. Remove SNPs whose alleles do not match the alleles in the 1000 Genomes
+Project.
+"""
+
+#Step 1:  Parse all summary statistics into one HDF5 file.  Do not coordinate.
+#Step 2:  For each pair of summary statistics calculate LDscore regression.
+#Step 3:  
+
+
 import scipy as sp
 from scipy import stats
 import h5py
@@ -757,7 +800,8 @@ def parse_sum_stats(filename,
                 if d is not None:
                     pos = d['pos']
                     chrom = d['chrom']
-                    eur_maf = d['eur_maf']
+#                     eur_maf = d['eur_maf']
+                    eur_maf = float(l[5])
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
@@ -776,9 +820,9 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)
-#                     weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
-#                     weight = (z/beta)**2
-                    weight = float(l[16])  # Number of studies used.
+                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+#                     weight = (z/raw_beta)**2
+#                     weight = float(l[16])  # Number of studies used.
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
@@ -1353,17 +1397,30 @@ def parse_parameters():
         sys.exit(0)
     return p_dict
 
+
+
 def parse_all_sum_stats():
     """
     Code for parsing all of the summary stastics on the cluster.
     """
-    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=FA,FN,LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
-    gefoss_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --iq_range=90,100 --min_maf=0.02 --ow'
-    gefoss_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --LDradius=250 --out=/faststorage/project/PCMA/1_DATA/GEFOS --LDthres=0.2'    
+    diagram_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAMv3.2012DEC17.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/T2D_comb.hdf5 --sslabels=t2d_diagram --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+
+    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=GEFOS_FA,GEFOS_FN,GEFOS_LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
+    icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5 --sslabels=ICBP_sb,ICBP_db,ICBP_pp,ICBP_map --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    tag_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.cpd.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.evrsmk.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.former.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.logonset.tbl.tbl --combfile=/faststorage/project/PCMA/3_SUMSTATS/TAG/TAG_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    tag_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+
+    #Then merge into big file:
     
-    icbp_parse_str = '%run coordinate_data.py --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP --sslabels=sb,db,pp,map --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    icbp_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --iq_range=50,100 --min_maf=0.02 --ow'
-    icbp_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --LDradius=100 --out=/faststorage/project/PCMA/1_DATA/ICBP --LDthres=0.2'
+
+
+def process_all_sum_stats():
+    #gefoss_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --iq_range=90,100 --min_maf=0.02 --ow'
+    #gefoss_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_coord.hdf5 --LDradius=250 --out=/faststorage/project/PCMA/1_DATA/GEFOS --LDthres=0.2'    
+    
+    #icbp_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --iq_range=50,100 --min_maf=0.02 --ow'
+    #icbp_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --LDradius=100 --out=/faststorage/project/PCMA/1_DATA/ICBP --LDthres=0.2'
+
 
 if __name__=='__main__':
     p_dict = parse_parameters()
