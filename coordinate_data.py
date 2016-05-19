@@ -811,11 +811,11 @@ def parse_sum_stats(filename,
                 d = sid_map.get(sid,None)
                 if d is not None:
                     raw_beta = sp.log(float(l[5]))
-                    if raw_beta==0:
+                    eur_maf = d['eur_maf']
+                    if raw_beta==0 or eur_maf==0:
                         continue
                     pos = d['pos']
                     chrom = d['chrom']
-                    eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
