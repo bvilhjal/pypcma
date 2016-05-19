@@ -838,11 +838,11 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sid = l[1]
                 d = sid_map.get(sid,None)
-                eur_maf = d['eur_maf']
-                if d is not None and eur_maf>0:
+                if d is not None:
+                    eur_maf = d['eur_maf']
                     raw_beta = sp.log(float(l[7]))
                     pval = float(l[10])
-                    if raw_beta==0 or pval == 0:
+                    if raw_beta==0 or pval == 0 or eur_maf==0:
                         continue
                     pos = d['pos']
                     chrom = d['chrom']
