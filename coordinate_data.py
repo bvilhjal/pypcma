@@ -1473,6 +1473,7 @@ def process_all_sum_stats():
     pass
 
 if __name__=='__main__':
+    print 'Started'
     p_dict = parse_parameters()
     assert p_dict['combfile'] is not None, 'Combined SS file is missing.'
     comb_hdf5_file = p_dict['combfile']
