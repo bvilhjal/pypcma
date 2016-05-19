@@ -43,40 +43,6 @@ python coordinate_data.py --ssfiles=SUM_STATS_FILE1,SUM_STATS_FILE2,... --combfi
 """
 
 
-"""
-Bulick-Sullivan et al., NG 2015:
-  
-Summary statistic data sets. We selected traits for inclusion in the analysis
-for the main text via the following procedure:
-
-1. Begin with all publicly available non-sex-stratified European-only
-summary statistics.
-2. Remove studies that do not provide signed summary statistics.
-3. Remove studies not imputed to at least phase 2 of HapMap.
-4. Remove studies that adjust for heritable covariates.
-5. Remove all traits with a heritability z score below 4. Genetic correlation
-estimates for traits with a heritability z score below 4 are generally
-too noisy to report.
-6. Prune clusters of correlated phenotypes (for example, obesity classes 1–3) by picking the trait from each cluster with the highest heritability z score.
-
-We then applied the following filters (implemented in the script munge_sumstats.py included with ldsc):
-1. For studies that provide a measure of imputation quality, filter to INFO above 0.9.
-2. For studies that provide sample MAF, filter to sample MAF above 1%.
-3. To restrict to well-imputed SNPs in studies that do not provide a measure
-of imputation quality, filter to SNPs in the HapMap 3 panel61 with a 1000 
-Genomes Project EUR (European) MAF above 5%, which tend to be well
-imputed in most studies. This step should be skipped if INFO scores are
-available for all studies.
-4. If the sample size varies from SNP to SNP, remove SNPs with an effective
-sample size less than 0.67 times the 90th percentile of sample size.
-5. For meta-analyses with specialty chips (for example, the Metabochip),
-remove SNPs with a sample size above the maximum GWAS sample size.
-6. Remove indels and structural variants.
-7. Remove strand-ambiguous SNPs.
-8. Remove SNPs whose alleles do not match the alleles in the 1000 Genomes
-Project.
-"""
-
 #Step 1:  Parse all summary statistics into one HDF5 file.  Do not coordinate.
 #Step 2:  For each pair of summary statistics calculate LDscore regression.
 #Step 3:  
