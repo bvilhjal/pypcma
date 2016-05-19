@@ -183,10 +183,12 @@ headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta
            'TAG':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A', 'FRQ_U', 'INFO', 'OR', 'SE', 'P'],
            'CD':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_5956', 'FRQ_U_14927', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
            'UC':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_6968', 'FRQ_U_20464', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
+           'IBD': ['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_12882', 'FRQ_U_21770', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa']
            'GEFOS':['chromosome', 'position', 'rs_number', 'reference_allele', 'other_allele', 'eaf', 'beta', 'se', 'beta_95L', 'beta_95U', 'z', 'p-value', '_-log10_p-value', 'q_statistic', 'q_p-value', 'i2', 'n_studies', 'n_samples', 'effects'],
            'RA':['SNPID','Chr','Position(hg19)','A1','A2','OR(A1)','OR_95%CIlow','OR_95%CIup','P-val'],
            'ASTHMA':['Chr', 'rs', 'position', 'Allele_1', 'Allele_2', 'freq_all_1_min', 'freq_all_1_max', 'OR_fix', 'ORl_fix', 'ORu_fix', 'P_fix'],
-           'ICBP': ['ID', 'Analysis', 'ID', 'SNP', 'ID', 'P-value', 'Rank', 'Plot', 'data', 'Chr', 'ID', 'Chr', 'Position', 'Submitted', 'SNP', 'ID', 'ss2rs', 'rs2genome', 'Allele1', 'Allele2', 'Minor', 'allele', 'pHWE', 'Call', 'Rate', 'Effect', 'SE', 'R-Squared', 'Coded', 'Allele', 'Sample', 'size', 'Bin', 'ID']
+           'ICBP': ['ID', 'Analysis', 'ID', 'SNP', 'ID', 'P-value', 'Rank', 'Plot', 'data', 'Chr', 'ID', 'Chr', 'Position', 'Submitted', 'SNP', 'ID', 'ss2rs', 'rs2genome', 'Allele1', 'Allele2', 'Minor', 'allele', 'pHWE', 'Call', 'Rate', 'Effect', 'SE', 'R-Squared', 'Coded', 'Allele', 'Sample', 'size', 'Bin', 'ID'],
+           'GLC': ['SNP_hg18', 'SNP_hg19', 'rsid', 'A1', 'A2', 'beta', 'se', 'N', 'P-value', 'Freq.A1.1000G.EUR'],
            }
 
 def parse_sum_stats(filename,
@@ -214,11 +216,11 @@ def parse_sum_stats(filename,
         
         line = f.next()
         header = line.split()        
-        if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC'] or header==headers['ASTHMA']:
+        if header==['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header==headers['TAG'] or header==headers['CD'] or header==headers['UC'] or header==headers['IBD'] or header==headers['ASTHMA']:
             for line in f:
                 l = line.split()
                 sids.append(l[1])
-        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP']:
+        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP'], or header==headers['GLC']:
 #             line_count =0
             for line in f:
 #                 line_count +=1
@@ -636,10 +638,10 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sid = l[0]
                 d = sid_map.get(sid,None)
-                if d is not None:
+                eur_maf = float(l[3])
+                if d is not None and eur_maf>0:
                     pos = d['pos']
                     chrom = d['chrom']
-                    eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
@@ -759,13 +761,15 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
-        elif header==headers['CD'] or header==headers['UC']:
+        elif header==headers['CD'] or header==headers['UC'] or header==headers['IBD']:
+            #['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_12882', 'FRQ_U_21770', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa']
             for line in f:
                 line_i +=1
                 l = line.split()
                 sid = l[1]
+                info_score = float(l[7])
                 d = sid_map.get(sid,None)
-                if d is not None:
+                if d is not None and info_score>0.8:
                     pos = d['pos']
                     chrom = d['chrom']
                     eur_maf = d['eur_maf']
@@ -787,7 +791,9 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
-                    weight = z**2/((raw_beta**2)*2*eur_maf*(1-eur_maf))
+                    direction = l[11]
+                    num_studies = len(direction)-direction.count('?')                    
+                    weight = num_studies
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
@@ -797,11 +803,11 @@ def parse_sum_stats(filename,
                 l = line.split()
                 sid = l[2]
                 d = sid_map.get(sid,None)
-                if d is not None:
+                eur_maf = float(l[5])
+                if d is not None and eur_maf>0 and eur_maf<1:
                     pos = d['pos']
                     chrom = d['chrom']
 #                     eur_maf = d['eur_maf']
-                    eur_maf = float(l[5])
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
@@ -933,6 +939,39 @@ def parse_sum_stats(filename,
                     z = sign * stats.norm.ppf(pval/2.0)
                     chrom_dict[chrom]['zs'].append(z)     
                     weight = float(l[17])
+                    chrom_dict[chrom]['weights'].append(weight)
+                if line_i%100000==0:
+                    print line_i   
+
+           'GLC': ['SNP_hg18', 'SNP_hg19', 'rsid', 'A1', 'A2', 'beta', 'se', 'N', 'P-value', 'Freq.A1.1000G.EUR'],
+        elif header==headers['GLC']:
+            for line in f:
+                line_i +=1
+                l = line.split()
+                sid = l[2]
+                d = sid_map.get(sid,None)
+                if d is not None :
+                    raw_beta = float(l[5])
+                    pval = float(l[8])
+                    pos = d['pos']
+                    chrom = d['chrom']
+                    eur_maf = d['eur_maf']
+                    if not chrom in chrom_dict.keys():
+                        chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
+                                             'positions': [], 'eur_maf':[], 'weights':[]}
+                    chrom_dict[chrom]['sids'].append(sid)
+                    chrom_dict[chrom]['positions'].append(pos)
+                    chrom_dict[chrom]['eur_maf'].append(eur_maf)
+                    chrom_dict[chrom]['ps'].append(pval)
+                    if random.random()>0.5:
+                        nt = [l[3], l[4]]                    
+                    else:
+                        nt = [l[4], l[3]]                    
+                        raw_beta = -raw_beta
+                    chrom_dict[chrom]['nts'].append(nt)                
+                    z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
+                    chrom_dict[chrom]['zs'].append(z)     
+                    weight = float(l[7])
                     chrom_dict[chrom]['weights'].append(weight)
                 if line_i%100000==0:
                     print line_i   
@@ -1402,13 +1441,24 @@ def parse_parameters():
 def parse_all_sum_stats():
     """
     Code for parsing all of the summary stastics on the cluster.
+    
+    DIAGRAM_T2D    GABRIEL_ASTHMA    GEFOS_BMD-FOREARM    GEFOS_BMD-NECK    GEFOS_BMD-SPINE    GIANT_BMI    GIANT_HEIGHT    GIANT_HIP    GIANT_WC    GIANT_WHR    
+    GLG_HDL    GLG_LDL    GLG_TC    GLG_TG    ICBP_DBP    ICBP_MAP    ICBP_PP    ICBP_SBP    
+    IIBDGC_CD    IIBDGC_IBD    IIBDGC_UC    
+    MAGIC_FAST-GLUCOSE    MAGIC_FAST-INSULIN    MAGIC_HOMA-B    MAGIC_HOMA-IR    
+    RA_RA
     """
-    diagram_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAMv3.2012DEC17.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/T2D_comb.hdf5 --sslabels=t2d_diagram --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-
-    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_comb.hdf5 --sslabels=GEFOS_FA,GEFOS_FN,GEFOS_LS --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/'
-    icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5 --sslabels=ICBP_sb,ICBP_db,ICBP_pp,ICBP_map --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    tag_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.cpd.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.evrsmk.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.former.tbl.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TAG/tag.logonset.tbl.tbl --combfile=/faststorage/project/PCMA/3_SUMSTATS/TAG/TAG_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    tag_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    diagram_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAMv3.2012DEC17.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5 --sslabels=DIAGRAM_T2D --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    gabriel_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/gabriel_asthma.txt --combfile=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5 --sslabels=GABRIEL_ASTHMA --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5 --sslabels=GEFOS_BMD-FOREARM,GEFOS_BMD-NECK,GEFOS_BMD-SPINE --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+    giant_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GIANT/SNP_gwas_mc_merge_nogc.tbl.uniq,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_HIP_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WC_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WHR_COMBINED_EUR.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5 --sslabels=GIANT_BMI,GIANT_HEIGHT,GIANT_HIP,GIANT_WC,GIANT_WHR --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+    glc_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_HDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_LDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TC.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TG.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5 --sslabels=GLG_HDL,GLG_LDL,GLG_TC,GLG_TG --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+    icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5 --sslabels=ICBP_DBP,ICBP_MAP,ICBP_PP,ICBP_SBP --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    iibdgc_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.CD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.IBD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.UC.gwas.assoc --combfile=/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5 --sslabels=IIBDGC_CD,IIBDGC_IBD,IIBDGC_UC --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    magic_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_FastingGlucose.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_FastingInsulin.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-B.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-IR.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5 --sslabels=MAGIC_FAST-GLUCOSE,MAGIC_FAST-INSULIN,MAGIC_HOMA-B,MAGIC_HOMA-IR --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2 --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    
+    teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
 
     #Then merge into big file:
     
