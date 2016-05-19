@@ -183,7 +183,7 @@ headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta
            'TAG':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A', 'FRQ_U', 'INFO', 'OR', 'SE', 'P'],
            'CD':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_5956', 'FRQ_U_14927', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
            'UC':['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_6968', 'FRQ_U_20464', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
-           'IBD': ['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_12882', 'FRQ_U_21770', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa']
+           'IBD': ['CHR', 'SNP', 'BP', 'A1', 'A2', 'FRQ_A_12882', 'FRQ_U_21770', 'INFO', 'OR', 'SE', 'P', 'Direction', 'HetISqt', 'HetPVa'],
            'GEFOS':['chromosome', 'position', 'rs_number', 'reference_allele', 'other_allele', 'eaf', 'beta', 'se', 'beta_95L', 'beta_95U', 'z', 'p-value', '_-log10_p-value', 'q_statistic', 'q_p-value', 'i2', 'n_studies', 'n_samples', 'effects'],
            'RA':['SNPID','Chr','Position(hg19)','A1','A2','OR(A1)','OR_95%CIlow','OR_95%CIup','P-val'],
            'ASTHMA':['Chr', 'rs', 'position', 'Allele_1', 'Allele_2', 'freq_all_1_min', 'freq_all_1_max', 'OR_fix', 'ORl_fix', 'ORu_fix', 'P_fix'],
@@ -220,7 +220,7 @@ def parse_sum_stats(filename,
             for line in f:
                 l = line.split()
                 sids.append(l[1])
-        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP'], or header==headers['GLC']:
+        elif header==['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header==headers['GCAN'] or header==headers['GEFOS'] or header==headers['ICBP'] or header==headers['GLC']:
 #             line_count =0
             for line in f:
 #                 line_count +=1
@@ -943,7 +943,7 @@ def parse_sum_stats(filename,
                 if line_i%100000==0:
                     print line_i   
 
-           'GLC': ['SNP_hg18', 'SNP_hg19', 'rsid', 'A1', 'A2', 'beta', 'se', 'N', 'P-value', 'Freq.A1.1000G.EUR'],
+           #'GLC': ['SNP_hg18', 'SNP_hg19', 'rsid', 'A1', 'A2', 'beta', 'se', 'N', 'P-value', 'Freq.A1.1000G.EUR'],
         elif header==headers['GLC']:
             for line in f:
                 line_i +=1
@@ -1470,7 +1470,7 @@ def process_all_sum_stats():
     
     #icbp_coord_str = '%run coordinate_data --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_comb.hdf5  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --iq_range=50,100 --min_maf=0.02 --ow'
     #icbp_LDprune_str = '%run LD_prune_sum_stats.py  --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --coordfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/ICPB_bloodPress/ICBP_coord.hdf5 --LDradius=100 --out=/faststorage/project/PCMA/1_DATA/ICBP --LDthres=0.2'
-
+    pass
 
 if __name__=='__main__':
     p_dict = parse_parameters()
