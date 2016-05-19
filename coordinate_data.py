@@ -833,19 +833,19 @@ def parse_sum_stats(filename,
                 if line_i%100000==0:
                     print line_i   
         elif header==headers['ASTHMA']:
-            for line in f:
+            for line in f: 
                 line_i +=1
                 l = line.split()
                 sid = l[1]
                 d = sid_map.get(sid,None)
-                if d is not None:
+                eur_maf = d['eur_maf']
+                if d is not None and eur_maf>0:
                     raw_beta = sp.log(float(l[7]))
                     pval = float(l[10])
                     if raw_beta==0 or pval == 0:
                         continue
                     pos = d['pos']
                     chrom = d['chrom']
-                    eur_maf = d['eur_maf']
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
