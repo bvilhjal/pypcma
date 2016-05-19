@@ -57,8 +57,7 @@ summary statistics.
 5. Remove all traits with a heritability z score below 4. Genetic correlation
 estimates for traits with a heritability z score below 4 are generally
 too noisy to report.
-6. Prune clusters of correlated phenotypes (for example, obesity classes 1–3) by picking the trait from each cluster with the highest 
-heritability z score.
+6. Prune clusters of correlated phenotypes (for example, obesity classes 1–3) by picking the trait from each cluster with the highest heritability z score.
 
 We then applied the following filters (implemented in the script munge_sumstats.py included with ldsc):
 1. For studies that provide a measure of imputation quality, filter to INFO above 0.9.
