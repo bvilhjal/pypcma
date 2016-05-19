@@ -48,6 +48,7 @@ Bulick-Sullivan et al., NG 2015:
   
 Summary statistic data sets. We selected traits for inclusion in the analysis
 for the main text via the following procedure:
+
 1. Begin with all publicly available non-sex-stratified European-only
 summary statistics.
 2. Remove studies that do not provide signed summary statistics.
