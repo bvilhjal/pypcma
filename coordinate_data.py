@@ -604,6 +604,9 @@ def parse_sum_stats(filename,
                 d = sid_map.get(sid,None)
                 eur_maf = float(l[3])
                 if d is not None and eur_maf>0:
+                    raw_beta = float(l[4])
+                    if raw_beta==0:
+                        continue
                     pos = d['pos']
                     chrom = d['chrom']
                     if not chrom in chrom_dict.keys():
@@ -614,7 +617,6 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     pval = float(l[6])
                     chrom_dict[chrom]['ps'].append(pval)
-                    raw_beta = float(l[4])
                     if random.random()>0.5:
                         nt = [lc_2_cap_map[l[1]], lc_2_cap_map[l[2]]]
                     else:
@@ -769,9 +771,13 @@ def parse_sum_stats(filename,
                 d = sid_map.get(sid,None)
                 eur_maf = float(l[5])
                 if d is not None and eur_maf>0 and eur_maf<1:
+                    raw_beta = float(l[6])
+                    if raw_beta==0:
+                        continue
                     pos = d['pos']
                     chrom = d['chrom']
 #                     eur_maf = d['eur_maf']
+                    
                     if not chrom in chrom_dict.keys():
                         chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [], 
                                              'positions': [], 'eur_maf':[], 'weights':[]}
@@ -780,7 +786,6 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     pval = float(l[11])
                     chrom_dict[chrom]['ps'].append(pval)
-                    raw_beta = float(l[6])
                     if random.random()>0.5:
                         nt = [l[3], l[4]]
                     else:
@@ -840,10 +845,11 @@ def parse_sum_stats(filename,
                 d = sid_map.get(sid,None)
                 if d is not None:
                     eur_maf = d['eur_maf']
-                    raw_beta = sp.log(float(l[7]))
+                    odd_rat = float(l[7])
                     pval = float(l[10])
-                    if raw_beta==0 or pval == 0 or eur_maf==0:
+                    if odd_rat==0 or pval == 0 or eur_maf==0:
                         continue
+                    raw_beta = sp.log(odd_rat)
                     pos = d['pos']
                     chrom = d['chrom']
                     if not chrom in chrom_dict.keys():
@@ -1420,7 +1426,7 @@ def parse_all_sum_stats():
     icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5 --sslabels=ICBP_DBP,ICBP_MAP,ICBP_PP,ICBP_SBP --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
     iibdgc_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.CD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.IBD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.UC.gwas.assoc --combfile=/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5 --sslabels=IIBDGC_CD,IIBDGC_IBD,IIBDGC_UC --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
     magic_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_FastingGlucose.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_FastingInsulin.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-B.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-IR.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5 --sslabels=MAGIC_FAST-GLUCOSE,MAGIC_FAST-INSULIN,MAGIC_HOMA-B,MAGIC_HOMA-IR --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2 --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2.txt --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
     
     teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
 
