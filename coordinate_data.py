@@ -1326,8 +1326,8 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
 
 
 
-def hdf5_coord_file_2_txt(coord_hdf5_file,outfile):
-    h5f = h5py.File(comb_hdf5_file,'r')
+def hdf5_coord_file_2_txt(coord_hdf5_file,outfile,sums_ids):
+    h5f = h5py.File(coord_hdf5_file,'r')
     with open(outfile,'w') as f:
         for chrom in range(1,23):
             print 'Working on Chromosome %d'%chrom
@@ -1488,6 +1488,9 @@ def parse_all_sum_stats():
     
     coordinate_sum_stats_w_missing('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5', '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5', '/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/', 
                                    only_common_snps=False)
+    
+    hdf5_coord_file_2_txt('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5','/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.txt',
+                          ['DIAGRAM_T2D', 'GABRIEL_ASTHMA', 'GEFOS_BMD-FOREARM', 'GEFOS_BMD-NECK', 'GEFOS_BMD-SPINE', 'GIANT_BMI', 'GIANT_HEIGHT', 'GIANT_HIP', 'GIANT_WC', 'GIANT_WHR', 'GLG_HDL', 'GLG_LDL', 'GLG_TC', 'GLG_TG', 'ICBP_DBP', 'ICBP_MAP', 'ICBP_PP', 'ICBP_SBP', 'IIBDGC_CD', 'IIBDGC_IBD', 'IIBDGC_UC', 'MAGIC_FAST-GLUCOSE', 'MAGIC_FAST-INSULIN', 'MAGIC_HOMA-B', 'MAGIC_HOMA-IR', 'RA_RA'])
     
 #     teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
 
