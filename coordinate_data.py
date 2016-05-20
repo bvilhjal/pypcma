@@ -1295,7 +1295,7 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
                 nt1 = nts[i1]
                 nt2 = nts2[i2]
                 if 'GLG' in sums_id:
-                    nt2 = lc_2_cap_map[nt2[0],nt2[1]]
+                    nt2 = [lc_2_cap_map[nt2[0]],lc_2_cap_map[nt2[1]]]
                 if sp.all(nt1==nt2):
                     final_zs[i1]=zs[i2]
                     final_pvals[i1]=pvals[i2]
