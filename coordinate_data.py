@@ -1325,6 +1325,45 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
             out_chr_ss_g.create_dataset('weights', data = final_weights)
 
 
+
+def hdf5_coord_file_2_txt(coord_hdf5_file,outfile):
+    h5f = h5py.File(comb_hdf5_file,'r')
+    with open(outfile,'w') as f:
+        for chrom in range(1,23):
+            print 'Working on Chromosome %d'%chrom
+            chrom_str = 'chrom_%d' % chrom
+            snps_chrom_g = h5f[chrom_str]
+            sids = snps_chrom_g['sids'][...]
+            eur_mafs = snps_chrom_g['eur_mafs'][...]
+            positions = snps_chrom_g['positions'][...]
+            nts = snps_chrom_g['nts'][...]
+            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+            for sums_id in sums_ids:
+                header_str += '%s_ZS    %s_PS    %s_WEIGHT    '%(sums_id,sums_id,sums_id)
+            header_str +='\n'
+            f.write(header_str)
+            
+            num_snps = len(sids)
+            for i in range(num_snps):
+                if i%10000==0:
+                    print i
+                sid = sids[i]
+                pos = positions[i]
+                maf = eur_mafs[i]
+                nt = nts[i]
+                out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
+                for sums_id in sums_ids:
+                    pval = snps_chrom_g[sums_id]['ps'][i]
+                    zval = snps_chrom_g[sums_id]['zs'][i]
+                    weight = snps_chrom_g[sums_id]['weights'][i]
+                    out_str += '%f    %f    %f    '%(zval,pval,weight)
+                out_str += '\n'
+                f.write(out_str)
+                
+
+            
+
+
 def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
     oh5f = h5py.File(outfile)
     for h5file in h5files:
