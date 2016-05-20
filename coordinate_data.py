@@ -934,9 +934,9 @@ def parse_sum_stats(filename,
                     chrom_dict[chrom]['eur_maf'].append(eur_maf)
                     chrom_dict[chrom]['ps'].append(pval)
                     if random.random()>0.5:
-                        nt = [l[3], l[4]]                    
+                        nt = [lc_2_cap_map[l[3]], lc_2_cap_map[l[4]]]                    
                     else:
-                        nt = [l[4], l[3]]                    
+                        nt = [lc_2_cap_map[l[4]], lc_2_cap_map[l[3]]]                    
                         raw_beta = -raw_beta
                     chrom_dict[chrom]['nts'].append(nt)                
                     z = sp.sign(raw_beta) * stats.norm.ppf(pval/2.0)
@@ -1236,6 +1236,7 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
     print 'Combining datasets: '+' '.join(sums_ids)
     oh5f.create_dataset('sums_ids', data=sums_ids)
     for chrom in range(1,23):
+        print 'Working on Chromosome %d'%chrom
         chrom_str = 'chrom_%d' % chrom
         snps_chrom_g = snps_h5f[chrom_str]
         all_sids = snps_chrom_g['sids'][...]
@@ -1269,6 +1270,7 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
         
         #Retrieve effect estimates for other summary statistics.
         for sums_id in sums_ids:
+            print 'Working on summary statistics:', sums_id
             chr_g = h5f[sums_id][chrom_str]
             sids = chr_g['sids'][...]
             ss_spec_sids_map = sp.in1d(sids, final_sids)
@@ -1287,10 +1289,13 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
             final_pvals = sp.ones(num_snps,dtype='single')
             final_weights = sp.zeros(num_snps,dtype='single')
             #Check nucleotide match, try flipping, etc, and perhaps post-filter data...
+            num_nt_mismatches = 0
             for i2, sid in enumerate(sids):
                 i1 = sid_map[sid]
                 nt1 = nts[i1]
                 nt2 = nts2[i2]
+                if 'GLG' in sums_id:
+                    nt2 = lc_2_cap_map[nt2[0],nt2[1]]
                 if sp.all(nt1==nt2):
                     final_zs[i1]=zs[i2]
                     final_pvals[i1]=pvals[i2]
@@ -1311,8 +1316,9 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
                             final_pvals[i1]=pvals[i2]
                             final_weights[i1]=weights[i2]
                         else:
-                            print "Nucleotides don't match after all?  sid=%s, nt1=%s, nt2=%s" % (sid, str(nt1), str(nt2))
-            
+#                             print "Nucleotides don't match after all?  sid=%s, nt1=%s, nt2=%s" % (sid, str(nt1), str(nt2))
+                            num_nt_mismatches +=1 
+            print '%d nuclotides did not match after all.'%num_nt_mismatches
             out_chr_ss_g = out_chr_g.create_group(sums_id)
             out_chr_ss_g.create_dataset('ps', data=final_pvals)
             out_chr_ss_g.create_dataset('zs', data=final_zs)
