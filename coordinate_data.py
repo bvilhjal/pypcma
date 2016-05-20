@@ -1442,7 +1442,7 @@ def parse_all_sum_stats():
                             '/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5'], '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5')
     
     coordinate_sum_stats_w_missing('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5', '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5', '/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/', 
-                                   only_common_snps=False):
+                                   only_common_snps=False)
     
 #     teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
 
