@@ -1224,7 +1224,7 @@ def coordinate_sum_stats(comb_hdf5_file, coord_hdf5_file, filter_ambiguous_nts=T
             out_chr_ss_g.create_dataset('weights', data = weights)
         
 
-def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filter_ambiguous_nts=True, only_common_snps=True):
+def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filter_ambiguous_nts=True):
     """
     
     """
@@ -1239,23 +1239,23 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
         chrom_str = 'chrom_%d' % chrom
         snps_chrom_g = snps_h5f[chrom_str]
         all_sids = snps_chrom_g['sids'][...]
-        total_sids = set(h5f[sums_ids[0]][chrom_str]['sids'][...])
-        for sums_id in sums_ids[1:]:
-            chr_g = h5f[sums_id][chrom_str]
-            sids = chr_g['sids'][...]
-            print len(sids)
-            total_sids = total_sids.union(sids)
-        num_sids = len(total_sids)
-        total_sids = sp.array(list(total_sids))
-        print 'Found %d SNPs in common on chromosome %d'%(num_sids,chrom)
+#         total_sids = set(h5f[sums_ids[0]][chrom_str]['sids'][...])
+#         for sums_id in sums_ids[1:]:
+#             chr_g = h5f[sums_id][chrom_str]
+#             sids = chr_g['sids'][...]
+#             print len(sids)
+#             total_sids = total_sids.union(sids)
+#         num_sids = len(total_sids)
+#         total_sids = sp.array(list(total_sids))
+#         print 'Found %d SNPs in common on chromosome %d'%(num_sids,chrom)
     
         #Use order and information from first summary stats dataset.
         chr_g = h5f[sums_ids[0]][chrom_str]
-        sids_map = sp.in1d(all_sids, total_sids)
-        final_sids = all_sids[sids_map] 
-        positions = snps_chrom_g['positions'][...][sids_map]
-        nts = snps_chrom_g['nts'][...][sids_map]
-        eur_mafs = snps_chrom_g['eur_mafs'][...][sids_map]
+        #sids_map = sp.in1d(all_sids, total_sids)
+        final_sids = all_sids#[sids_map] 
+        positions = snps_chrom_g['positions'][...]#[sids_map]
+        nts = snps_chrom_g['nts'][...]#[sids_map]
+        eur_mafs = snps_chrom_g['eur_mafs'][...]#[sids_map]
         
         num_snps = len(final_sids)
         sid_map = dict(it.izip(final_sids, range(num_snps)))
@@ -1273,11 +1273,14 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
             sids = chr_g['sids'][...]
             ss_spec_sids_map = sp.in1d(sids, final_sids)
             sids = sids[ss_spec_sids_map]
+            
+            #create data vectors of size ...
+            
             zs = chr_g['zs'][...][ss_spec_sids_map]
             pvals = chr_g['ps'][...][ss_spec_sids_map]
             nts2 = chr_g['nts'][...][ss_spec_sids_map]
-            if 'weights' in chr_g.keys():
-                weights = chr_g['weights'][...][ss_spec_sids_map]
+#             if 'weights' in chr_g.keys():
+            weights = chr_g['weights'][...][ss_spec_sids_map]
             
             final_zs = sp.empty(num_snps,dtype='single')
             final_zs.fill(sp.nan)
@@ -1428,7 +1431,20 @@ def parse_all_sum_stats():
     magic_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_FastingGlucose.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_FastingInsulin.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-B.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-IR.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5 --sslabels=MAGIC_FAST-GLUCOSE,MAGIC_FAST-INSULIN,MAGIC_HOMA-B,MAGIC_HOMA-IR --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
     ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2.txt --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
     
-    teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+    concatenate_ss_h5files(['/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5',
+                            '/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5',
+                            '/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5',
+                            '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5',
+                            '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5',
+                            '/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5',
+                            '/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5',
+                            '/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5',
+                            '/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5'], '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5')
+    
+    coordinate_sum_stats_w_missing('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5', '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5', '/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/', 
+                                   only_common_snps=False):
+    
+#     teslovich_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl,/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TG_ONE_Europeans.tbl --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/TESLOVITCH/TESLOVICH_comb.hdf5 --sslabels=TAG_cpd,TAG_evrsmk,TAG_former,TAG_logonset --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
 
     #Then merge into big file:
     
