@@ -1326,9 +1326,12 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
 
 
 
-def hdf5_coord_file_2_txt(coord_hdf5_file,outfile,sums_ids):
+def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_file, sums_ids):
     h5f = h5py.File(coord_hdf5_file,'r')
-    with open(outfile,'w') as f:
+    
+    print 'Generating Zs file'            
+
+    with open(out_zs_file,'w') as f:
         for chrom in range(1,23):
             print 'Working on Chromosome %d'%chrom
             chrom_str = 'chrom_%d' % chrom
@@ -1339,11 +1342,17 @@ def hdf5_coord_file_2_txt(coord_hdf5_file,outfile,sums_ids):
             nts = snps_chrom_g['nts'][...]
             header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
             for sums_id in sums_ids:
-                header_str += '%s_ZS    %s_PS    %s_WEIGHT    '%(sums_id,sums_id,sums_id)
+                header_str += '%s_ZS    '%(sums_id)
             header_str +='\n'
             f.write(header_str)
             
-            num_snps = len(sids)
+            num_snps = len(sids)                
+            sums_zs_dict = {}
+            print 'Loading all Z-values for this chromosome'
+            for sums_id in sums_ids:
+                sums_zs_dict[sums_id] = snps_chrom_g[sums_id]['zs'][...]
+            
+            print 'Printing to file'            
             for i in range(num_snps):
                 if i%10000==0:
                     print i
@@ -1353,15 +1362,88 @@ def hdf5_coord_file_2_txt(coord_hdf5_file,outfile,sums_ids):
                 nt = nts[i]
                 out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
                 for sums_id in sums_ids:
-                    pval = snps_chrom_g[sums_id]['ps'][i]
-                    zval = snps_chrom_g[sums_id]['zs'][i]
-                    weight = snps_chrom_g[sums_id]['weights'][i]
-                    out_str += '%f    %f    %f    '%(zval,pval,weight)
+#                     pval = snps_chrom_g[sums_id]['ps'][i]
+                    zval = sums_zs_dict[sums_id][i]
+#                     weight = snps_chrom_g[sums_id]['weights'][i]
+                    out_str += '%f   '%(zval)
                 out_str += '\n'
                 f.write(out_str)
                 
-
+    print 'Generating weights file'            
+    with open(out_weight_file,'w') as f:
+        for chrom in range(1,23):
+            print 'Working on Chromosome %d'%chrom
+            chrom_str = 'chrom_%d' % chrom
+            snps_chrom_g = h5f[chrom_str]
+            sids = snps_chrom_g['sids'][...]
+            eur_mafs = snps_chrom_g['eur_mafs'][...]
+            positions = snps_chrom_g['positions'][...]
+            nts = snps_chrom_g['nts'][...]
+            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+            for sums_id in sums_ids:
+                header_str += '%s_WEIGHT    '%(sums_id)
+            header_str +='\n'
+            f.write(header_str)
             
+            num_snps = len(sids)                
+            sums_weights_dict = {}
+            print 'Loading all weights for this chromosome'
+            for sums_id in sums_ids:
+                sums_weights_dict[sums_id] = snps_chrom_g[sums_id]['weights'][...]
+            
+            print 'Printing to file'            
+            for i in range(num_snps):
+                if i%10000==0:
+                    print i
+                sid = sids[i]
+                pos = positions[i]
+                maf = eur_mafs[i]
+                nt = nts[i]
+                out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
+                for sums_id in sums_ids:
+                    weight = sums_weights_dict[sums_id][i]
+                    out_str += '%f    '%(weight)
+                out_str += '\n'
+                f.write(out_str)
+            
+    print 'Generating p-value file'            
+    with open(out_ps_file,'w') as f:
+        for chrom in range(1,23):
+            print 'Working on Chromosome %d'%chrom
+            chrom_str = 'chrom_%d' % chrom
+            snps_chrom_g = h5f[chrom_str]
+            sids = snps_chrom_g['sids'][...]
+            eur_mafs = snps_chrom_g['eur_mafs'][...]
+            positions = snps_chrom_g['positions'][...]
+            nts = snps_chrom_g['nts'][...]
+            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+            for sums_id in sums_ids:
+                header_str += '%s_PS    '%(sums_id)
+            header_str +='\n'
+            f.write(header_str)
+            
+            num_snps = len(sids)                
+            sums_ps_dict = {}
+            print 'Loading all P-values for this chromosome'
+            for sums_id in sums_ids:
+                sums_ps_dict[sums_id] = snps_chrom_g[sums_id]['ps'][...]
+            
+            print 'Printing to file'            
+            for i in range(num_snps):
+                if i%10000==0:
+                    print i
+                sid = sids[i]
+                pos = positions[i]
+                maf = eur_mafs[i]
+                nt = nts[i]
+                out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
+                for sums_id in sums_ids:
+                    pval = sums_ps_dict[sums_id][i]
+                    out_str += '%f   '%(pval)
+                out_str += '\n'
+                f.write(out_str)
+
+    h5f.close()
 
 
 def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
@@ -1466,28 +1548,28 @@ def parse_all_sum_stats():
     MAGIC_FAST-GLUCOSE    MAGIC_FAST-INSULIN    MAGIC_HOMA-B    MAGIC_HOMA-IR    
     RA_RA
     """
-    diagram_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAMv3.2012DEC17.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5 --sslabels=DIAGRAM_T2D --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    gabriel_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/gabriel_asthma.txt --combfile=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5 --sslabels=GABRIEL_ASTHMA --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
-    gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5 --sslabels=GEFOS_BMD-FOREARM,GEFOS_BMD-NECK,GEFOS_BMD-SPINE --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
-    giant_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GIANT/SNP_gwas_mc_merge_nogc.tbl.uniq,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_HIP_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WC_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WHR_COMBINED_EUR.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5 --sslabels=GIANT_BMI,GIANT_HEIGHT,GIANT_HIP,GIANT_WC,GIANT_WHR --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
-    glc_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_HDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_LDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TC.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TG.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5 --sslabels=GLG_HDL,GLG_LDL,GLG_TC,GLG_TG --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
-    icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5 --sslabels=ICBP_DBP,ICBP_MAP,ICBP_PP,ICBP_SBP --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    iibdgc_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.CD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.IBD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.UC.gwas.assoc --combfile=/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5 --sslabels=IIBDGC_CD,IIBDGC_IBD,IIBDGC_UC --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    magic_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_FastingGlucose.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_FastingInsulin.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-B.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-IR.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5 --sslabels=MAGIC_FAST-GLUCOSE,MAGIC_FAST-INSULIN,MAGIC_HOMA-B,MAGIC_HOMA-IR --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2.txt --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
-    
-    concatenate_ss_h5files(['/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5',
-                            '/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5',
-                            '/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5',
-                            '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5',
-                            '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5',
-                            '/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5',
-                            '/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5',
-                            '/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5',
-                            '/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5'], '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5')
-    
-    coordinate_sum_stats_w_missing('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5', '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5', '/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/', 
-                                   only_common_snps=False)
+#     diagram_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAMv3.2012DEC17.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5 --sslabels=DIAGRAM_T2D --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+#     gabriel_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/gabriel_asthma.txt --combfile=/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5 --sslabels=GABRIEL_ASTHMA --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+#     gefoss_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fa2stu.MAF0_.005.pos_.out__0,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/fn2stu.MAF0_.005.pos_.out_,/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/ls2stu.MAF0_.005.pos_.out_ --combfile=/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5 --sslabels=GEFOS_BMD-FOREARM,GEFOS_BMD-NECK,GEFOS_BMD-SPINE --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+#     giant_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GIANT/SNP_gwas_mc_merge_nogc.tbl.uniq,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_HIP_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WC_COMBINED_EUR.txt,/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT_2015_WHR_COMBINED_EUR.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5 --sslabels=GIANT_BMI,GIANT_HEIGHT,GIANT_HIP,GIANT_WC,GIANT_WHR --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+#     glc_parse_str = '%run coordinate_data.py --ssfiles=/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_HDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_LDL.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TC.txt,/project/PCMA/faststorage/3_SUMSTATS/GLC/jointGwasMc_TG.txt  --combfile=/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5 --sslabels=GLG_HDL,GLG_LDL,GLG_TC,GLG_TG --1KGpath=/project/PCMA/faststorage/3_SUMSTATS/1Kgenomes/ --ow'
+#     icbp_parse_str = '%run coordinate_data --ssfiles=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/dbp_phs000585.pha003589.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/map_phs000585.pha003591.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/pp_phs000585.pha003590.txt,/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/sbp_phs000585.pha003588.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5 --sslabels=ICBP_DBP,ICBP_MAP,ICBP_PP,ICBP_SBP --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+#     iibdgc_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.CD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.IBD.gwas.assoc,/home/bjarni/PCMA/faststorage/3_SUMSTATS/IBD/iibdgc-trans-ancestry-summary-stats/EUR.UC.gwas.assoc --combfile=/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5 --sslabels=IIBDGC_CD,IIBDGC_IBD,IIBDGC_UC --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+#     magic_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_FastingGlucose.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_FastingInsulin.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-B.txt,/home/bjarni/PCMA/faststorage/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC_ln_HOMA-IR.txt --combfile=/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5 --sslabels=MAGIC_FAST-GLUCOSE,MAGIC_FAST-INSULIN,MAGIC_HOMA-B,MAGIC_HOMA-IR --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+#     ra_parse_str = '%run coordinate_data --ssfiles=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA_GWASmeta_European_v2.txt --combfile=/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5 --sslabels=RA_RA --1KGpath=/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/ --ow'
+#     
+#     concatenate_ss_h5files(['/faststorage/project/PCMA/3_SUMSTATS/DIAGRAMv3.GWAS.T2D/DIAGRAM_T2D.hdf5',
+#                             '/project/PCMA/faststorage/3_SUMSTATS/GABRIEL_asthma/GABRIEL_ASTHMA.hdf5',
+#                             '/project/PCMA/faststorage/3_SUMSTATS/GEFOS_osteoporosis/GEFOS_BMD.hdf5',
+#                             '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GIANT.hdf5',
+#                             '/project/PCMA/faststorage/3_SUMSTATS/GIANT/GLC.hdf5',
+#                             '/faststorage/project/PCMA/3_SUMSTATS/ICPB_bloodPress/ICBP.hdf5',
+#                             '/faststorage/project/PCMA/3_SUMSTATS/IBD/IIBDGC.hdf5',
+#                             '/faststorage/project/PCMA/3_SUMSTATS/MAGIC_glycaemic.traits/MAGIC.hdf5',
+#                             '/home/bjarni/PCMA/faststorage/3_SUMSTATS/RA/RA.hdf5'], '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5')
+#     
+#     coordinate_sum_stats_w_missing('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb.hdf5', '/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5', '/faststorage/project/PCMA/3_SUMSTATS/1Kgenomes/', 
+#                                    only_common_snps=False)
     
     hdf5_coord_file_2_txt('/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.hdf5','/home/bjarni/PCMA/faststorage/3_SUMSTATS/comb_coord.txt',
                           ['DIAGRAM_T2D', 'GABRIEL_ASTHMA', 'GEFOS_BMD-FOREARM', 'GEFOS_BMD-NECK', 'GEFOS_BMD-SPINE', 'GIANT_BMI', 'GIANT_HEIGHT', 'GIANT_HIP', 'GIANT_WC', 'GIANT_WHR', 'GLG_HDL', 'GLG_LDL', 'GLG_TC', 'GLG_TG', 'ICBP_DBP', 'ICBP_MAP', 'ICBP_PP', 'ICBP_SBP', 'IIBDGC_CD', 'IIBDGC_IBD', 'IIBDGC_UC', 'MAGIC_FAST-GLUCOSE', 'MAGIC_FAST-INSULIN', 'MAGIC_HOMA-B', 'MAGIC_HOMA-IR', 'RA_RA'])
