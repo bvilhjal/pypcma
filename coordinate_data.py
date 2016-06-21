@@ -1354,7 +1354,7 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             
             print 'Printing to file'            
             for i in range(num_snps):
-                if i%10000==0:
+                if i%1000000==0:
                     print i
                 sid = sids[i]
                 pos = positions[i]
@@ -1393,7 +1393,7 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             
             print 'Printing to file'            
             for i in range(num_snps):
-                if i%10000==0:
+                if i%1000000==0:
                     print i
                 sid = sids[i]
                 pos = positions[i]
@@ -1430,7 +1430,7 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             
             print 'Printing to file'            
             for i in range(num_snps):
-                if i%10000==0:
+                if i%1000000==0:
                     print i
                 sid = sids[i]
                 pos = positions[i]
