@@ -421,19 +421,15 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
     
     #Filter for good SNPs?
     
-    
-    
     #parse ldetect map
     print 'Loading ldetect map'
     ldr = h5py.File(ld_reg_map,'r')
     
-    #
     num_new_hits = 0
     num_comb_hits = 0
     num_marg_hits = 0
     num_shared_hits = 0
     num_missed_hits = 0
-    
         
     chrom_bin_dict = {} 
     
