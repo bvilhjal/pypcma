@@ -1344,6 +1344,10 @@ def hdf5_coord_file_2_txt(coord_hdf5_file,outfile,sums_ids):
             f.write(header_str)
             
             num_snps = len(sids)
+            
+            #Pre-store in a huge dict
+            
+            
             for i in range(num_snps):
                 if i%10000==0:
                     print i
