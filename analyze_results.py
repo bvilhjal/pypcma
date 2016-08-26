@@ -388,6 +388,7 @@ def pparse_PCMA_results(ss_file,res_file, subset_ss_file=True):
     ss_weights_ids = l[num_ss:]
     if subset_ss_file:
         #Identify shared SNPs
+        
         #Filter
         pass
     else:
