@@ -377,7 +377,7 @@ def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldete
         of.create_dataset(chrom_str, data=sp.array(bin_limits))
     of.close()
         
-def parse_PCMA_results(ss_file,res_file):
+def pparse_PCMA_results(ss_file,res_file, subset_ss_file=True):
     #Parse ss file, get various information
     ss_df = pandas.read_table(ss_file)
     l = list(ss_df.columns)[4:]
@@ -386,7 +386,12 @@ def parse_PCMA_results(ss_file,res_file):
     
     ss_zs_ids = l[:num_ss]
     ss_weights_ids = l[num_ss:]
-    assert sp.all(ss_df['SID']==ss_df['SID']), 'The summary statistics and PCMA results file do not match.'
+    if subset_ss_file:
+        #Identify shared SNPs
+        #Filter
+        pass
+    else:
+        assert sp.all(ss_df['SID']==ss_df['SID']), 'The summary statistics and PCMA results file do not match.'
     
     #Parse p-values from result file
     res_df = pandas.read_table(res_file)
