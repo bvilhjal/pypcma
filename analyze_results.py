@@ -414,7 +414,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
 #         merged_df = merged_df.merge(ss_wts_chrom_df[use_cols],on='SID')
 #         print 'Merge 3 done'
 
-        print merged_df.colums
+        print merged_df.columns
         chrom_str = 'chr%d'%chrom
         marg_ps = merged_df[ss_ps_ids]
         min_marg_ps = marg_ps.min(1)
