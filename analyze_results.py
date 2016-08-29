@@ -416,7 +416,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
 
         print merged_df.colums
         chrom_str = 'chr%d'%chrom
-        marg_ps = merged_df[ss_zs_ids]
+        marg_ps = merged_df[ss_ps_ids]
         min_marg_ps = marg_ps.min(1)
         chrom_res_dict[chrom_str] = {'ps':merged_df[ss_ps_ids],'positions':merged_df['POS'], 
                                      'sids':merged_df['SID'], 'maf':merged_df['MAF'],
