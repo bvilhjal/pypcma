@@ -378,16 +378,19 @@ def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldete
     of.close()
         
         
-def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
+def parse_PCMA_results(ss_ps_file, res_file):
+# def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     #Parse ss file, get various information
     ss_ps_df = pandas.read_table(ss_ps_file)
-    ss_zs_df = pandas.read_table(ss_zs_file)
-    ss_wts_df = pandas.read_table(ss_wt_file)
-    ss_zs_ids = list(ss_ps_df.columns)[6:]
-    ss_wts_ids = list(ss_ps_df.columns)[6:]
+    print 'Parsed p-value file'
+#     ss_zs_df = pandas.read_table(ss_zs_file)
+#     ss_wts_df = pandas.read_table(ss_wt_file)
+#     ss_zs_ids = list(ss_ps_df.columns)[6:]
+#     ss_wts_ids = list(ss_ps_df.columns)[6:]
     ss_ps_ids = list(ss_ps_df.columns)[6:]
     num_ss = len(ss_ps_ids)
     res_df = pandas.read_table(res_file)
+    print 'Parsed results file'
     pc_ids = ['pvPC%d'%i for i in range(1,num_ss+1)]
     
     dupl_columns = ss_ps_df.columns[1:6]
@@ -397,29 +400,31 @@ def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     for chrom in range(1,23):
         print 'Working on chromosome %d'%chrom
         res_chrom_df = res_df.loc[res_df['CHR']==chrom]
-        ok_sids = res_chrom_df['SID']
         ss_ps_chrom_df = ss_ps_df.loc[ss_ps_df['CHR']==chrom]
-        ss_zs_chrom_df = ss_zs_df.loc[ss_zs_df['CHR']==chrom]
-        ss_wts_chrom_df = ss_wts_df.loc[ss_wts_df['CHR']==chrom]
+#         ss_zs_chrom_df = ss_zs_df.loc[ss_zs_df['CHR']==chrom]
+#         ss_wts_chrom_df = ss_wts_df.loc[ss_wts_df['CHR']==chrom]
         
         print 'Sub-sampled chromsomes, now merging'
         use_cols = ss_ps_chrom_df.colums - dupl_columns
         merged_df = res_chrom_df.merge(ss_ps_chrom_df[use_cols],on='SID')
-        print 'Merge 1 done'
-        use_cols = ss_zs_chrom_df.colums - dupl_columns
-        merged_df = merged_df.merge(ss_zs_chrom_df[use_cols],on='SID')
-        print 'Merge 2 done'
-        use_cols = ss_wts_chrom_df.colums - dupl_columns
-        merged_df = merged_df.merge(ss_wts_chrom_df[use_cols],on='SID')
-        print 'Merge 3 done'
+        print 'Merge done'
+#         use_cols = ss_zs_chrom_df.colums - dupl_columns
+#         merged_df = merged_df.merge(ss_zs_chrom_df[use_cols],on='SID')
+#         print 'Merge 2 done'
+#         use_cols = ss_wts_chrom_df.colums - dupl_columns
+#         merged_df = merged_df.merge(ss_wts_chrom_df[use_cols],on='SID')
+#         print 'Merge 3 done'
 
         print merged_df.colums
         chrom_str = 'chr%d'%chrom
         marg_ps = merged_df[ss_zs_ids]
         min_marg_ps = marg_ps.min(1)
-        chrom_res_dict[chrom_str] = {'zs':merged_df[ss_zs_ids],'weights':merged_df[ss_wts_ids], 'positions':merged_df['POS'], 
+        chrom_res_dict[chrom_str] = {'ps':merged_df[ss_ps_ids],'positions':merged_df['POS'], 
                                      'sids':merged_df['SID'], 'maf':merged_df['MAF'], 'res_df':res_chrom_df, 
                                      'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
+#         chrom_res_dict[chrom_str] = {'zs':merged_df[ss_zs_ids],'weights':merged_df[ss_wts_ids], 'positions':merged_df['POS'], 
+#                                      'sids':merged_df['SID'], 'maf':merged_df['MAF'], 'res_df':res_chrom_df, 
+#                                      'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
 
     
     return chrom_res_dict
@@ -453,7 +458,6 @@ def count_ld_indep_regions(ss_file, res_file, ld_reg_map = '/project/PCMA/fastst
         bin_indices = sp.digitize(res_dict['positions'], chrom_bins)
         chrom_bin_dict[chrom_str]={'bin_indices':bin_indices, 'chrom_bins':chrom_bins, 'num_bins':len(chrom_bins)-1}
         
-    
         #Count things..
         print 'Counting hits'
         #assert len(chrom_bins)-1==bin_indices.max()+1, 'WTF?'
