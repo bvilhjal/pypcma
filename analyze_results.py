@@ -378,39 +378,44 @@ def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldete
     of.close()
         
         
-def parse_PCMA_results(ss_file,res_file, subset_ss_file=True):
+def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     #Parse ss file, get various information
-    ss_df = pandas.read_table(ss_file)
-    l = list(ss_df.columns)[4:]
-    num_ss = len(l)/2
+    ss_ps_df = pandas.read_table(ss_ps_file)
+    ss_zs_df = pandas.read_table(ss_zs_file)
+    ss_wts_df = pandas.read_table(ss_wt_file)
+    ss_zs_ids = list(ss_ps_df.columns)[6:]
+    ss_wts_ids = list(ss_ps_df.columns)[6:]
+    ss_ps_ids = list(ss_ps_df.columns)[6:]
+    num_ss = len(ss_ps_ids)
+    res_df = pandas.read_table(res_file)
     pc_ids = ['pvPC%d'%i for i in range(1,num_ss+1)]
     
-    ss_zs_ids = l[:num_ss]
-    ss_weights_ids = l[num_ss:]
-    if subset_ss_file:
-        #Identify shared SNPs
-        
-        #Filter
-        pass
-    else:
-        assert sp.all(ss_df['SID']==ss_df['SID']), 'The summary statistics and PCMA results file do not match.'
-        pass
-    
-    #Parse p-values from result file
-    res_df = pandas.read_table(res_file)
+    dupl_columns = ss_ps_df.columns[1:6]
     
     #Partition things by chromosome
     chrom_res_dict = {}
     for chrom in range(1,23):
+        res_chrom_df = res_df.loc[res_df['CHR']==chrom]
+        ok_sids = res_chrom_df['SID']
+        ss_ps_chrom_df = ss_ps_df.loc[ss_ps_df['CHR']==chrom]
+        ss_zs_chrom_df = ss_zs_df.loc[ss_zs_df['CHR']==chrom]
+        ss_wts_chrom_df = ss_wts_df.loc[ss_wts_df['CHR']==chrom]
+        use_cols = ss_ps_chrom_df.colums - dupl_columns
+        merged_df = res_chrom_df.merge(ss_ps_chrom_df[use_cols],on='SID')
+        use_cols = ss_zs_chrom_df.colums - dupl_columns
+        merged_df = merged_df.merge(ss_zs_chrom_df[use_cols],on='SID')
+        use_cols = ss_wts_chrom_df.colums - dupl_columns
+        merged_df = merged_df.merge(ss_wts_chrom_df[use_cols],on='SID')
+
+        print merged_df.colums
         chrom_str = 'chr%d'%chrom
-        chrom_filter = ss_df['Chromosome']==chrom
-        chrom_ss_df = ss_df[chrom_filter]
-        chrom_res_df = res_df[chrom_filter]
-        marg_ps = chrom_res_df[ss_zs_ids]
+        marg_ps = merged_df[ss_zs_ids]
         min_marg_ps = marg_ps.min(1)
-        chrom_res_dict[chrom_str] = {'zs':chrom_ss_df[ss_zs_ids],'weights':chrom_ss_df[ss_weights_ids], 'positions':chrom_ss_df['Position'], 
-                                     'sids':chrom_ss_df['SID'], 'maf':chrom_ss_df['EUR_MAF'], 'res_df':chrom_res_df.ix[:,1:-num_ss], 
-                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':chrom_res_df['pvCHI2'], 'pc_ps':chrom_res_df[pc_ids]}
+        chrom_res_dict[chrom_str] = {'zs':merged_df[ss_zs_ids],'weights':merged_df[ss_wts_ids], 'positions':merged_df['POS'], 
+                                     'sids':merged_df['SID'], 'maf':merged_df['MAF'], 'res_df':res_chrom_df, 
+                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
+
+    
     return chrom_res_dict
 
 
