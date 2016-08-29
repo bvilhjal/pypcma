@@ -395,6 +395,7 @@ def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     #Partition things by chromosome
     chrom_res_dict = {}
     for chrom in range(1,23):
+        print 'Working on chromosome %d'%chrom
         res_chrom_df = res_df.loc[res_df['CHR']==chrom]
         ok_sids = res_chrom_df['SID']
         ss_ps_chrom_df = ss_ps_df.loc[ss_ps_df['CHR']==chrom]
