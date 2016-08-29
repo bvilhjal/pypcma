@@ -409,6 +409,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
         use_cols = ss_ps_chrom_df.columns - dupl_columns
         merged_df = res_chrom_df.merge(ss_ps_chrom_df[use_cols],on='SID')
         print 'Merge done'
+        merged_df = merged_df[merged_df.SID!='SID']
 #         use_cols = ss_zs_chrom_df.colums - dupl_columns
 #         merged_df = merged_df.merge(ss_zs_chrom_df[use_cols],on='SID')
 #         print 'Merge 2 done'
