@@ -406,7 +406,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
 #         ss_wts_chrom_df = ss_wts_df.loc[ss_wts_df['CHR']==chrom]
         
         print 'Sub-sampled chromsomes, now merging'
-        use_cols = ss_ps_chrom_df.colums - dupl_columns
+        use_cols = ss_ps_chrom_df.columns - dupl_columns
         merged_df = res_chrom_df.merge(ss_ps_chrom_df[use_cols],on='SID')
         print 'Merge done'
 #         use_cols = ss_zs_chrom_df.colums - dupl_columns
