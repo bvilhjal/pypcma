@@ -419,8 +419,9 @@ def parse_PCMA_results(ss_ps_file, res_file):
         marg_ps = merged_df[ss_zs_ids]
         min_marg_ps = marg_ps.min(1)
         chrom_res_dict[chrom_str] = {'ps':merged_df[ss_ps_ids],'positions':merged_df['POS'], 
-                                     'sids':merged_df['SID'], 'maf':merged_df['MAF'], 'res_df':res_chrom_df, 
-                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
+                                     'sids':merged_df['SID'], 'maf':merged_df['MAF'],
+                                     'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 
+                                     'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
 #         chrom_res_dict[chrom_str] = {'zs':merged_df[ss_zs_ids],'weights':merged_df[ss_wts_ids], 'positions':merged_df['POS'], 
 #                                      'sids':merged_df['SID'], 'maf':merged_df['MAF'], 'res_df':res_chrom_df, 
 #                                      'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps, 'comb_ps':merged_df['pvCHI2'], 'pc_ps':merged_df[pc_ids]}
