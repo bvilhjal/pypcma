@@ -381,6 +381,7 @@ def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldete
 def parse_PCMA_results(ss_ps_file, res_file):
 # def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     #Parse ss file, get various information
+    print 'Starting to load data...'
     ss_ps_df = pandas.read_table(ss_ps_file)
     print 'Parsed p-value file'
 #     ss_zs_df = pandas.read_table(ss_zs_file)
@@ -389,7 +390,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
 #     ss_wts_ids = list(ss_ps_df.columns)[6:]
     ss_ps_ids = list(ss_ps_df.columns)[6:]
     num_ss = len(ss_ps_ids)
-    res_df = pandas.read_table(res_file)
+    res_df = pandas.read_csv(res_file)
     print 'Parsed results file'
     pc_ids = ['pvPC%d'%i for i in range(1,num_ss+1)]
     
