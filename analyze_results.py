@@ -382,7 +382,7 @@ def parse_PCMA_results(ss_ps_file, res_file):
 # def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
     #Parse ss file, get various information
     print 'Starting to load data...'
-    ss_ps_df = pandas.read_table(ss_ps_file)
+    ss_ps_df = pandas.read_table(ss_ps_file,delim_whitespace=True)
     print 'Parsed p-value file'
 #     ss_zs_df = pandas.read_table(ss_zs_file)
 #     ss_wts_df = pandas.read_table(ss_wt_file)
