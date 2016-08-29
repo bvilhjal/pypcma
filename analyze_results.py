@@ -22,7 +22,7 @@ def get_sid_pos_map(sids):
     for chrom_i in range(1,23):
         chrom_pos_dict[chrom_i] = [] 
     for chrom_i in range(1,23):
-        fn = '/Users/bjarnivilhjalmsson/data/1Kgenomes/ALL_1000G_phase1integrated_v3_chr%d_impute.legend.gz'%chrom_i
+        fn = '/project/PCMA/faststorage/1_DATA/1k_genomes/ALL_1000G_phase1integrated_v3_chr%d_impute.legend.gz'%chrom_i
         with gzip.open(fn) as f:
             f.next()
             for line in f:
@@ -37,7 +37,7 @@ def get_sid_pos_map(sids):
 
 
 
-def plot_manhattan(result_file,fig_filename='/project/data/tmp/manhattan_MVT.png',method='MVT'):
+def plot_manhattan(result_file,fig_filename='/project/PCMA/faststorage/2_RESULTS/figures/manhattan_all.png'):
     """
     Generates a Manhattan plot for the PCMA results...
     """
@@ -60,10 +60,8 @@ def plot_manhattan(result_file,fig_filename='/project/data/tmp/manhattan_MVT.png
         x_tick_lab.append(str(chrom_i))
     
     print 'Calculating X-axis positions'
-    if method=='MVT':
-        ps = sp.array(res.pvCHI2)
-    elif method=='combPC':
-        ps = sp.array(res.pvCPC)
+    ps = sp.array(res.pvCHI2)
+#         ps = sp.array(res.pvCPC)
     x_positions=sp.empty(len(ps))
     chromosomes=sp.empty(len(ps))
     for i, sid in enumerate(sids):
