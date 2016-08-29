@@ -37,12 +37,12 @@ def get_sid_pos_map(sids):
 
 
 
-def plot_manhattan(result_file,fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_MVT.png',method='MVT'):
+def plot_manhattan(result_file,fig_filename='/project/data/tmp/manhattan_MVT.png',method='MVT'):
     """
-Generates a Manhattan plot for the PCMA results...
+    Generates a Manhattan plot for the PCMA results...
     """
-    res = pandas.read_table(result_file)
-    sids = list(res.SNPid)
+    res = pandas.read_csv(result_file, delim_whitespace=True)
+    sids = list(res.SID)
     print 'Getting SNP positions from 1K Genomes data'
     d = get_sid_pos_map(sids)
     sid_map = d['sid_map']
@@ -61,9 +61,9 @@ Generates a Manhattan plot for the PCMA results...
     
     print 'Calculating X-axis positions'
     if method=='MVT':
-        ps = sp.array(res.pval)
+        ps = sp.array(res.pvCHI2)
     elif method=='combPC':
-        ps = sp.array(res.combPC)
+        ps = sp.array(res.pvCPC)
     x_positions=sp.empty(len(ps))
     chromosomes=sp.empty(len(ps))
     for i, sid in enumerate(sids):
