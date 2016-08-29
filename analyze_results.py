@@ -65,6 +65,8 @@ def plot_manhattan(result_file,fig_filename='/project/PCMA/faststorage/2_RESULTS
     x_positions=sp.empty(len(ps))
     chromosomes=sp.empty(len(ps))
     for i, sid in enumerate(sids):
+        if sid=='SID': 
+            continue
         chrom_i=sid_map[sid]['chrom']
         pos=sid_map[sid]['pos']
         x_offset = chrom_offset_dict[chrom_i]
