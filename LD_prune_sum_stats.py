@@ -341,7 +341,7 @@ if __name__=='__main__':
     
 def _clean_up_res_file_(in_file = '/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_comb_wo_weights_filtered.txt', 
                         out_file='/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_comb_wo_weights_filtered2.txt'):
-    with open(out_file) as of:
+    with open(out_file,'w') as of:
         with open(in_file) as f:
             of.write(f.next())
             for line_i, line in enumerate(f):
