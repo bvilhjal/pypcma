@@ -338,3 +338,18 @@ if __name__=='__main__':
     LD_prune_ss(coord_hdf5_file, zs_file_prefix_ld_pruned, KG_path=p_dict['1KGpath'], r2_thres=p_dict['LDthres'], ld_radius=p_dict['LDradius'])
     
     
+    
+def _clean_up_res_file_(in_file = '/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_comb_wo_weights_filtered.txt', 
+                        out_file='/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_comb_wo_weights_filtered.txt'):
+    with open(out_file) as of:
+        with open(in_file) as f:
+            of.write(f.next())
+            for line_i, line in enumerate(f):
+                if line.split()[1]=='SID':
+                    continue
+                of.write(line) 
+        
+    
+    
+    
+     

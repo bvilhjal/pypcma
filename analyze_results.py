@@ -297,68 +297,68 @@ def plot_overlap_ps(result_file, ss_file='/Users/bjarnivilhjalmsson/data/GIANT/G
     pylab.clf()
         
         
-def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
-                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
-                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
-                                           '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt'], 
-                   fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC_HGT.png', method='combPC', 
-                   ylabel='Comb. PC (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$', p_thres = 0.00001):
-    #Parse results ans SS file
-    res_table = pandas.read_table(result_file)
-    marg_ps_list = []
-    #Parse 
-    res_sids = sp.array(res_table['SNPid'])
-    if method=='MVT':
-        comb_ps = sp.array(res_table['pval'])
-    elif method=='combPC':
-        comb_ps = sp.array(res_table['combPC'])
-    for ss_file in ss_files:
-        ss_table = pandas.read_table(ss_file)
-        if 'MarkerName' in ss_table.keys():
-            ss_sids = sp.array(ss_table['MarkerName'])
-        elif 'SNP' in ss_table.keys():
-            ss_sids = sp.array(ss_table['SNP'])
-        else:
-            raise Exception("Don't know where to look for rs IDs")
-        marg_ps = sp.array(ss_table['p'])
-        marg_ps_list.append(marg_ps)
-    min_pvals = sp.minimum(sp.array(marg_ps_list))
-    # Filtering boring p-values
-    res_p_filter = comb_ps<p_thres
-    res_sids = res_sids[res_p_filter]
-    comb_ps = comb_ps[res_p_filter]
-#     ss_p_filter = marg_ps<p_thres
-#     ss_sids = ss_sids[ss_p_filter]
-#     marg_ps = marg_ps[ss_p_filter]
-    
-    common_sids = sp.intersect1d(res_sids, ss_sids)
-    print 'Found %d SNPs in common'%(len(common_sids))
-    ss_filter = sp.in1d(ss_sids, common_sids)
-    res_filter = sp.in1d(res_sids, common_sids)
-    
-    ss_sids = ss_sids[ss_filter]
-    res_sids = res_sids[res_filter]
-    marg_ps = marg_ps[ss_filter]
-    comb_ps = comb_ps[res_filter]
-    
-    print 'Now sorting'
-    ss_index = sp.argsort(ss_sids)
-    res_index = sp.argsort(res_sids)
-    
-    marg_ps=-sp.log10(marg_ps[ss_index])
-    comb_ps=-sp.log10(comb_ps[res_index])
-    
-    with pylab.style.context('fivethirtyeight'):
-        pylab.plot(marg_ps,comb_ps,'b.',alpha=0.2)
-        (x_min,x_max) = pylab.xlim()
-        (y_min,y_max) = pylab.ylim()
-        
-        pylab.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
-        pylab.ylabel(ylabel)
-        pylab.xlabel(xlabel)
-        pylab.tight_layout()
-        pylab.savefig(fig_filename)
-    pylab.clf()
+# def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+#                                            '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+#                                            '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
+#                                            '/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt'], 
+#                    fig_filename='/Users/bjarnivilhjalmsson/data/tmp/manhattan_combPC_HGT.png', method='combPC', 
+#                    ylabel='Comb. PC (HIP,WC,HGT,BMI) $-log_{10}(P$-value$)$', xlabel='Height $-log_{10}(P$-value$)$', p_thres = 0.00001):
+#     #Parse results ans SS file
+#     res_table = pandas.read_table(result_file)
+#     marg_ps_list = []
+#     #Parse 
+#     res_sids = sp.array(res_table['SNPid'])
+#     if method=='MVT':
+#         comb_ps = sp.array(res_table['pval'])
+#     elif method=='combPC':
+#         comb_ps = sp.array(res_table['combPC'])
+#     for ss_file in ss_files:
+#         ss_table = pandas.read_table(ss_file)
+#         if 'MarkerName' in ss_table.keys():
+#             ss_sids = sp.array(ss_table['MarkerName'])
+#         elif 'SNP' in ss_table.keys():
+#             ss_sids = sp.array(ss_table['SNP'])
+#         else:
+#             raise Exception("Don't know where to look for rs IDs")
+#         marg_ps = sp.array(ss_table['p'])
+#         marg_ps_list.append(marg_ps)
+#     min_pvals = sp.minimum(sp.array(marg_ps_list))
+#     # Filtering boring p-values
+#     res_p_filter = comb_ps<p_thres
+#     res_sids = res_sids[res_p_filter]
+#     comb_ps = comb_ps[res_p_filter]
+# #     ss_p_filter = marg_ps<p_thres
+# #     ss_sids = ss_sids[ss_p_filter]
+# #     marg_ps = marg_ps[ss_p_filter]
+#     
+#     common_sids = sp.intersect1d(res_sids, ss_sids)
+#     print 'Found %d SNPs in common'%(len(common_sids))
+#     ss_filter = sp.in1d(ss_sids, common_sids)
+#     res_filter = sp.in1d(res_sids, common_sids)
+#     
+#     ss_sids = ss_sids[ss_filter]
+#     res_sids = res_sids[res_filter]
+#     marg_ps = marg_ps[ss_filter]
+#     comb_ps = comb_ps[res_filter]
+#     
+#     print 'Now sorting'
+#     ss_index = sp.argsort(ss_sids)
+#     res_index = sp.argsort(res_sids)
+#     
+#     marg_ps=-sp.log10(marg_ps[ss_index])
+#     comb_ps=-sp.log10(comb_ps[res_index])
+#     
+#     with pylab.style.context('fivethirtyeight'):
+#         pylab.plot(marg_ps,comb_ps,'b.',alpha=0.2)
+#         (x_min,x_max) = pylab.xlim()
+#         (y_min,y_max) = pylab.ylim()
+#         
+#         pylab.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
+#         pylab.ylabel(ylabel)
+#         pylab.xlabel(xlabel)
+#         pylab.tight_layout()
+#         pylab.savefig(fig_filename)
+#     pylab.clf()
         
 
 def parse_ldetect_map(file_prefix= '/Users/bjarnivilhjalmsson/REPOS/others/ldetect-data/EUR/fourier_ls-', 
