@@ -345,7 +345,7 @@ def _clean_up_res_file_(in_file = '/home/bjarni/PCMA/faststorage/2_RESULTS/PCMA_
         with open(in_file) as f:
             of.write(f.next())
             for line_i, line in enumerate(f):
-                if line.split()[1]=='SID':
+                if line.split(',')[1]=='SID':
                     continue
                 of.write(line) 
         
