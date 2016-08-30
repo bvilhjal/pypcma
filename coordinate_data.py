@@ -1340,11 +1340,12 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             eur_mafs = snps_chrom_g['eur_mafs'][...]
             positions = snps_chrom_g['positions'][...]
             nts = snps_chrom_g['nts'][...]
-            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
-            for sums_id in sums_ids:
-                header_str += '%s_ZS    '%(sums_id)
-            header_str +='\n'
-            f.write(header_str)
+            if chrom ==1:
+                header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+                for sums_id in sums_ids:
+                    header_str += '%s_ZS    '%(sums_id)
+                header_str +='\n'
+                f.write(header_str)
             
             num_snps = len(sids)                
             sums_zs_dict = {}
@@ -1379,11 +1380,12 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             eur_mafs = snps_chrom_g['eur_mafs'][...]
             positions = snps_chrom_g['positions'][...]
             nts = snps_chrom_g['nts'][...]
-            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
-            for sums_id in sums_ids:
-                header_str += '%s_WEIGHT    '%(sums_id)
-            header_str +='\n'
-            f.write(header_str)
+            if chrom ==1:
+                header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+                for sums_id in sums_ids:
+                    header_str += '%s_WEIGHT    '%(sums_id)
+                header_str +='\n'
+                f.write(header_str)
             
             num_snps = len(sids)                
             sums_weights_dict = {}
@@ -1416,11 +1418,12 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
             eur_mafs = snps_chrom_g['eur_mafs'][...]
             positions = snps_chrom_g['positions'][...]
             nts = snps_chrom_g['nts'][...]
-            header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
-            for sums_id in sums_ids:
-                header_str += '%s_PS    '%(sums_id)
-            header_str +='\n'
-            f.write(header_str)
+            if chrom ==1:
+                header_str = 'SID    CHR    POS    MAF    NT1    NT2    '
+                for sums_id in sums_ids:
+                    header_str += '%s_PS    '%(sums_id)
+                header_str +='\n'
+                f.write(header_str)
             
             num_snps = len(sids)                
             sums_ps_dict = {}
