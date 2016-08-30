@@ -1326,8 +1326,12 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
 
 
 
-def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_file, sums_ids):
+def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_file, sums_ids=None):
     h5f = h5py.File(coord_hdf5_file,'r')
+    
+    if sums_ids is None:
+        sums_ids = h5f['sums_ids'][...]
+    
     
     print 'Generating Zs file'            
 
