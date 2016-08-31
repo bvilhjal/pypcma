@@ -1326,7 +1326,7 @@ def coordinate_sum_stats_w_missing(comb_hdf5_file, coord_hdf5_file, KGpath, filt
 
 
 
-def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_file, sums_ids=None):
+def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_file, sums_ids=['GIANT_BMI','GIANT_HEIGHT','GIANT_WC']):
     h5f = h5py.File(coord_hdf5_file,'r')
     
     if sums_ids is None:
@@ -1370,9 +1370,12 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
 #                     pval = snps_chrom_g[sums_id]['ps'][i]
                     zval = sums_zs_dict[sums_id][i]
 #                     weight = snps_chrom_g[sums_id]['weights'][i]
+                    if sp.isnan(zval):
+                        break
                     out_str += '%f   '%(zval)
-                out_str += '\n'
-                f.write(out_str)
+                else:
+                    out_str += '\n'
+                    f.write(out_str)
                 
     print 'Generating weights file'            
     with open(out_weight_file,'w') as f:
@@ -1408,9 +1411,13 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
                 out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
                 for sums_id in sums_ids:
                     weight = sums_weights_dict[sums_id][i]
+                    if sp.isnan(weight):
+                        break
                     out_str += '%f    '%(weight)
-                out_str += '\n'
-                f.write(out_str)
+                else:
+                    out_str += '\n'
+                    f.write(out_str)
+
             
     print 'Generating p-value file'            
     with open(out_ps_file,'w') as f:
@@ -1446,11 +1453,14 @@ def hdf5_coord_file_2_txt(coord_hdf5_file, out_zs_file, out_weight_file, out_ps_
                 out_str = '%s    %d    %d    %f    %s    %s    '%(sid,chrom,pos,maf,nt[0],nt[1])
                 for sums_id in sums_ids:
                     pval = sums_ps_dict[sums_id][i]
+                    if sp.isnan(weight):
+                        break
                     out_str += '%f   '%(pval)
-                out_str += '\n'
-                f.write(out_str)
-
+                else:
+                    out_str += '\n'
+                    f.write(out_str)
     h5f.close()
+
 
 
 def concatenate_ss_h5files(h5files, outfile, ss_labs = None):
