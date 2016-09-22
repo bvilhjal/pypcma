@@ -60,8 +60,6 @@ import random
 import getopt
 import os 
 
-print 'Tests'
-
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 ok_nts = set([('A', 'G'), ('G', 'A'), ('A', 'C'), ('C', 'A'),('G', 'T'), ('T', 'G'),('C', 'T'), ('T', 'C')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
