@@ -221,12 +221,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snp_means = snp_means[maf_filter]
         nts = nts[maf_filter]
         
-        nt_filter = sp.in1d(nts, ok_nts)
-        if not sp.all(nt_filter):
-            print 'Removing SNPs with missing NT information'
-            snps = snps[nt_filter]
-            snp_stds = snp_stds[nt_filter]
-            snp_means = snp_means[nt_filter]
+#         nt_filter = sp.in1d(nts, ok_nts)
+#         if not sp.all(nt_filter):
+#             print 'Removing SNPs with missing NT information'
+#             snps = snps[nt_filter]
+#             snp_stds = snp_stds[nt_filter]
+#             snp_means = snp_means[nt_filter]
         
         print '%d SNPs remaining' % len(snps)
         
@@ -470,7 +470,7 @@ def gen_1k_test_genotypes(kg_file='Data/1Kgenomes/1K_genomes_v3_EUR_unrelated2.h
 # For debugging purposes
 if __name__ == '__main__':        
     data_dir = '/home/bjarni/PCMA/faststorage/1Kgenomes/'
-    kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
+    kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/1K_genomes_v3_EUR_unrelated.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
                          maf_thres=0.01, debug_filter=0.05, indiv_filter_frac=0.5)
