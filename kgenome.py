@@ -231,7 +231,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snp_means = sp.mean(snps, 1)
         snp_means.shape = (len(snp_means), 1)
         snp_freqs = snp_means / 2
-        snp_stds = sp.sqrt((snp_freqs) * (1 - snp_freqs))
+        snp_stds = sp.std(snps, 1)
+        snp_means.shape = (len(snp_means), 1)
         norm_snps = (snps - snp_means) / snp_stds
         
         print 'Calculating chromosome kinship'
@@ -261,6 +262,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 chrom2_str = 'chr%d' % chrom
                 K_leave_one_out += chromosome_kinships[chrom2_str]['K_unscaled']
                 num_snps_used += chromosome_kinships[chrom2_str]['num_snps']
+                assert sp.isclose(sp.sum(sp.diag(K_leave_one_out)) / (len(num_snps_used) * num_indivs), 1.0), '..bug' 
         chromosome_kinships[chrom_str]['K_leave_one_out'] = K_leave_one_out / num_snps_used
         
     assert sp.sum((chromosome_kinships['chr1']['K_leave_one_out'] - chromosome_kinships['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
