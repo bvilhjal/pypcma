@@ -33,18 +33,26 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 
-def generate_1k_LD_scores(input_genotype_file, output_file, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
+def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
     
+    chrom_ld_scores_dict = {}
+    chrom_ld_dict = {}
+    if gm_ld_radius is not None:
+        chrom_ld_boundaries = {}
+    ld_score_sum = 0
+    num_snps = 0
+    print 'Calculating LD information w. radius %d' % ld_radius
+
     in_h5f = h5py.File(input_genotype_file)
     indiv_ids = in_h5f['indiv_ids'][...] 
     num_indivs = len(indiv_ids) - 1  # An ugly bug hack!!
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
-
-    chromosome_ld_dict = {}
+    n_snps = 0
+    
     print 'Calculating local LD'
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
@@ -83,21 +91,31 @@ def generate_1k_LD_scores(input_genotype_file, output_file, maf_thres=0.01, ld_r
         print '%d SNPs remaining' % len(snps)
         
         print 'Normalizing SNPs'
-#         snp_means = sp.mean(snps, 1)
-#         snp_means.shape = (len(snp_means), 1)
-#         snp_freqs = snp_means / 2
-#         snp_stds = sp.sqrt((snp_freqs) * (1 - snp_freqs))
         norm_snps = (snps - snp_means) / snp_stds
     
-        chromosome_ld_dict[chrom_str] = get_ld_tables(norm_snps, ld_radius=ld_radius,
-                                                      ld_window_size=0, gm=None, gm_ld_radius=None)
-
-    out_h5f = h5py.File(output_file)
+        if gm_ld_radius is not None:
+            assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
+            gm = in_h5f[chrom_str]['genetic_map'][...]
+            ret_dict = get_ld_tables(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
+            chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
+        else:
+            ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
+        chrom_ld_dict[chrom_str] = ret_dict['ld_dict']
+        ld_scores = ret_dict['ld_scores']
+        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ld_scores, 'avg_ld_score':sp.mean(ld_scores)}
+        ld_score_sum += sp.sum(ld_scores)
+        num_snps += n_snps
     
-    kgenome.dict_to_hdf5(chromosome_ld_dict, out_h5f)
-    out_h5f.close()
+    avg_gw_ld_score = ld_score_sum / float(num_snps)
+    ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'chrom_dict':chrom_ld_scores_dict}    
     
-    return chromosome_ld_dict
+    print 'Done calculating the LD table and LD scores.'
+    print 'Genome-wide average LD score was:', ld_scores_dict['avg_gw_ld_score']
+    ld_dict = {'ld_scores_dict':ld_scores_dict, 'chrom_ld_dict':chrom_ld_dict}
+    if gm_ld_radius is not None:
+        ld_dict['chrom_ld_boundaries'] = chrom_ld_boundaries 
+        
+    return ld_dict
     
 
 def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
@@ -148,7 +166,7 @@ def get_genotype_cov_mat():
     """
     
 
-def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=None):
+def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
     """
     Calculates LD tables, and the LD scores in one go, with or without a genetic map.
     
@@ -208,8 +226,6 @@ def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=N
         
         avg_window_size = sp.mean(window_sizes)
         print 'Average # of SNPs in LD window was %0.2f' % avg_window_size
-        if ld_window_size == 0:
-            ld_window_size = avg_window_size * 2
         ret_dict['ld_boundaries'] = ld_boundaries
     ret_dict['ld_dict'] = ld_dict
     ret_dict['ld_scores'] = ld_scores
