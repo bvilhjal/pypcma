@@ -163,8 +163,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
-        kinship_pca_dict = {}
-        hdf5_to_dict(k_h5f, kinship_pca_dict)
+        kinship_pca_dict = hdf5_to_dict(k_h5f)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
                                                 maf_thres=maf_thres, figure_dir=None, debug_filter=debug_filter)
