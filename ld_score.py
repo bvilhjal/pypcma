@@ -33,7 +33,8 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 
-def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
+def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats,
+                          gm_ld_radius=None, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
@@ -92,6 +93,10 @@ def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, m
         print 'Normalizing SNPs'
         norm_snps = (snps - snp_means) / snp_stds
     
+        if chrom_snp_trans_mats is not None:
+            snp_trans_mat = chrom_snp_trans_mats[chrom_str]
+            norm_snps = sp.dot(snp_trans_mat, norm_snps)
+    
         if gm_ld_radius is not None:
             assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
             gm = in_h5f[chrom_str]['genetic_map'][...]
@@ -116,16 +121,27 @@ def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, m
         
     return ld_dict
     
+    
+def get_popadj_snp_trans_mat(kinship):
+    return 
 
 def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
-                             ld_radius=200, maf_thres=0.01, debug_filter=0.01):
+                             ld_radius=200, maf_thres=0.01, debug_filter=0.05):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-#     kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, debug_filter=debug_filter)
+    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, debug_filter=debug_filter)
+    chrom_snp_trans_mats = {}
+    for chrom in range(1, 23):
+        print 'Working on Chromosome %d' % chrom
+        chrom_str = 'chr%d' % chrom
+        chrom_snp_trans_mats[chrom_str] = linalg.cholesky(linalg.pinv(kinship_pca_dict['chromosome_kinships'][chrom_str]['K_leave_one_out']))
+    
+    
     ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=debug_filter)
     
+
     # 6. a) Calculate LD score.
     # 6. b) Calculate population structure adjusted LD score.
     # 7. Store everything.  EVERYTHING!
