@@ -41,10 +41,12 @@ def dict_to_hdf5(input_dict, hdf5_group):
  
     
     
-def gen_unrelated_eur_1k_data(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/1K_genomes_v3_EUR_unrelated2.hdf5'):
+def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
+                              out_file='/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/1K_genomes_v3_EUR_unrelated.hdf5'):
     h5f = h5py.File()
     eur_filter = h5f['indivs']['continent'][...] == 'EUR'
     num_indivs = sp.sum(eur_filter)
+    print 'Number of individuals: %d', num_indivs
     K = sp.zeros((num_indivs, num_indivs), dtype='single')
     num_snps = 0
     print 'Calculating kinship'
@@ -256,18 +258,19 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     print ordered_evals[-10:] / sp.sum(ordered_evals)
     pcs = evecs[:, sort_indices]
 
-    plt.clf()    
     tot = sum(evals)
     var_exp = [(i / tot) * 100 for i in sorted(evals, reverse=True)]
     print 'Total variance explained:', sp.sum(var_exp)
 
-    plt.plot(pcs[0], pcs[1], 'k.')
-    plt.title("Overall PCA")
-    plt.xlabel('PC1')
-    plt.xlabel('PC2')
-    plt.tight_layout()
-    plt.savefig(figure_dir + '/' + figure_fn, format='pdf')
-    plt.clf()
+    if figure_dir is not None:
+        plt.clf()    
+        plt.plot(pcs[0], pcs[1], 'k.')
+        plt.title("Overall PCA")
+        plt.xlabel('PC1')
+        plt.xlabel('PC2')
+        plt.tight_layout()
+        plt.savefig(figure_dir + '/' + figure_fn, format='pdf')
+        plt.clf()
     
     return_data = {'pca_all_chromosomes':pcs}
     chromosome_pcs = {}
