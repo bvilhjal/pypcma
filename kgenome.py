@@ -171,7 +171,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
 
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
-                  maf_thres=0.1, figure_dir='', figure_fn='', debug_filter=1):
+                  maf_thres=0.1, figure_dir='', figure_fn='', debug_filter=1, indiv_filter_frac=0.5):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -180,6 +180,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
+    indiv_filter = sp.random.random(len(indiv_ids)) < indiv_filter_frac
     num_indivs = len(indiv_ids)  # An ugly bug hack!!
     chromosome_dict = {}
     
@@ -195,6 +196,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         print 'Loading SNPs'
         snps = in_h5f[chrom_str]['snps'][...]
+        snps = snps[:, indiv_filter]
         # filter non-europeans.
 #         print 'Filtering non-European individuals'
 #         snps = snps[:, eur_filter]
@@ -218,12 +220,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snp_means = snp_means[maf_filter]
         nts = nts[maf_filter]
         
-#         nt_filter = sp.in1d(nts, ok_nts)
-#         if not sp.all(nt_filter):
-#             print 'Removing SNPs with missing NT information'
-#             snps = snps[nt_filter]
-#             snp_stds = snp_stds[nt_filter]
-#             snp_means = snp_means[nt_filter]
+        nt_filter = sp.in1d(nts, ok_nts)
+        if not sp.all(nt_filter):
+            print 'Removing SNPs with missing NT information'
+            snps = snps[nt_filter]
+            snp_stds = snp_stds[nt_filter]
+            snp_means = snp_means[nt_filter]
         
         print '%d SNPs remaining' % len(snps)
         
@@ -470,6 +472,6 @@ if __name__ == '__main__':
     kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
-                         maf_thres=0.01, debug_filter=0.05)
+                         maf_thres=0.01, debug_filter=0.05, indiv_filter_frac=0.5)
 
 
