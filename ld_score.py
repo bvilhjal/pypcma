@@ -29,23 +29,82 @@ except Exception:
     import numpy as sp
     print 'Using Numpy instead of Scipy.'
     
+ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 
-
-def generate_1k_LD_scores(input_genotype_file, output_file, ld_radius=200,):
+def generate_1k_LD_scores(input_genotype_file, output_file, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
-    pass
+    
+    in_h5f = h5py.File(input_genotype_file)
+    indiv_ids = in_h5f['indiv_ids'][...] 
+    num_indivs = len(indiv_ids) - 1  # An ugly bug hack!!
+    
+    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
+    chromosome_ld_dict = {}
+    print 'Calculating local LD'
+    for chrom in range(1, 23):
+        print 'Working on Chromosome %d' % chrom
+        chrom_str = 'chr%d' % chrom
+        
+        
+        print 'Loading SNPs'
+        snps = in_h5f[chrom_str]['snps'][...]
+        snp_stds = in_h5f[chrom_str]['snp_stds'][...]
+        snp_means = in_h5f[chrom_str]['snp_means'][...]
+        nts = in_h5f[chrom_str]['nts'][...]
+        print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
+        
+        if debug_filter < 1:
+            debug_snp_filter = sp.random.random(len(snps)) < debug_filter
+        snps = snps[debug_snp_filter]
+        snp_stds = snp_stds[debug_snp_filter]
+        snp_means = snp_means[debug_snp_filter]
+        nts = nts[debug_snp_filter]
+
+        
+        print 'Filtering SNPs with MAF <', maf_thres
+        maf_filter = snp_stds.flatten() > std_thres
+        snps = snps[maf_filter]
+        snp_stds = snp_stds[maf_filter]
+        snp_means = snp_means[maf_filter]
+        nts = nts[maf_filter]
+        
+        nt_filter = sp.in1d(nts, ok_nts)
+        if not sp.all(nt_filter):
+            print 'Removing SNPs with missing NT information'
+            snps = snps[nt_filter]
+            snp_stds = snp_stds[nt_filter]
+            snp_means = snp_means[nt_filter]
+        
+        print '%d SNPs remaining' % len(snps)
+        
+        print 'Normalizing SNPs'
+#         snp_means = sp.mean(snps, 1)
+#         snp_means.shape = (len(snp_means), 1)
+#         snp_freqs = snp_means / 2
+#         snp_stds = sp.sqrt((snp_freqs) * (1 - snp_freqs))
+        norm_snps = (snps - snp_means) / snp_stds
+    
+        chromosome_ld_dict[chrom_str] = get_ld_tables(norm_snps, ld_radius=100, ld_window_size=0, gm=None, gm_ld_radius=None)
+
+    out_h5f = h5py.File(output_file)
+    
+    kgenome.dict_to_hdf5(chromosome_ld_dict, out_h5f)
+    out_h5f.close()
+    
+    return chromosome_ld_dict
+    
 
 def pre_calculate_everything(input_genotype_file, output_file, kinship_pca_file, ld_radius=200, ancestry='EUR'):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    
+    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file)
     
     # 6. a) Calculate LD score.
     # 6. b) Calculate population structure adjusted LD score.
@@ -89,6 +148,8 @@ def get_genotype_cov_mat():
 def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=None):
     """
     Calculates LD tables, and the LD scores in one go, with or without a genetic map.
+    
+    Assumes SNPs are standardized.
     """
     
     ld_dict = {}

@@ -29,12 +29,18 @@ def dict_to_hdf5(input_dict, hdf5_group):
     for key in input_dict:
         if isinstance(input_dict[key], dict):
             new_hdf5_group = hdf5_group.create_group(key)
-            dict_to_hdf5(new_hdf5_group, input_dict[key])
+            dict_to_hdf5(input_dict[key], new_hdf5_group)
         else:
             hdf5_group.create_dataset(key, data=input_dict[key])
             
-def hdf5_to_dict():
-    pass
+def hdf5_to_dict(hdf5_group, output_dict):
+    for key in hdf5_group.keys():
+        if isinstance(hdf5_group[key], h5py._hl.dataset.Dataset):
+            output_dict[key] = {}
+            hdf5_group.create_dataset(hdf5_group[key], output_dict[key])
+        else:
+            output_dict[key] = hdf5_group[key][...]
+            
     
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
@@ -157,16 +163,12 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file):
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
-        kinship_pca_dict = {'pca_all_chromosomes':k_h5f['pca_all_chromosomes'][...]}
-        chromosome_pcs = {}
-        for chrom in range(1, 23):
-            print 'Working on Chromosome %d' % chrom
-#             chrom_str = 'chr%d' % chrom
-#             kinship_pca_dict[chrom_str] = k_h5f[chrom_str]['K_leave_one_out'][...]
+        kinship_pca_dict = {}
+        hdf5_to_dict(k_h5f, kinship_pca_dict)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
                                                 maf_thres=0.01, figure_dir=None, debug_filter=0.1)
-        
+    return kinship_pca_dict
 
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
