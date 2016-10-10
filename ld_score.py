@@ -89,7 +89,8 @@ def generate_1k_LD_scores(input_genotype_file, output_file, maf_thres=0.01, ld_r
 #         snp_stds = sp.sqrt((snp_freqs) * (1 - snp_freqs))
         norm_snps = (snps - snp_means) / snp_stds
     
-        chromosome_ld_dict[chrom_str] = get_ld_tables(norm_snps, ld_radius=100, ld_window_size=0, gm=None, gm_ld_radius=None)
+        chromosome_ld_dict[chrom_str] = get_ld_tables(norm_snps, ld_radius=ld_radius,
+                                                      ld_window_size=0, gm=None, gm_ld_radius=None)
 
     out_h5f = h5py.File(output_file)
     
@@ -99,12 +100,14 @@ def generate_1k_LD_scores(input_genotype_file, output_file, maf_thres=0.01, ld_r
     return chromosome_ld_dict
     
 
-def pre_calculate_everything(input_genotype_file, output_file, kinship_pca_file, ld_radius=200, ancestry='EUR'):
+def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
+                             ld_radius=200, maf_thres=0.01, debug_filter=0.01):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file)
+#     kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, debug_filter=debug_filter)
+    ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=debug_filter)
     
     # 6. a) Calculate LD score.
     # 6. b) Calculate population structure adjusted LD score.
@@ -213,3 +216,10 @@ def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=N
 
     return ret_dict
 
+
+if __name__ == '__main__':
+    pre_calculate_everything('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
+                             '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
+                             '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
+                             '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
+                             ld_radius=100, maf_thres=0.01, debug_filter=0.01)
