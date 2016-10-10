@@ -182,20 +182,27 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         # filter non-europeans.
 #         print 'Filtering non-European individuals'
 #         snps = snps[:, eur_filter]
-        print 'Filtering SNPs with MAF <', maf_thres
         snp_stds = in_h5f[chrom_str]['snp_stds'][...]
+        snp_means = in_h5f[chrom_str]['snp_means'][...]
+        nts = in_h5f[chrom_str]['nts'][...]
+        print 'snps.shape: %d, snp_stds.shape: %d, snp_means.shape: %d' % (snps.shape, snp_stds.shape, snp_means.shape)
+        
+        print 'Filtering SNPs with MAF <', maf_thres
         maf_filter = snp_stds > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
-        print 'Filter SNPs with missing NT information'
-        nts = in_h5f[chrom_str]['nts'][...]
+        snp_means = snp_means[maf_filter]
+        
         nts = nts[maf_filter]
-        nt_filter = sp.all(sp.in1d(nts, ok_nts))
-        snps = snps[nt_filter]
-        snp_stds = snp_stds[nt_filter]
+        nt_filter = sp.in1d(nts, ok_nts)
+        if not sp.all(nt_filter):
+            print 'Filter SNPs with missing NT information'
+            snps = snps[nt_filter]
+            snp_stds = snp_stds[nt_filter]
+            snp_means = snp_means[nt_filter]
+        
         print 'Normalizing SNPs'
-        snp_means = in_h5f[chrom_str]['snp_means'][...]
-        norm_snps = (snps - snp_means[sp.newaxis].T) / snp_stds[sp.newaxis].T
+        norm_snps = (snps - snp_means) / snp_stds
         
         print 'Calculating chromosome kinship'
         K_unscaled = sp.dot(norm_snps.T, norm_snps)
