@@ -453,9 +453,10 @@ def gen_1k_test_genotypes(kg_file='Data/1Kgenomes/1K_genomes_v3_EUR_unrelated2.h
         
 # For debugging purposes
 if __name__ == '__main__':        
-    data_dir = '/home/bjarni/TheHonestGene/faststorage/1Kgenomes/'
-    kinship_pca_dict = calc_kinship(data_dir + '1K_genomes_v3_EUR_unrelated.hdf5',
-                         out_file=data_dir + 'unrelated_kinships_pca.hdf5', figure_dir='/home/bjarni/tmp', figure_fn='test.png',
+    data_dir = '/home/bjarni/PCMA/faststorage/1Kgenomes/'
+    kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
+                         out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
+                         figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
                          debug_filter=0.05)
 
 
