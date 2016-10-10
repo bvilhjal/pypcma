@@ -164,6 +164,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
     num_indivs = sp.sum(eur_filter)
     chromosome_kinships = {}
+    
+    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
     K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='single')
     num_all_snps = 0
@@ -178,14 +180,14 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         # filter non-europeans.
         print 'Filtering non-European individuals'
         snps = snps[:, eur_filter]
-        print 'Filtering monomorphic SNPs'
+        print 'Filtering SNPs with MAF <', maf_thres
         snp_stds = sp.std(snps, 1)
-        mono_morph_filter = snp_stds > 0
-        snps = snps[mono_morph_filter]
-        snp_stds = snp_stds[mono_morph_filter]
+        maf_filter = snp_stds > std_thres
+        snps = snps[maf_filter]
+        snp_stds = snp_stds[maf_filter]
         print 'Filter SNPs with missing NT information'
         nts = in_h5f[chrom_str]['nts'][...]
-        nts = nts[mono_morph_filter]
+        nts = nts[maf_filter]
         nt_filter = sp.all(nts > 0, 1)
         snps = snps[nt_filter]
         snp_stds = snp_stds[nt_filter]
