@@ -161,8 +161,10 @@ def gen_unrelated_eur_1k_data(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , o
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
                   maf_thres=0.01, figure_dir='', figure_fn=''):
     in_h5f = h5py.File(input_file)
-    eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
-    num_indivs = sp.sum(eur_filter)
+#     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
+#     num_indivs = sp.sum(eur_filter)
+    indiv_ids = in_h5f['indiv_ids'][...] 
+    num_indivs = sp.sum(indiv_ids)
     chromosome_kinships = {}
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
@@ -178,8 +180,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Loading SNPs'
         snps = in_h5f[chrom_str]['raw_snps'][...]
         # filter non-europeans.
-        print 'Filtering non-European individuals'
-        snps = snps[:, eur_filter]
+#         print 'Filtering non-European individuals'
+#         snps = snps[:, eur_filter]
         print 'Filtering SNPs with MAF <', maf_thres
         snp_stds = sp.std(snps, 1)
         maf_filter = snp_stds > std_thres
