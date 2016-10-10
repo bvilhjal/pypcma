@@ -43,6 +43,7 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
     if gm_ld_radius is not None:
         chrom_ld_boundaries = {}
     ld_score_sum = 0
+    struct_adj_ld_score_sum = 0
     num_snps = 0
     print 'Calculating LD information w. radius %d' % ld_radius
 
@@ -102,7 +103,6 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
         chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
         ld_score_sum += sp.sum(ret_dict['ld_scores'])
 
-        
         if chrom_snp_trans_mats is not None:
             snp_trans_mat = chrom_snp_trans_mats[chrom_str]
             norm_snps = sp.dot(snp_trans_mat, norm_snps)
@@ -115,8 +115,9 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
             else:
                 ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
             
-        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
-        ld_score_sum += sp.sum(ret_dict['ld_scores'])
+            chrom_ld_scores_dict[chrom_str]['struct_adj_ld_scores'] = ret_dict['ld_scores']
+            chrom_ld_scores_dict[chrom_str]['avg_struct_adj_ld_score'] = sp.mean(ret_dict['ld_scores'])
+            struct_adj_ld_score_sum += sp.sum(ret_dict['ld_scores'])
             
         num_snps += len(norm_snps)
     
