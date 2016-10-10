@@ -34,6 +34,7 @@ def dict_to_hdf5(input_dict, hdf5_group):
             hdf5_group.create_dataset(key, data=input_dict[key])
             
 def hdf5_to_dict():
+    pass
     
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
