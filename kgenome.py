@@ -6,16 +6,15 @@ from itertools import izip
 import cPickle
 import gzip
 
-from matplotlib import pyplot as plt
 from scipy import linalg
 import h5py
-import matplotlib
-import pylab
 
 import scipy as sp
 
 
-matplotlib.use('Agg')
+
+
+
 
 
 
@@ -160,6 +159,10 @@ def gen_unrelated_eur_1k_data(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , o
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
                   maf_thres=0.01, figure_dir='', figure_fn=''):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+
     in_h5f = h5py.File(input_file)
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
@@ -196,7 +199,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         nts = nts[maf_filter]
         nt_filter = sp.in1d(nts, ok_nts)
         if not sp.all(nt_filter):
-            print 'Filter SNPs with missing NT information'
+            print 'Removing SNPs with missing NT information'
             snps = snps[nt_filter]
             snp_stds = snp_stds[nt_filter]
             snp_means = snp_means[nt_filter]
@@ -209,12 +212,15 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Calculating chromosome kinship'
         K_unscaled = sp.dot(norm_snps.T, norm_snps)
         
+        assert sp.sum(sp.diag(K_unscaled)) / len(norm_snps) == 1, '..bug'and 
+        
         print 'Storing and updating kinships'
         chromosome_kinships[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps)}
         
         K_all_snps += K_unscaled
         num_all_snps += len(norm_snps)
     K_all_snps = K_all_snps / float(num_all_snps)
+    print 'K_all_snps.shape: %s'%str(K_all_snps.shape)
     print 'Full kinship calculation done using %d SNPs\n' % num_all_snps
 
     in_h5f.close()
@@ -240,18 +246,18 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     print ordered_evals[-10:] / sp.sum(ordered_evals)
     pcs = evecs[:, sort_indices]
 
-    pylab.clf()    
+    plt.clf()    
     tot = sum(evals)
     var_exp = [(i / tot) * 100 for i in sorted(evals, reverse=True)]
     print 'Total variance explained:', sp.sum(var_exp)
 
-    pylab.plot(pcs[0], pcs[1], 'k.')
-    pylab.title("Overall PCA")
-    pylab.xlabel('PC1')
-    pylab.xlabel('PC2')
-    pylab.tight_layout()
-    pylab.savefig(figure_dir + '/' + figure_fn, format='pdf')
-    pylab.clf()
+    plt.plot(pcs[0], pcs[1], 'k.')
+    plt.title("Overall PCA")
+    plt.xlabel('PC1')
+    plt.xlabel('PC2')
+    plt.tight_layout()
+    plt.savefig(figure_dir + '/' + figure_fn, format='pdf')
+    plt.clf()
     
     return_data = {'pca_all_chromosomes':pcs}
     chromosome_pcs = {}

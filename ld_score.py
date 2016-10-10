@@ -8,13 +8,7 @@ Re-implementation of LD score regression (Bulik-Sullivan et al., Nat Genet 2015)
 3. Implement heritability estimation.
 4. Implement genetic correlation estimation.
 """
-
-try: 
-    import scipy as sp
-except Exception:
-    print 'Using Numpy instead of Scipy.'
-    import numpy as sp
-    
+from itertools import izip
 import cPickle
 import os
 import pdb
@@ -24,9 +18,18 @@ import time
 
 from numpy import linalg 
 from plinkio import plinkfile
+import h5py
 import plinkio
 
-import itertools as it
+
+try: 
+    import scipy as sp
+except Exception:
+    import numpy as sp
+    print 'Using Numpy instead of Scipy.'
+    
+
+
 
 
 def generate_1k_LD_scores(input_genotype_file, output_file, ld_radius=200,):
@@ -36,17 +39,17 @@ def generate_1k_LD_scores(input_genotype_file, output_file, ld_radius=200,):
     pass
 
 
-def pre_calculate_everything(input_genotype_file, output_file, ld_radius=200, ancestry='EUR'):
+def pre_calculate_everything(input_genotype_file, output_file, kinship_pca_file, ld_radius=200, ancestry='EUR'):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    # 1. Parse 1K genomes
-    # 2. Filter by ancestry
-    # 3. Calculate 1K genomes kinship and filter related individuals.  (all done in imputation)
-    # 4. Filter SNPs w MAF<1%
-    # 5. On filtered 1K genomes data, generate leave-one-out chromosome kinships/SNP covariance matrices.
-    #    - While you're at it calculate leave-one chromosome out PCA.
+    if os.path.isfile(kinship_pca_file):
+        print ':Loading Kinship and PCA information from %s' % kinship_pca_file
+    
+    k_h5f = h5py.File(kinship_pca_file)
+    
+    
     # 6. a) Calculate LD score.
     # 6. b) Calculate population structure adjusted LD score.
     # 7. Store everything.  EVERYTHING!
