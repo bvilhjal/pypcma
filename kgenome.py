@@ -191,7 +191,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
         
         print 'Filtering SNPs with MAF <', maf_thres
-        maf_filter = snp_stds > std_thres
+        maf_filter = snp_stds.flatten() > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
         snp_means = snp_means[maf_filter]
