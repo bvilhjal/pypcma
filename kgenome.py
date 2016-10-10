@@ -43,7 +43,7 @@ def dict_to_hdf5(input_dict, hdf5_group):
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
                               out_file='/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/1K_genomes_v3_EUR_unrelated.hdf5'):
-    h5f = h5py.File()
+    h5f = h5py.File(input_file)
     eur_filter = h5f['indivs']['continent'][...] == 'EUR'
     num_indivs = sp.sum(eur_filter)
     print 'Number of individuals: %d', num_indivs
