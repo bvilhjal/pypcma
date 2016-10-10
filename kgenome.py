@@ -267,9 +267,9 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     print 'Calculating PCAs'
     evals, evecs = linalg.eig(K_all_snps)  # PCA via eigen decomp
     evals[evals < 0] = 0
-    sort_indices = sp.argsort(evals,)
+    sort_indices = sp.argsort(evals,)[::-1]
     ordered_evals = evals[sort_indices]
-    print ordered_evals[-10:] / sp.sum(ordered_evals)
+    print ordered_evals[:10] / sp.sum(ordered_evals)
     pcs = evecs[:, sort_indices]
 
     tot = sum(evals)
@@ -278,7 +278,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 
     if figure_dir is not None:
         plt.clf()    
-        plt.plot(pcs[:, -1], pcs[:, -2], 'k.')
+        plt.plot(pcs[:, 0], pcs[:, 1], 'k.')
         plt.title("Overall PCA")
         plt.xlabel('PC1')
         plt.xlabel('PC2')
