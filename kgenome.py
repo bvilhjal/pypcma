@@ -201,6 +201,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
             snp_stds = snp_stds[nt_filter]
             snp_means = snp_means[nt_filter]
         
+        print '%d SNPs remaining' % len(snps)
+        
         print 'Normalizing SNPs'
         norm_snps = (snps - snp_means) / snp_stds
         
