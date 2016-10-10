@@ -181,6 +181,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
     indiv_filter = sp.random.random(len(indiv_ids)) < indiv_filter_frac
+    indiv_ids = indiv_ids[indiv_filter]
     num_indivs = len(indiv_ids)  # An ugly bug hack!!
     chromosome_dict = {}
     
