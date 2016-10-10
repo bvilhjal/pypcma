@@ -159,7 +159,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     oh5f.close()
     h5f.close()
     
-def get_kinship_pca_dict(input_genotype_file, kinship_pca_file):
+def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug_filter):
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
@@ -167,7 +167,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file):
         hdf5_to_dict(k_h5f, kinship_pca_dict)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
-                                                maf_thres=0.01, figure_dir=None, debug_filter=0.1)
+                                                maf_thres=maf_thres, figure_dir=None, debug_filter=debug_filter)
     return kinship_pca_dict
 
     
