@@ -471,6 +471,6 @@ if __name__ == '__main__':
     kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
-                         debug_filter=0.01)
+                         debug_filter=0.1)
 
 
