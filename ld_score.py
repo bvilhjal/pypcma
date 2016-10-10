@@ -156,7 +156,7 @@ def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=N
     """
     
     ld_dict = {}
-    m, n = snps.size
+    m, n = snps.shape
     print m, n
     ld_scores = sp.ones(m)
     ret_dict = {}
