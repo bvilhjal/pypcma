@@ -160,7 +160,7 @@ def gen_unrelated_eur_1k_data(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , o
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
                   maf_thres=0.01, figure_dir='', figure_fn=''):
-    in_h5f = h5py.File()
+    in_h5f = h5py.File(input_file)
     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
     num_indivs = sp.sum(eur_filter)
     chromosome_kinships = {}
