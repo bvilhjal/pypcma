@@ -232,7 +232,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snp_means.shape = (len(snp_means), 1)
 #         snp_freqs = snp_means / 2
         snp_stds = sp.std(snps, 1)
-        snp_means.shape = (len(snp_stds), 1)
+        snp_stds.shape = (len(snp_stds), 1)
         norm_snps = (snps - snp_means) / snp_stds
         
         print 'Calculating chromosome kinship'
