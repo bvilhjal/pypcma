@@ -158,7 +158,7 @@ def gen_unrelated_eur_1k_data(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , o
     
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
-                  maf_thres=0.01, figure_dir='', figure_fn=''):
+                  maf_thres=0.01, figure_dir='', figure_fn='', debug_filter=1):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -190,13 +190,21 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         nts = in_h5f[chrom_str]['nts'][...]
         print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
         
+        if debug_filter < 1:
+            debug_snp_filter = sp.random.random(len(snps)) < debug_filter
+        snps = snps[debug_snp_filter]
+        snp_stds = snp_stds[debug_snp_filter]
+        snp_means = snp_means[debug_snp_filter]
+        nts = nts[debug_snp_filter]
+
+        
         print 'Filtering SNPs with MAF <', maf_thres
         maf_filter = snp_stds.flatten() > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
         snp_means = snp_means[maf_filter]
-        
         nts = nts[maf_filter]
+        
         nt_filter = sp.in1d(nts, ok_nts)
         if not sp.all(nt_filter):
             print 'Removing SNPs with missing NT information'
@@ -440,6 +448,9 @@ def gen_1k_test_genotypes(kg_file='Data/1Kgenomes/1K_genomes_v3_EUR_unrelated2.h
         
 # For debugging purposes
 if __name__ == '__main__':        
-    gen_1k_test_genotypes()
+    data_dir = '/home/bjarni/TheHonestGene/faststorage/1Kgenomes/'
+    kinship_pca_dict = calc_kinship(data_dir + '1K_genomes_v3_EUR_unrelated.hdf5',
+                         out_file=data_dir + 'unrelated_kinships_pca.hdf5', figure_dir='/home/bjarni/tmp', figure_fn='test.png',
+                         debug_filter=0.05)
 
 
