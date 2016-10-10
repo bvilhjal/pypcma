@@ -13,7 +13,7 @@ import h5py
 import scipy as sp
 
 
-__updated__ = '2016-10-10'
+__updated__ = '2016-10-11'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -181,6 +181,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
     indiv_filter = sp.random.random(len(indiv_ids)) < indiv_filter_frac
+    indiv_filter[0] = False
     indiv_ids = indiv_ids[indiv_filter]
     num_indivs = len(indiv_ids)  # An ugly bug hack!!
     chromosome_dict = {}
