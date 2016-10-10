@@ -33,14 +33,14 @@ def dict_to_hdf5(input_dict, hdf5_group):
         else:
             hdf5_group.create_dataset(key, data=input_dict[key])
             
-def hdf5_to_dict(hdf5_group, output_dict):
+def hdf5_to_dict(hdf5_group):
+    output_dict = {}
     for key in hdf5_group.keys():
         if isinstance(hdf5_group[key], h5py._hl.dataset.Dataset):
-            output_dict[key] = {}
-            hdf5_group.create_dataset(hdf5_group[key], output_dict[key])
+            output_dict[key] = hdf5_to_dict(hdf5_group[key])
         else:
             output_dict[key] = hdf5_group[key][...]
-            
+    return output_dict
     
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,

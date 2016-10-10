@@ -213,8 +213,9 @@ def get_ld_tables(snps, ld_radius=500, ld_window_size=0, gm=None, gm_ld_radius=N
         ret_dict['ld_boundaries'] = ld_boundaries
     ret_dict['ld_dict'] = ld_dict
     ret_dict['ld_scores'] = ld_scores
-
+    
     return ret_dict
+
 
 
 if __name__ == '__main__':
