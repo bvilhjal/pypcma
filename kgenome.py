@@ -218,12 +218,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snp_means = snp_means[maf_filter]
         nts = nts[maf_filter]
         
-        nt_filter = sp.in1d(nts, ok_nts)
-        if not sp.all(nt_filter):
-            print 'Removing SNPs with missing NT information'
-            snps = snps[nt_filter]
-            snp_stds = snp_stds[nt_filter]
-            snp_means = snp_means[nt_filter]
+#         nt_filter = sp.in1d(nts, ok_nts)
+#         if not sp.all(nt_filter):
+#             print 'Removing SNPs with missing NT information'
+#             snps = snps[nt_filter]
+#             snp_stds = snp_stds[nt_filter]
+#             snp_means = snp_means[nt_filter]
         
         print '%d SNPs remaining' % len(snps)
         
