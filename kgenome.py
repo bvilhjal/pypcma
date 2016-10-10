@@ -178,12 +178,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         
         print 'Loading SNPs'
-        snps = in_h5f[chrom_str]['raw_snps'][...]
+        snps = in_h5f[chrom_str]['snps'][...]
         # filter non-europeans.
 #         print 'Filtering non-European individuals'
 #         snps = snps[:, eur_filter]
         print 'Filtering SNPs with MAF <', maf_thres
-        snp_stds = sp.std(snps, 1)
+        snp_stds = in_h5f[chrom_str]['snp_stds'][...]
         maf_filter = snp_stds > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
@@ -194,7 +194,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         snps = snps[nt_filter]
         snp_stds = snp_stds[nt_filter]
         print 'Normalizing SNPs'
-        snp_means = sp.mean(snps, 1)
+        snp_means = in_h5f[chrom_str]['snp_means'][...]
         norm_snps = (snps - snp_means[sp.newaxis].T) / snp_stds[sp.newaxis].T
         
         print 'Calculating chromosome kinship'
