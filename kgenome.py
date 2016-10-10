@@ -37,9 +37,9 @@ def hdf5_to_dict(hdf5_group):
     output_dict = {}
     for key in hdf5_group.keys():
         if isinstance(hdf5_group[key], h5py._hl.group.Group):
-            output_dict[key] = hdf5_group[key][...]
-        else:
             output_dict[key] = hdf5_to_dict(hdf5_group[key])
+        else:
+            output_dict[key] = hdf5_group[key][...]
     return output_dict
     
     
