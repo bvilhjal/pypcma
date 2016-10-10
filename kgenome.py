@@ -201,16 +201,22 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         # filter non-europeans.
 #         print 'Filtering non-European individuals'
 #         snps = snps[:, eur_filter]
-        snp_stds = in_h5f[chrom_str]['snp_stds'][...]
-        snp_means = in_h5f[chrom_str]['snp_means'][...]
+#         snp_stds = in_h5f[chrom_str]['snp_stds'][...]
+#         snp_means = in_h5f[chrom_str]['snp_means'][...]
         nts = in_h5f[chrom_str]['nts'][...]
-        print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
+#         print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
         
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
         snps = snps[debug_snp_filter]
-        snp_stds = snp_stds[debug_snp_filter]
-        snp_means = snp_means[debug_snp_filter]
+        snp_means = sp.mean(snps, 1)
+        snp_means.shape = (len(snp_means), 1)
+#         snp_freqs = snp_means / 2
+        snp_stds = sp.std(snps, 1)
+        snp_stds.shape = (len(snp_stds), 1)
+        
+#         snp_stds = snp_stds[debug_snp_filter]
+#         snp_means = snp_means[debug_snp_filter]
         nts = nts[debug_snp_filter]
 
         
@@ -231,11 +237,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print '%d SNPs remaining' % len(snps)
         
         print 'Normalizing SNPs'
-        snp_means = sp.mean(snps, 1)
-        snp_means.shape = (len(snp_means), 1)
-#         snp_freqs = snp_means / 2
-        snp_stds = sp.std(snps, 1)
-        snp_stds.shape = (len(snp_stds), 1)
+        
         norm_snps = (snps - snp_means) / snp_stds
         
         print 'Calculating chromosome kinship'
