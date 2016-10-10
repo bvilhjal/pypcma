@@ -40,7 +40,6 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
     """
     
     chrom_ld_scores_dict = {}
-    chrom_ld_dict = {}
     if gm_ld_radius is not None:
         chrom_ld_boundaries = {}
     ld_score_sum = 0
@@ -93,10 +92,6 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
         print 'Normalizing SNPs'
         norm_snps = (snps - snp_means) / snp_stds
     
-        if chrom_snp_trans_mats is not None:
-            snp_trans_mat = chrom_snp_trans_mats[chrom_str]
-            norm_snps = sp.dot(snp_trans_mat, norm_snps)
-    
         if gm_ld_radius is not None:
             assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
             gm = in_h5f[chrom_str]['genetic_map'][...]
@@ -104,10 +99,25 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
             chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
         else:
             ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
-        chrom_ld_dict[chrom_str] = ret_dict['ld_dict']
-        ld_scores = ret_dict['ld_scores']
-        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ld_scores, 'avg_ld_score':sp.mean(ld_scores)}
-        ld_score_sum += sp.sum(ld_scores)
+        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
+        ld_score_sum += sp.sum(ret_dict['ld_scores'])
+
+        
+        if chrom_snp_trans_mats is not None:
+            snp_trans_mat = chrom_snp_trans_mats[chrom_str]
+            norm_snps = sp.dot(snp_trans_mat, norm_snps)
+    
+            if gm_ld_radius is not None:
+                assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
+                gm = in_h5f[chrom_str]['genetic_map'][...]
+                ret_dict = get_ld_tables(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
+                chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
+            else:
+                ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
+            
+        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
+        ld_score_sum += sp.sum(ret_dict['ld_scores'])
+            
         num_snps += len(norm_snps)
     
     avg_gw_ld_score = ld_score_sum / float(num_snps)
@@ -188,7 +198,6 @@ def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
     Assumes SNPs are standardized.
     """
     
-    ld_dict = {}
     m, n = snps.shape
     print m, n
     ld_scores = sp.ones(m)
@@ -201,7 +210,6 @@ def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
             X = snps[start_i: stop_i]
             D_i = sp.dot(snp, X.T) / n
             r2s = D_i ** 2
-            ld_dict[snp_i] = D_i
             lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
             # lds_i = sp.sum(r2s - (1-r2s)*empirical_null_r2)
             ld_scores[snp_i] = lds_i
@@ -234,15 +242,12 @@ def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
             X = snps[start_i: stop_i]
             D_i = sp.dot(snp, X.T) / n
             r2s = D_i ** 2
-            ld_dict[snp_i] = D_i
             lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
-#             lds_i = sp.sum(r2s - (1-r2s)*empirical_null_r2)
             ld_scores[snp_i] = lds_i
         
         avg_window_size = sp.mean(window_sizes)
         print 'Average # of SNPs in LD window was %0.2f' % avg_window_size
         ret_dict['ld_boundaries'] = ld_boundaries
-    ret_dict['ld_dict'] = ld_dict
     ret_dict['ld_scores'] = ld_scores
     
     return ret_dict
@@ -253,5 +258,5 @@ if __name__ == '__main__':
     pre_calculate_everything('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
-                             '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
-                             ld_radius=100, maf_thres=0.01, debug_filter=0.01)
+                             '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.05.hdf5',
+                             ld_radius=100, maf_thres=0.01, debug_filter=0.05)
