@@ -45,13 +45,7 @@ def pre_calculate_everything(input_genotype_file, output_file, kinship_pca_file,
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    if os.path.isfile(kinship_pca_file):
-        print ':Loading Kinship and PCA information from %s' % kinship_pca_file
-        k_h5f = h5py.File(kinship_pca_file)
-        kinship_pca_dict = {}
-    else:
-        kinship_pca_dict = kgenome.calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
-                  maf_thres=0.01, figure_dir=None, debug_filter=0.1)
+    
     
     # 6. a) Calculate LD score.
     # 6. b) Calculate population structure adjusted LD score.

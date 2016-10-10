@@ -5,17 +5,12 @@ Methods for analysing 1000 genomes data.
 from itertools import izip
 import cPickle
 import gzip
+import os
 
 from scipy import linalg
 import h5py
 
 import scipy as sp
-
-
-
-
-
-
 
 
 __updated__ = '2016-10-10'
@@ -38,7 +33,7 @@ def dict_to_hdf5(input_dict, hdf5_group):
         else:
             hdf5_group.create_dataset(key, data=input_dict[key])
             
- 
+def hdf5_to_dict():
     
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
@@ -157,10 +152,24 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     oh5f.close()
     h5f.close()
     
-    
+def get_kinship_pca_dict(input_genotype_file, kinship_pca_file):
+    if os.path.isfile(kinship_pca_file):
+        print ':Loading Kinship and PCA information from %s' % kinship_pca_file
+        k_h5f = h5py.File(kinship_pca_file)
+        kinship_pca_dict = {'pca_all_chromosomes':k_h5f['pca_all_chromosomes'][...]}
+        chromosome_pcs = {}
+        for chrom in range(1, 23):
+            print 'Working on Chromosome %d' % chrom
+            chrom_str = 'chr%d' % chrom
+            kinship_pca_dict[] = k_h5f[chrom_str]['K_leave_one_out'][...]
+    else:
+        kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
+                                                maf_thres=0.01, figure_dir=None, debug_filter=0.1)
+        
+
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
-                  maf_thres=0.01, figure_dir='', figure_fn='', debug_filter=1):
+                  maf_thres=0.1, figure_dir='', figure_fn='', debug_filter=1):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -461,6 +470,6 @@ if __name__ == '__main__':
     kinship_pca_dict = calc_kinship('/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/phase3/1k_genomes_unrelated.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
-                         debug_filter=0.05)
+                         debug_filter=0.01)
 
 
