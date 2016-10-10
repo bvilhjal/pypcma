@@ -190,7 +190,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Filter SNPs with missing NT information'
         nts = in_h5f[chrom_str]['nts'][...]
         nts = nts[maf_filter]
-        nt_filter = sp.all(nt in ok_nts)
+        nt_filter = sp.all(nts in ok_nts)
         snps = snps[nt_filter]
         snp_stds = snp_stds[nt_filter]
         print 'Normalizing SNPs'
