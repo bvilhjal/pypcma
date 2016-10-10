@@ -51,7 +51,6 @@ def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, m
     num_indivs = len(indiv_ids) - 1  # An ugly bug hack!!
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
-    n_snps = 0
     
     print 'Calculating local LD'
     for chrom in range(1, 23):
@@ -104,7 +103,7 @@ def generate_1k_LD_scores(input_genotype_file, output_file, gm_ld_radius=None, m
         ld_scores = ret_dict['ld_scores']
         chrom_ld_scores_dict[chrom_str] = {'ld_scores':ld_scores, 'avg_ld_score':sp.mean(ld_scores)}
         ld_score_sum += sp.sum(ld_scores)
-        num_snps += n_snps
+        num_snps += len(norm_snps)
     
     avg_gw_ld_score = ld_score_sum / float(num_snps)
     ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'chrom_dict':chrom_ld_scores_dict}    
