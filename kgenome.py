@@ -180,7 +180,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
-    num_indivs = len(indiv_ids) - 1  # An ugly bug hack!!
+    num_indivs = len(indiv_ids)  # An ugly bug hack!!
     chromosome_dict = {}
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
