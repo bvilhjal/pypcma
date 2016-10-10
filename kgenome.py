@@ -24,7 +24,7 @@ __updated__ = '2016-10-10'
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 Kg_nt_decoder = {1:'A', 2:'T', 3:'C', 4:'G', }
-ok_nts = set(['A', 'T', 'G', 'C'])
+ok_nts = sp.array(['A', 'T', 'G', 'C'])
  
 def dict_to_hdf5(input_dict, hdf5_group):
     """
@@ -190,7 +190,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Filter SNPs with missing NT information'
         nts = in_h5f[chrom_str]['nts'][...]
         nts = nts[maf_filter]
-        nt_filter = sp.all(nts in ok_nts)
+        nt_filter = sp.all(sp.in1d(nts, ok_nts))
         snps = snps[nt_filter]
         snp_stds = snp_stds[nt_filter]
         print 'Normalizing SNPs'
