@@ -278,7 +278,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 
     if figure_dir is not None:
         plt.clf()    
-        plt.plot(pcs[:, 0], pcs[:, 1], 'k.')
+        plt.plot(pcs[:, -1], pcs[:, -2], 'k.')
         plt.title("Overall PCA")
         plt.xlabel('PC1')
         plt.xlabel('PC2')
