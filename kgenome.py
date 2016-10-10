@@ -161,8 +161,8 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file):
         chromosome_pcs = {}
         for chrom in range(1, 23):
             print 'Working on Chromosome %d' % chrom
-            chrom_str = 'chr%d' % chrom
-            kinship_pca_dict[] = k_h5f[chrom_str]['K_leave_one_out'][...]
+#             chrom_str = 'chr%d' % chrom
+#             kinship_pca_dict[chrom_str] = k_h5f[chrom_str]['K_leave_one_out'][...]
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
                                                 maf_thres=0.01, figure_dir=None, debug_filter=0.1)
