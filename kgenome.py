@@ -188,7 +188,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
-    K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='single')
+    K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='double')
     num_all_snps = 0
     print 'Calculating kinship'
     for chrom in range(1, 23):
@@ -261,7 +261,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='single')
+        K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='double')
         num_snps_used = 0 
         for chrom2 in range(1, 23):
             if not chrom2 == chrom: 
@@ -269,7 +269,19 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 K_leave_one_out += chromosome_dict[chrom2_str]['K_unscaled']
                 num_snps_used += chromosome_dict[chrom2_str]['num_snps']
                 assert sp.isclose(sp.sum(sp.diag(K_leave_one_out)) / (num_snps_used * num_indivs), 1.0), '..bug' 
-        chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out / num_snps_used
+        K_leave_one_out = K_leave_one_out / num_snps_used
+        chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
+        evals, evecs = linalg.eig(K_leave_one_out)  # PCA via eigen decomp
+        assert sp.all(evals > 0), '...bug'
+
+        evals, evecs = linalg.eig(K_leave_one_out)  # PCA via eigen decomp
+        assert sp.all(evals > 0), '...bug'
+        sort_indices = sp.argsort(evals,)
+        ordered_evals = evals[sort_indices]
+        print ordered_evals[-10:] / sp.sum(ordered_evals)
+        ordered_evecs = evecs[:, sort_indices]
+        chromosome_dict[chrom_str]['evecs_leave_one_out'] = ordered_evecs
+        chromosome_dict[chrom_str]['evals_leave_one_out'] = ordered_evals
         
     assert sp.sum((chromosome_dict['chr1']['K_leave_one_out'] - chromosome_dict['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
         
@@ -299,14 +311,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
         K_leave_one_out = chromosome_dict[chrom_str]['K_leave_one_out']
-        evals, evecs = linalg.eig(K_leave_one_out)  # PCA via eigen decomp
-        assert sp.all(evals > 0), '...bug'
-        sort_indices = sp.argsort(evals,)
-        ordered_evals = evals[sort_indices]
-        print ordered_evals[-10:] / sp.sum(ordered_evals)
-        ordered_evecs = evecs[:, sort_indices]
-        chromosome_dict[chrom_str]['evecs_leave_one_out'] = ordered_evecs
-        chromosome_dict[chrom_str]['evals_leave_one_out'] = ordered_evals
 
     
     out_h5f = h5py.File(out_file)
