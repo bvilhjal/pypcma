@@ -212,7 +212,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Calculating chromosome kinship'
         K_unscaled = sp.dot(norm_snps.T, norm_snps)
         
-        assert sp.sum(sp.diag(K_unscaled)) / len(norm_snps) == 1, '..bug'and 
+        assert sp.sum(sp.diag(K_unscaled)) / len(norm_snps) == 1, '..bug' 
         
         print 'Storing and updating kinships'
         chromosome_kinships[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps)}
@@ -220,7 +220,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         K_all_snps += K_unscaled
         num_all_snps += len(norm_snps)
     K_all_snps = K_all_snps / float(num_all_snps)
-    print 'K_all_snps.shape: %s'%str(K_all_snps.shape)
+    print 'K_all_snps.shape: %s' % str(K_all_snps.shape)
     print 'Full kinship calculation done using %d SNPs\n' % num_all_snps
 
     in_h5f.close()
