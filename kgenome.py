@@ -144,6 +144,8 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         
         print 'Loading SNPs and data'
         snps = sp.array(h5f[chrom_str]['calldata']['snps'][...], dtype='int8')
+        snp_ids = h5f[chrom_str]['variants']['ID'][...]
+        positions = h5f[chrom_str]['variants']['POS'][...]
 
         print 'Loading NTs'
         ref_nts = h5f[chrom_str]['variants']['REF'][...]
@@ -154,6 +156,8 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         snps = snps[multi_allelic_filter]
         ref_nts = ref_nts[multi_allelic_filter]
         alt_nts = alt_nts[multi_allelic_filter]
+        positions = positions[multi_allelic_filter]
+        snp_ids = snp_ids[multi_allelic_filter]
 
         print 'Filter individuals'
         snps = snps[:, indiv_filter]
@@ -165,13 +169,19 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
             snps = snps[nt_filter]
             ref_nts = ref_nts[nt_filter]
             alt_nts = alt_nts[nt_filter]
+            positions = positions[nt_filter]
+            snp_ids = snp_ids[nt_filter]
         
         print 'filter monomorphic SNPs'
         snp_stds = sp.std(snps, 1)
         mono_morph_filter = snp_stds > 0
         snps = snps[mono_morph_filter]
-        
+        ref_nts = ref_nts[mono_morph_filter]
+        alt_nts = alt_nts[mono_morph_filter]
+        positions = positions[mono_morph_filter]
+        snp_ids = snp_ids[mono_morph_filter]
         snp_stds = snp_stds[mono_morph_filter]
+
         snp_means = sp.mean(snps, 1)
 
         if debug:
@@ -197,13 +207,6 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
             else:
                 raise Exception('Kinship looks wrong?')
         
-        snp_ids = h5f[chrom_str]['snp_ids'][...]
-        snp_ids = snp_ids[mono_morph_filter]
-        snp_ids = snp_ids[nt_filter]
-        
-        positions = h5f[chrom_str]['positions'][...]
-        positions = positions[mono_morph_filter]
-        positions = positions[nt_filter]
 
         nts = sp.array([[nt1, nt2] for nt1, nt2 in izip(ref_nts, alt_nts)])
 
@@ -216,7 +219,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         cg.create_dataset('positions', data=positions)
         cg.create_dataset('nts', data=nts)
         oh5f.flush()
-        print 'Done'
+        print 'Done writing to disk'
         
 #         centimorgans = h5f[chrom_str]['centimorgans'][...]
 #         cg.create_dataset('centimorgans',data=centimorgans)
@@ -226,6 +229,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         
     oh5f.close()
     h5f.close()
+    print 'Done'
     
     
     
