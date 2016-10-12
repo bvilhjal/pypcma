@@ -60,14 +60,25 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
         print 'Loading SNPs and data'
-        snps = h5f[chrom_str]['raw_snps'][...]
-        nts = h5f[chrom_str]['nts'][...]
+        snps = sp.array(h5f[chrom_str]['calldata']['snps'][...], dtype='int8')
+        print 'Loading NTs'
+        ref_nts = h5f[chrom_str]['variants']['REF'][...]
+        alt_nts = h5f[chrom_str]['variants']['ALT'][...]
+        
+        print 'Filtering multi-allelic SNPs'
+        multi_allelic_filter = sp.negative(h5f[chrom_str]['variants']['MULTI_ALLELIC'][...])
+        snps = snps[multi_allelic_filter]
+        ref_nts = ref_nts[multi_allelic_filter]
+        alt_nts = alt_nts[multi_allelic_filter]
+
 
         if K_thinning_frac < 1:
             print 'Thinning SNPs for kinship calculation'
             thinning_filter = sp.random.random(len(snps)) < K_thinning_frac
             snps = snps[thinning_filter]
-            nts = nts[thinning_filter]
+            alt_nts = alt_nts[thinning_filter]
+            ref_nts = ref_nts[thinning_filter]
+
 
         print 'Filtering non-European individuals'
         snps = snps[:, eur_filter]
