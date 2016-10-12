@@ -67,10 +67,10 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
         
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
-        snps = snps[debug_snp_filter]
-        snp_stds = snp_stds[debug_snp_filter]
-        snp_means = snp_means[debug_snp_filter]
-        nts = nts[debug_snp_filter]
+            snps = snps[debug_snp_filter]
+            snp_stds = snp_stds[debug_snp_filter]
+            snp_means = snp_means[debug_snp_filter]
+            nts = nts[debug_snp_filter]
 
         
         print 'Filtering SNPs with MAF <', maf_thres
