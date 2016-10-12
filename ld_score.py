@@ -49,7 +49,6 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
 
     in_h5f = h5py.File(input_genotype_file)
     indiv_ids = in_h5f['indiv_ids'][...] 
-    num_indivs = len(indiv_ids) - 1  # An ugly bug hack!!
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
     
@@ -125,12 +124,10 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
     ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'chrom_dict':chrom_ld_scores_dict}    
     
     print 'Done calculating the LD table and LD scores.'
-    print 'Genome-wide average LD score was:', ld_scores_dict['avg_gw_ld_score']
-    ld_dict = {'ld_scores_dict':ld_scores_dict, 'chrom_ld_dict':chrom_ld_dict}
     if gm_ld_radius is not None:
-        ld_dict['chrom_ld_boundaries'] = chrom_ld_boundaries 
+        ld_scores_dict['chrom_ld_boundaries'] = chrom_ld_boundaries 
         
-    return ld_dict
+    return ld_scores_dict
     
     
 def get_popadj_snp_trans_mat(kinship):
@@ -150,7 +147,7 @@ def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_scor
         chrom_snp_trans_mats[chrom_str] = linalg.cholesky(linalg.pinv(kinship_pca_dict[chrom_str]['K_leave_one_out']))
     
     
-    ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=debug_filter)
+    ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=1)
     
 
     # 6. a) Calculate LD score.
