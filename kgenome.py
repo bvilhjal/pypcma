@@ -128,8 +128,9 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     K_ok = K_ok[:, keep_indivs]
     assert (K_ok - sp.tril(K_ok)).max() < max_relatedness
 
-    indiv_filter = sp.zeros(num_indivs)
+    indiv_filter = sp.zeros(num_indivs, dtype='bool8')
     indiv_filter[(sp.arange(num_indivs)[eur_filter])[keep_indivs]] = 1
+    
     assert sp.sum(indiv_filter) == len(keep_indivs)
     
     # Store in new file
