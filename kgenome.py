@@ -59,8 +59,10 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
+        
         print 'Loading SNPs and data'
         snps = sp.array(h5f[chrom_str]['calldata']['snps'][...], dtype='int8')
+
         print 'Loading NTs'
         ref_nts = h5f[chrom_str]['variants']['REF'][...]
         alt_nts = h5f[chrom_str]['variants']['ALT'][...]
@@ -79,6 +81,11 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
             alt_nts = alt_nts[thinning_filter]
             ref_nts = ref_nts[thinning_filter]
 
+        print 'Filter SNPs with missing NT information'
+        nt_filter = sp.in1d(ref_nts, ok_nts)
+        nt_filter = nt_filter * sp.in1d(alt_nts, ok_nts)
+        if sp.sum(nt_filter) < len(nt_filter):
+            snps = snps[nt_filter]
 
         print 'Filtering non-European individuals'
         snps = snps[:, eur_filter]
@@ -88,14 +95,8 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         maf_filter = snp_stds.flatten() > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
-        nts = nts[maf_filter]
         
-        print 'Filter SNPs with missing NT information'
-        nt_filter = sp.all(nts > 0, 1)
-        snps = snps[nt_filter]
-        snp_stds = snp_stds[nt_filter]
-        
-        print '%d SNPs remaining after filtering steps.' % len(snps)
+        print '%d SNPs remaining after all filtering steps.' % len(snps)
 
         print 'Normalizing SNPs'
         snp_means = sp.mean(snps, 1)
@@ -140,27 +141,36 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
         
-        print 'Loading SNPs'
-        snps = sp.array(h5f[chrom_str]['raw_snps'][...], dtype='int8')
-        nts = h5f[chrom_str]['nts'][...]
+        print 'Loading SNPs and data'
+        snps = sp.array(h5f[chrom_str]['calldata']['snps'][...], dtype='int8')
+
+        print 'Loading NTs'
+        ref_nts = h5f[chrom_str]['variants']['REF'][...]
+        alt_nts = h5f[chrom_str]['variants']['ALT'][...]
         
+        print 'Filtering multi-allelic SNPs'
+        multi_allelic_filter = sp.negative(h5f[chrom_str]['variants']['MULTI_ALLELIC'][...])
+        snps = snps[multi_allelic_filter]
+        ref_nts = ref_nts[multi_allelic_filter]
+        alt_nts = alt_nts[multi_allelic_filter]
+
         print 'Filter individuals'
         snps = snps[:, indiv_filter]
+        
+        print 'Filter SNPs with missing NT information'
+        nt_filter = sp.in1d(ref_nts, ok_nts)
+        nt_filter = nt_filter * sp.in1d(alt_nts, ok_nts)
+        if sp.sum(nt_filter) < len(nt_filter):
+            snps = snps[nt_filter]
+            ref_nts = ref_nts[nt_filter]
+            alt_nts = alt_nts[nt_filter]
         
         print 'filter monomorphic SNPs'
         snp_stds = sp.std(snps, 1)
         mono_morph_filter = snp_stds > 0
         snps = snps[mono_morph_filter]
         
-        print 'filter SNPs w missing NT values'
-        nts = nts[mono_morph_filter]
-        nt_filter = sp.all(nts > 0, 1)
-        nts = nts[nt_filter]
-        snps = snps[nt_filter]
-        
-        print 'Calculating the SNP STD'
         snp_stds = snp_stds[mono_morph_filter]
-        snp_stds = snp_stds[nt_filter]
         snp_means = sp.mean(snps, 1)
 
         if debug:
@@ -194,11 +204,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         positions = positions[mono_morph_filter]
         positions = positions[nt_filter]
 
-        decoded_nts = []
-        for nt in nts:
-            nt1 = nt[0]
-            nt2 = nt[1]
-            decoded_nts.append([Kg_nt_decoder[nt1], Kg_nt_decoder[nt2]])
+        nts = sp.array([[nt1, nt2] for nt1, nt2 in izip(ref_nts, alt_nts)])
 
         print 'Writing to disk'
         cg = oh5f.create_group(chrom_str)
@@ -207,7 +213,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
         cg.create_dataset('snp_stds', data=snp_stds[sp.newaxis].T)
         cg.create_dataset('snp_ids', data=snp_ids)
         cg.create_dataset('positions', data=positions)
-        cg.create_dataset('nts', data=decoded_nts)
+        cg.create_dataset('nts', data=nts)
         oh5f.flush()
         print 'Done'
         
