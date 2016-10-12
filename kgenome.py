@@ -13,7 +13,7 @@ import h5py
 import scipy as sp
 
 
-__updated__ = '2016-10-11'
+__updated__ = '2016-10-12'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -43,8 +43,8 @@ def hdf5_to_dict(hdf5_group):
     return output_dict
     
     
-def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/1K_genomes_v3.hdf5' ,
-                              out_file='/home/bjarni/HeritPartition/faststorage/1Kgenomes_bjarni/1K_genomes_v3_EUR_unrelated.hdf5',
+def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/phase3/1k_genomes_hg.hdf5' ,
+                              out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
                               maf_thres=0.01, max_relatedness=0.05, K_thinning_frac=0.1, debug=False):
     h5f = h5py.File(input_file)
     num_indivs = len(h5f['indivs']['continent'])
