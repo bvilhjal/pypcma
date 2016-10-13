@@ -287,10 +287,10 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
         snps = snps[debug_snp_filter]
-        snp_means = sp.mean(snps, 1)
+        snp_means = sp.mean(snps, 1, dtype='double')
         snp_means.shape = (len(snp_means), 1)
 #         snp_freqs = snp_means / 2
-        snp_stds = sp.std(snps, 1)
+        snp_stds = sp.std(snps, 1, dtype='double')
         snp_stds.shape = (len(snp_stds), 1)
         
 #         snp_stds = snp_stds[debug_snp_filter]
@@ -316,7 +316,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         print 'Normalizing SNPs'
         
-        norm_snps = (snps - snp_means) / snp_stds
+        norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='double')
         
         print 'Calculating chromosome kinship'
         K_unscaled = sp.dot(norm_snps.T, norm_snps)
