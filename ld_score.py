@@ -104,7 +104,7 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
 
         if chrom_snp_trans_mats is not None:
             snp_trans_mat = chrom_snp_trans_mats[chrom_str]
-            norm_snps = sp.dot(snp_trans_mat, norm_snps)
+            norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
     
             if gm_ld_radius is not None:
                 assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
