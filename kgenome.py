@@ -250,13 +250,15 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
+    print 'Loading Genotype from '
     in_h5f = h5py.File(input_file)
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
-    indiv_filter = sp.random.random(len(indiv_ids)) < indiv_filter_frac
-    indiv_ids = indiv_ids[indiv_filter]
-    num_indivs = len(indiv_ids) 
+    if indiv_filter_frac < 1:
+        indiv_filter = sp.array(sp.random.random(len(indiv_ids)) < indiv_filter_frac, dtype='bool8')
+        indiv_ids = indiv_ids[indiv_filter]
+        num_indivs = len(indiv_ids) 
     chromosome_dict = {}
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
@@ -271,7 +273,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         print 'Loading SNPs'
         snps = in_h5f[chrom_str]['snps'][...]
-        snps = snps[:, indiv_filter]
+        if indiv_filter_frac < 1:
+            snps = snps[:, indiv_filter]
         # filter non-europeans.
 #         print 'Filtering non-European individuals'
 #         snps = snps[:, eur_filter]
