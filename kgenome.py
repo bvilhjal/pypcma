@@ -296,6 +296,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #         snp_stds = snp_stds[debug_snp_filter]
 #         snp_means = snp_means[debug_snp_filter]
         nts = nts[debug_snp_filter]
+        snp_stds = snp_stds[debug_snp_filter]
 
         
         print 'Filtering SNPs with MAF <', maf_thres
