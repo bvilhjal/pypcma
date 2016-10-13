@@ -296,7 +296,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #         snp_stds = snp_stds[debug_snp_filter]
 #         snp_means = snp_means[debug_snp_filter]
         nts = nts[debug_snp_filter]
-        snp_stds = snp_stds[debug_snp_filter]
 
         
         print 'Filtering SNPs with MAF <', maf_thres
@@ -353,6 +352,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         chol = linalg.cholesky(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         
         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
+        if evals.min() < 0:
+            min_i = evals.argmin()
+            evecs[:, min_i] = evecs[:, min_i] * -1
+            evals[min_i] = evals[min_i] * -1
+            new_K = sp.dot(sp.dot(evecs, sp.diag(evals)), evecs)
+            assert sp.all(sp.isclose(new_K, K_leave_one_out))
         if sp.any(evals <= 0):
             print 'Smallest eigenvalue is %f' % evals.min()
             print 'Trying a double cast.'
