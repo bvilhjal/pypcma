@@ -146,8 +146,6 @@ def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_scor
         chrom_str = 'chr%d' % chrom
         K = kinship_pca_dict[chrom_str]['K_leave_one_out']
         T = linalg.cholesky(linalg.pinv(K))
-        assert T.shape == K.shape
-        print T.shape
         chrom_snp_trans_mats[chrom_str] = T
     
     
