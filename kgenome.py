@@ -13,7 +13,7 @@ import h5py
 import scipy as sp
 
 
-__updated__ = '2016-10-12'
+__updated__ = '2016-10-13'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -245,7 +245,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
 
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
-                  maf_thres=0.1, figure_dir='', figure_fn='', debug_filter=1, indiv_filter_frac=0.5):
+                  maf_thres=0.1, figure_dir='', figure_fn='', debug_filter=1, indiv_filter_frac=1):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
