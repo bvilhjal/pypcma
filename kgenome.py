@@ -319,7 +319,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='single')
         
         print 'Calculating chromosome kinship'
-        K_unscaled = sp.dtype(sp.dot(norm_snps.T, norm_snps), dtype='single')
+        K_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='single')
         
         assert sp.isclose(sp.sum(sp.diag(K_unscaled)) / (len(norm_snps) * num_indivs), 1.0), '..bug' 
         
