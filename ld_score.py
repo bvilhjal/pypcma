@@ -260,4 +260,4 @@ if __name__ == '__main__':
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.02.hdf5',
-                             ld_radius=1000, maf_thres=0.01, debug_filter=0.05)
+                             ld_radius=1000, maf_thres=0.01, debug_filter=0.02)
