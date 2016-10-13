@@ -264,7 +264,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
-    K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='double')
+    K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='single')
     num_all_snps = 0
     print 'Calculating kinship'
     for chrom in range(1, 23):
@@ -287,10 +287,10 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
         snps = snps[debug_snp_filter]
-        snp_means = sp.mean(snps, 1, dtype='double')
+        snp_means = sp.mean(snps, 1, dtype='single')
         snp_means.shape = (len(snp_means), 1)
 #         snp_freqs = snp_means / 2
-        snp_stds = sp.std(snps, 1, dtype='double')
+        snp_stds = sp.std(snps, 1, dtype='single')
         snp_stds.shape = (len(snp_stds), 1)
         
 #         snp_stds = snp_stds[debug_snp_filter]
@@ -316,7 +316,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         print 'Normalizing SNPs'
         
-        norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='double')
+        norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='single')
         
         print 'Calculating chromosome kinship'
         K_unscaled = sp.dot(norm_snps.T, norm_snps)
@@ -338,7 +338,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='double')
+        K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='single')
         num_snps_used = 0 
         for chrom2 in range(1, 23):
             if not chrom2 == chrom: 
