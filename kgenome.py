@@ -51,7 +51,7 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     eur_filter = h5f['indivs']['continent'][...] == 'EUR'
     num_eur_indivs = sp.sum(eur_filter)
     print 'Number of European individuals: %d', num_eur_indivs
-    K = sp.zeros((num_eur_indivs, num_eur_indivs), dtype='single')
+    K = sp.zeros((num_eur_indivs, num_eur_indivs), dtype='double')
     num_snps = 0
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
