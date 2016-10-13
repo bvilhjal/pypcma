@@ -349,7 +349,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         K_leave_one_out = K_leave_one_out / sp.array(num_snps_used, dtype='float64')
         assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
         chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
-        chol = linalg.cholesky(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
+#         chol = linalg.cholesky(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         
         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         if evals.min() < 0:
