@@ -342,12 +342,12 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         num_snps_used = 0 
         for chrom2 in range(1, 23):
             if not chrom2 == chrom: 
-                chrom2_str = 'chr%d' % chrom
+                chrom2_str = 'chr%d' % chrom2
                 K_leave_one_out += chromosome_dict[chrom2_str]['K_unscaled']
                 num_snps_used += chromosome_dict[chrom2_str]['num_snps']
                 assert sp.isclose(sp.sum(sp.diag(K_leave_one_out)) / (num_snps_used * num_indivs), 1.0), '..bug' 
-                assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
         K_leave_one_out = K_leave_one_out / sp.array(num_snps_used, dtype='double')
+        assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
         chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
         evals, evecs = linalg.eigh(sp.array(K_leave_one_out, dtype='single'))  # PCA via eigen decomp
         if sp.all(evals > 0):
