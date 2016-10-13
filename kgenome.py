@@ -350,7 +350,11 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         K_leave_one_out = K_leave_one_out / sp.array(num_snps_used, dtype='double')
         chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
         evals, evecs = linalg.eigh(sp.array(K_leave_one_out, dtype='single'))  # PCA via eigen decomp
-        assert sp.all(evals > 0), '...bug'
+        if sp.all(evals > 0):
+            print 'Smallest eigenvalue is %f' % evals.min()
+            print 'Trying a double cast.'
+            evals, evecs = linalg.eigh(sp.array(K_leave_one_out, dtype='double'))
+        assert sp.all(evals > 0)
         sort_indices = sp.argsort(evals,)
         ordered_evals = evals[sort_indices]
         print ordered_evals[-10:] / sp.sum(ordered_evals)
