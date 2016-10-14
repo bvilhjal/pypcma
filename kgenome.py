@@ -282,7 +282,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
-        snps = snps[debug_snp_filter]
+        snps = snps[debug_snp_filter]        
+        
         snp_means = sp.mean(snps, 1, dtype='float64')
         snp_means.shape = (len(snp_means), 1)
         snp_stds = sp.std(snps, 1, dtype='float64')
@@ -298,6 +299,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         
         print 'Normalizing SNPs'
         norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='float64')
+        signs = sp.array(sp.random.random(len(norm_snps)) < 0.5, dtype='int8')
+        norm_snps = signs * norm_snps
         
         sum_indiv_genotypes = sp.sum(norm_snps, 0)
         sum_indiv_genotypes_all_chrom += sum_indiv_genotypes
@@ -387,6 +390,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 
                 print 'SNP-cov normalisation'
                 norm_snps = norm_snps - mean_indiv_genotypes
+                signs = sp.array(sp.random.random(len(norm_snps)) < 0.5, dtype='int8')
+                norm_snps = signs * norm_snps
                 
                 print 'Calculating SNP covariance unscaled'
                 snp_cov_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='float64')
