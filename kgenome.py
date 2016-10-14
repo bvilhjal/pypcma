@@ -360,12 +360,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         chol = linalg.cholesky(sp.array(snp_cov_one_out, dtype='float64'))  # PCA via eigen decomp
         
         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
-        if evals.min() < 0:
-            min_i = evals.argmin()
-            evecs[:, min_i] = evecs[:, min_i] * -1
-            evals[min_i] = evals[min_i] * -1
-            new_K = sp.dot(sp.dot(evecs, sp.diag(evals)), evecs)
-            assert sp.all(sp.isclose(new_K, K_leave_one_out))
         sort_indices = sp.argsort(evals,)
         ordered_evals = evals[sort_indices]
         print ordered_evals[-10:] / sp.sum(ordered_evals)
