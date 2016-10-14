@@ -312,7 +312,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         sum_indiv_genotypes = sp.sum(norm_snps, 0)
         sum_indiv_genotypes_all_chrom += sum_indiv_genotypes
         mean_indiv_genotypes = sum_indiv_genotypes / len(norm_snps)
-        norm_snps = ((norm_snps.T - mean_indiv_genotypes)).T
+        norm_snps = norm_snps - mean_indiv_genotypes
         
         print 'Calculating SNP covariance unscaled'
         snp_cov_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='float64')
