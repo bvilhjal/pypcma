@@ -144,8 +144,8 @@ def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_scor
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        K = kinship_pca_dict[chrom_str]['K_leave_one_out']
-        T = linalg.cholesky(linalg.pinv(K))
+        snp_cov = kinship_pca_dict[chrom_str]['snp_cov_leave_one_out']
+        T = linalg.cholesky(linalg.pinv(snp_cov))
         chrom_snp_trans_mats[chrom_str] = T
     
     
@@ -260,4 +260,4 @@ if __name__ == '__main__':
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.02.hdf5',
-                             ld_radius=1000, maf_thres=0.01, debug_filter=0.01)
+                             ld_radius=1000, maf_thres=0.01, debug_filter=0.05)

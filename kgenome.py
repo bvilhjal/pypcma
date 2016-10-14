@@ -341,23 +341,23 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
         
-        snp_cov_one_out = sp.zeros((num_indivs, num_indivs), dtype='float64')
+        snp_cov_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='float64')
       
         K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='float64')
         num_snps_used = 0 
         for chrom2 in range(1, 23):
             chrom2_str = 'chr%d' % chrom2
             if chrom2 != chrom: 
-                snp_cov_one_out += chromosome_dict[chrom2_str]['snp_cov_unscaled']
+                snp_cov_leave_one_out += chromosome_dict[chrom2_str]['snp_cov_unscaled']
                 K_leave_one_out += chromosome_dict[chrom2_str]['K_unscaled']
                 num_snps_used += chromosome_dict[chrom2_str]['num_snps']
                 assert sp.isclose(sp.sum(sp.diag(K_leave_one_out)) / (num_snps_used * num_indivs), 1.0), '..bug' 
-        snp_cov_one_out = snp_cov_one_out / num_snps_used
+        snp_cov_leave_one_out = snp_cov_leave_one_out / num_snps_used
         K_leave_one_out = K_leave_one_out / num_snps_used
         assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
         chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
-        chromosome_dict[chrom_str]['snp_cov_one_out'] = snp_cov_one_out
-        chol = linalg.cholesky(sp.array(snp_cov_one_out, dtype='float64'))  # PCA via eigen decomp
+        chromosome_dict[chrom_str]['snp_cov_leave_one_out'] = snp_cov_leave_one_out
+        chol = linalg.cholesky(sp.array(snp_cov_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         
         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         sort_indices = sp.argsort(evals,)
