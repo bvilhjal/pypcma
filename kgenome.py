@@ -13,7 +13,7 @@ import h5py
 import scipy as sp
 
 
-__updated__ = '2016-10-13'
+__updated__ = '2016-10-14'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -266,90 +266,98 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 
     K_all_snps = sp.zeros((num_indivs, num_indivs), dtype='float64')
     num_all_snps = 0
+    
+    sum_indiv_genotypes_all_chrom = sp.zeros(num_indivs, dtype='float64')
+    snp_cov_all_snps = sp.zeros((num_indivs, num_indivs), dtype='float64')
+
     print 'Calculating kinship'
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
         
-        
         print 'Loading SNPs'
         snps = in_h5f[chrom_str]['snps'][...]
         if indiv_filter_frac < 1:
             snps = snps[:, indiv_filter]
-        # filter non-europeans.
-#         print 'Filtering non-European individuals'
-#         snps = snps[:, eur_filter]
-#         snp_stds = in_h5f[chrom_str]['snp_stds'][...]
-#         snp_means = in_h5f[chrom_str]['snp_means'][...]
-        nts = in_h5f[chrom_str]['nts'][...]
-#         print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
         
         if debug_filter < 1:
             debug_snp_filter = sp.random.random(len(snps)) < debug_filter
         snps = snps[debug_snp_filter]
         snp_means = sp.mean(snps, 1, dtype='float64')
         snp_means.shape = (len(snp_means), 1)
-#         snp_freqs = snp_means / 2
         snp_stds = sp.std(snps, 1, dtype='float64')
         snp_stds.shape = (len(snp_stds), 1)
-        
-#         snp_stds = snp_stds[debug_snp_filter]
-#         snp_means = snp_means[debug_snp_filter]
-        nts = nts[debug_snp_filter]
-
         
         print 'Filtering SNPs with MAF <', maf_thres
         maf_filter = snp_stds.flatten() > std_thres
         snps = snps[maf_filter]
         snp_stds = snp_stds[maf_filter]
         snp_means = snp_means[maf_filter]
-        nts = nts[maf_filter]
-        
-#         nt_filter = sp.in1d(nts, ok_nts)
-#         if not sp.all(nt_filter):
-#             print 'Removing SNPs with missing NT information'
-#             snps = snps[nt_filter]
-#             snp_stds = snp_stds[nt_filter]
-#             snp_means = snp_means[nt_filter]
         
         print '%d SNPs remaining' % len(snps)
         
         print 'Normalizing SNPs'
-        
         norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='float64')
+        
+        sum_indiv_genotypes = sp.sum(norm_snps, 0)
+        sum_indiv_genotypes_all_chrom += sum_indiv_genotypes
         
         print 'Calculating chromosome kinship'
         K_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='float64')
-        
         assert sp.isclose(sp.sum(sp.diag(K_unscaled)) / (len(norm_snps) * num_indivs), 1.0), '..bug' 
-        
-        print 'Storing and updating kinships'
-        chromosome_dict[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps)}
-        
         K_all_snps += K_unscaled
         num_all_snps += len(norm_snps)
+
+        print 'SNP-cov normalisation'
+        sum_indiv_genotypes = sp.sum(norm_snps, 0)
+        sum_indiv_genotypes_all_chrom += sum_indiv_genotypes
+        mean_indiv_genotypes = sum_indiv_genotypes / len(norm_snps)
+        norm_snps = ((norm_snps.T - mean_indiv_genotypes)).T
+        
+        print 'Calculating SNP covariance unscaled'
+        snp_cov_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='float64')
+        snp_cov_all_snps += snp_cov_unscaled
+        
+        print 'Storing and updating things'
+        chromosome_dict[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps),
+                                      'sum_indiv_genotypes':sum_indiv_genotypes,
+                                      'snp_cov_unscaled':snp_cov_unscaled}
+        
+    snp_cov_all_snps = snp_cov_all_snps / float(num_all_snps)
     K_all_snps = K_all_snps / float(num_all_snps)
     print 'K_all_snps.shape: %s' % str(K_all_snps.shape)
-    print 'Full kinship calculation done using %d SNPs\n' % num_all_snps
-
-    in_h5f.close()
-
-    print 'Now generating the leave-one-chromosome-out kinships'
+    print 'snp_cov_all_snps.shape: %s' % str(snp_cov_all_snps.shape)
+    print 'sp.diag(snp_cov_all_snps): %s' % str(sp.diag(snp_cov_all_snps))
+    print 'sp.mean(sp.diag(snp_cov_all_snps)_: %s' % str(sp.mean(sp.diag(snp_cov_all_snps)))
+    
+    print 'Full kinship and snp-covariance calculation done using %d SNPs\n' % num_all_snps
+    
+    mean_indiv_genotypes_all_chrom = sum_indiv_genotypes_all_chrom / num_all_snps
+    print 'Individual gentoype mean found:'
+    print mean_indiv_genotypes_all_chrom
+    
+    print 'Calculating chromosome-wise SNP-covariance and kinship matrices'
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
+        
+        snp_cov_one_out = sp.zeros((num_indivs, num_indivs), dtype='float64')
+      
         K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='float64')
         num_snps_used = 0 
         for chrom2 in range(1, 23):
             chrom2_str = 'chr%d' % chrom2
             if chrom2 != chrom: 
+                snp_cov_one_out += chromosome_dict[chrom2_str]['snp_cov_unscaled']
                 K_leave_one_out += chromosome_dict[chrom2_str]['K_unscaled']
                 num_snps_used += chromosome_dict[chrom2_str]['num_snps']
                 assert sp.isclose(sp.sum(sp.diag(K_leave_one_out)) / (num_snps_used * num_indivs), 1.0), '..bug' 
-        K_leave_one_out = K_leave_one_out / sp.array(num_snps_used, dtype='float64')
+        snp_cov_one_out = snp_cov_one_out / num_snps_used
+        K_leave_one_out = K_leave_one_out / num_snps_used
         assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
         chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
-#         chol = linalg.cholesky(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
+        chromosome_dict[chrom_str]['snp_cov_one_out'] = snp_cov_one_out
+        chol = linalg.cholesky(sp.array(snp_cov_one_out, dtype='float64'))  # PCA via eigen decomp
         
         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64'))  # PCA via eigen decomp
         if evals.min() < 0:
@@ -358,18 +366,22 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
             evals[min_i] = evals[min_i] * -1
             new_K = sp.dot(sp.dot(evecs, sp.diag(evals)), evecs)
             assert sp.all(sp.isclose(new_K, K_leave_one_out))
-        if sp.any(evals <= 0):
-            print 'Smallest eigenvalue is %f' % evals.min()
-            print 'Trying a double cast.'
-            evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float32'))
-#         assert sp.all(evals > 0)
         sort_indices = sp.argsort(evals,)
         ordered_evals = evals[sort_indices]
         print ordered_evals[-10:] / sp.sum(ordered_evals)
         ordered_evecs = evecs[:, sort_indices]
         chromosome_dict[chrom_str]['evecs_leave_one_out'] = ordered_evecs
         chromosome_dict[chrom_str]['evals_leave_one_out'] = ordered_evals
-        
+            
+    
+    
+    in_h5f.close()
+
+    print 'Now generating the leave-one-chromosome-out kinships'
+    for chrom in range(1, 23):
+        print 'Working on Chromosome %d' % chrom
+        chrom_str = 'chr%d' % chrom
+
     assert sp.sum((chromosome_dict['chr1']['K_leave_one_out'] - chromosome_dict['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
         
     print 'Calculating PCAs'
