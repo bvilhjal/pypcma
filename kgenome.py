@@ -327,7 +327,9 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         chromosome_dict[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps),
                                       'sum_indiv_genotypes':sum_indiv_genotypes,
                                       'snp_cov_unscaled':snp_cov_unscaled, 'signs':signs}
-        
+        if debug_filter:
+            chromosome_dict[chrom_str]['debug_snp_filter'] = debug_snp_filter
+
     snp_cov_all_snps = snp_cov_all_snps / float(num_all_snps)
     K_all_snps = K_all_snps / float(num_all_snps)
     print 'K_all_snps.shape: %s' % str(K_all_snps.shape)
@@ -372,7 +374,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                     snps = snps[:, indiv_filter]
                 
                 if debug_filter < 1:
-                    debug_snp_filter = sp.random.random(len(snps)) < debug_filter
+                    debug_snp_filter = chromosome_dict[chrom2_str]['debug_snp_filter']
                 snps = snps[debug_snp_filter]
                 snp_means = sp.mean(snps, 1, dtype='float32')
                 snp_means.shape = (len(snp_means), 1)
