@@ -13,7 +13,7 @@ import h5py
 import scipy as sp
 
 
-__updated__ = '2016-10-14'
+__updated__ = '2016-10-17'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -326,7 +326,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         print 'Storing and updating things'
         chromosome_dict[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps),
                                       'sum_indiv_genotypes':sum_indiv_genotypes,
-                                      'snp_cov_unscaled':snp_cov_unscaled}
+                                      'snp_cov_unscaled':snp_cov_unscaled, 'signs':signs}
         
     snp_cov_all_snps = snp_cov_all_snps / float(num_all_snps)
     K_all_snps = K_all_snps / float(num_all_snps)
@@ -392,8 +392,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 
                 print 'SNP-cov normalisation'
                 norm_snps = norm_snps - mean_indiv_genotypes
-                signs = 2 * sp.array(sp.random.random(len(norm_snps)) < 0.5, dtype='int8') - 1
-                signs.shape = (len(signs), 1)
+                signs = chromosome_dict[chrom2_str]['signs']
                 norm_snps = norm_snps * signs
                 
                 print 'Calculating SNP covariance unscaled'
