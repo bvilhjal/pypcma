@@ -34,7 +34,7 @@ def generate_slurm_script(file_name, run_id, command_str, queue_id=None, out_fil
 
 
 def submit_job(run_id, command, parameters=None, out_file=None, err_file=None,
-               walltime='12:00:00', queue_id='normal', num_cores=4, max_memory=4000,
+               walltime='2:00:00', queue_id='normal', num_cores=4, max_memory=4000,
                script_dir='.', job_dir='.', email=None, delete_script_after_submit=False):
     """
     Submit a command to the cluster

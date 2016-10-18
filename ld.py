@@ -164,7 +164,7 @@ def _get_sub_run_id_(run_id, chrom_i, ld_radius):
 
 def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
                   min_maf=0.01, walltime='12:00:00', queue_id='normal', max_memory=8000, num_cores=4,
-                  job_dir='.', script_dir='.', email='bjarni.vilhjalmsson@gmail.com'):
+                  python_dir='.', job_dir='.', script_dir='.', email='bjarni.vilhjalmsson@gmail.com'):
     """
     Submit a command to the cluster
     """
@@ -172,7 +172,7 @@ def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
     out_file = '%s.out' % sub_run_id
     err_file = '%s.err' % sub_run_id
 
-    python_command = 'python ./ld.py'
+    python_command = 'python %s/ld.py' % python_dir
     python_command = '%s --ld_file_prefix=%s' % (python_command, ld_file_prefix)
     python_command = '%s --chrom=%d' % (python_command, chrom_i)
     python_command = '%s --ld_radius=%d' % (python_command, ld_radius)
