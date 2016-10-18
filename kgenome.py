@@ -508,7 +508,7 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         chrom_str = 'chr%d' % chrom_i
           
         g_dict = get_genotype_data(ih5f, chrom_i, maf_thres=maf_thres, randomize_sign=False, snps_signs=None,
-                                   return_raw_snps=True, return_snps_info=True)
+                                   return_raw_snps=True, return_snps_info=True, return_normalized_snps=False)
         snps = g_dict['snps']
         snp_means = g_dict['snp_means']
         snp_stds = g_dict['snp_stds']
