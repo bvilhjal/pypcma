@@ -86,12 +86,12 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
             shift = min(ld_radius, snp_i) + 1
             r2s = r2s[shift:]
             shift_start_i = shift + start_i
-            for k in range(start_i, stop_i):
-                ld_vec_i = k - shift_start_i
+            for snp_j in range(shift_start_i, stop_i):
+                ld_vec_i = snp_j - shift_start_i
                 if r2s[ld_vec_i] > min_r2:
                     
-                    ld_table[i][k] = r2s[ld_vec_i]
-                    ld_table[k][i] = r2s[ld_vec_i]
+                    ld_table[snp_i][snp_j] = r2s[ld_vec_i]
+                    ld_table[snp_j][snp_i] = r2s[ld_vec_i]
                     num_stored += 1
                     if verbose and snp_i % 1000 == 0:
                             sys.stdout.write('!')
