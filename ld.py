@@ -86,7 +86,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
             shift = min(ld_radius, snp_i) + 1
             r2s = r2s[shift:]
             shift_start_i = shift + start_i
-            for k in range(shift_start_i, stop_i):
+            for k in range(start_i, stop_i):
                 ld_vec_i = k - shift_start_i
                 if r2s[ld_vec_i] > min_r2:
                     
