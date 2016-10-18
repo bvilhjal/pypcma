@@ -113,13 +113,12 @@ def ld_pruning(ld_table, max_ld=0.5, verbose=False):
     return filter_vector
 
 
-def calculate_ld_tables(input_genotype_file, chrom_i, ld_file_prefix, ld_radius,
-                        maf_thres, gm_ld_radius=None, indiv_filter=None,
+def calculate_ld_tables(input_genotype_file, chrom_i, local_ld_dict_file, ld_radius,
+                        maf_thres=0.01, gm_ld_radius=None, indiv_filter=None,
                         snp_filter=None, return_void=True):
     """
     Calculate the LD tables for the given radius, and store in the given file.
     """
-    local_ld_dict_file = '%s_lrd%d_chr%d.pickled.gz' % (ld_file_prefix, ld_radius, chrom_i)
     if not os.path.isfile(local_ld_dict_file):
         h5f = h5py.File(input_genotype_file)
         
@@ -163,8 +162,8 @@ def get_pruning_filter_dict(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5', max_
 def _get_sub_run_id_(run_id, chrom_i, ld_radius):
     return 'rid%s_chr%i_ldr%i' % (run_id, chrom_i, ld_radius)
 
-def submit_ld_job(run_id, min_maf, genotype_file, chrom_i, ld_radius, ld_file_prefix,
-                  walltime='12:00:00', queue_id='normal', max_memory=8000, num_cores=4,
+def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
+                  min_maf=0.01, walltime='12:00:00', queue_id='normal', max_memory=8000, num_cores=4,
                   job_dir='.', script_dir='.', email='bjarni.vilhjalmsson@gmail.com'):
     """
     Submit a command to the cluster
@@ -208,7 +207,7 @@ def _parse_parameters_():
                          'genotype_file=', 'chrom=', 'min_maf=', 'sub_run_id=', 'h']
 
     p_dict = {'ld_radius':1000, 'local_ld_file_prefix':'./ld_file', 'run_id':'default_id',
-              'genotype_file': None, 'chrom':None, 'min_maf': 0.01, 'sub_run_id':None}
+              'genotype_file': None, 'chrom':None, 'min_maf': 0.01, 'sub_run_id':None, }
 
     if len(sys.argv) > 1:
         try:
@@ -249,7 +248,7 @@ def main():
         # Calculate LD...
         local_ld_dict_file = '%s_ldradius%d.pickled.gz' % (p_dict['local_ld_file_prefix'], p_dict['ld_radius'])
         calculate_ld_tables(p_dict['genotype_file'], p_dict['chrom'], local_ld_dict_file,
-                            p_dict['ld_radius'], p_dict['min_maf'])
+                            p_dict['ld_radius'], maf_thres=p_dict['min_maf'])
     else:
         print 'Nothing happened.  What did you expect?'
     
