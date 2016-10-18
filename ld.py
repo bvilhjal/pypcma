@@ -60,9 +60,9 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     m, n = norm_snps.shape
 
     ld_table = {}
-    for i in range(m):
-        ld_table[i] = {}
 
+    ld_snp_indices = set([])
+    
     print m, n
     ld_scores = sp.ones(m)
     num_stored = 0
@@ -87,8 +87,9 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
             num_pairs += 1
             ld_vec_i = snp_j - shift_start_i
             if r2s[ld_vec_i] > min_r2:
-                ld_table[snp_i][snp_j] = r2s[ld_vec_i]
-                ld_table[snp_j][snp_i] = r2s[ld_vec_i]
+                ld_table[(snp_i, snp_j)] = r2s[ld_vec_i]
+                ld_snp_indices.add(snp_i)
+                ld_snp_indices.add(snp_j)
                 num_stored += 1
             
         if verbose and snp_i % 10000 == 0:
@@ -98,7 +99,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         sys.stdout.write('Done.\n')
         if verbose:
             print 'Correlation between %d pairs was tested' % num_pairs
-        if num_pairs > 0:
+            print '%d SNPs out of %d had LD-partners' % (len(ld_snp_indices), len(norm_snps))            
             print 'Stored %d (%0.4f%%) correlations that made the cut (r^2>%0.3f).' % (num_stored, 100 * (num_stored / float(num_pairs)), min_r2)
         else:
             print '-'
@@ -108,10 +109,10 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         print '\nIt took %d minutes and %0.2f seconds to calculate the LD table' % (t / 60, t % 60)
     
     print 'Average LD score was %f' % sp.mean(ld_scores)
-    return {'ld_scores': ld_scores, 'ld_table':ld_table}
+    return {'ld_scores': ld_scores, 'ld_table':ld_table, 'ld_snp_indices': ld_snp_indices}
 
 
-def ld_pruning(ld_table, max_ld=0.5, verbose=False):
+def ld_pruning(ld_table, ld_snp_indices, num_snps, max_ld=0.5, verbose=False):
     """
     Prunes SNPs in LD, in random order. 
     """
@@ -119,22 +120,24 @@ def ld_pruning(ld_table, max_ld=0.5, verbose=False):
     if verbose:
         print 'Calculating LD table'
     t0 = time.time()
-    indices_to_keep = []
-    num_snps = len(ld_table)
-    indices = sp.random.permutation(num_snps)
-    remaining_indices = set(indices)
-    for i in indices:
+    indices_to_keep = set([])
+    ld_pairs = sp.random.permutation(ld_table.keys())
+    remaining_indices = ld_snp_indices.copy()
+    for (i, j) in ld_pairs:
         if len(remaining_indices) == 0:
             break
-        elif not (i in remaining_indices):
+        elif not (i in remaining_indices and j in remaining_indices):
             continue
-        else:
-            indices_to_keep.append(i)
-            for j in ld_table[i]:
-                if ld_table[i][j] > max_ld and j in remaining_indices:
-                    remaining_indices.remove(j)
+        elif ld_table[(i, j)] > max_ld:
+            if random.random() > 0.5:
+                indices_to_keep.add(i)
+                remaining_indices.remove(j)
+            else:
+                indices_to_keep.add(j)
+                remaining_indices.remove(i)
+                    
     filter_vector = sp.zeros(num_snps, dtype='bool')
-    filter_vector[indices_to_keep] = 1
+    filter_vector[list(indices_to_keep)] = 1
     t1 = time.time()
     t = (t1 - t0)
     if verbose:
@@ -216,7 +219,7 @@ def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
 
 def submit_all_ld_jobs(genotype_file, ld_file_prefix, run_id, min_maf=0.01, ld_radius=100,
                        job_dir='.', script_dir='.', walltime='6:00:00', num_cores=4,
-                       max_memory='24g', email='bjarni.vilhjalmsson@gmail.com'):
+                       max_memory='32g', email='bjarni.vilhjalmsson@gmail.com'):
     
     for chrom_i in range(1, 23):
         submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
