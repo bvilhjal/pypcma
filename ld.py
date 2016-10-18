@@ -268,7 +268,7 @@ def main():
     p_dict = _parse_parameters_()
     if p_dict['sub_run_id'] is None:
         # Calculate LD...
-        local_ld_dict_file = '%s_%chrom%d_ldradius%d.pickled.gz' % (p_dict['local_ld_file_prefix'], p_dict['chrom'], p_dict['ld_radius'])
+        local_ld_dict_file = '%s_chrom%d_ldradius%d.pickled.gz' % (p_dict['local_ld_file_prefix'], p_dict['chrom'], p_dict['ld_radius'])
         calculate_ld_tables(p_dict['genotype_file'], p_dict['chrom'], local_ld_dict_file,
                             p_dict['ld_radius'], maf_thres=p_dict['min_maf'])
     else:

@@ -20,7 +20,7 @@ def generate_slurm_script(file_name, run_id, command_str, queue_id=None, out_fil
         if err_file is not None:
             f.write('#SBATCH --error=%s\n' % err_file)
         f.write('#SBATCH --time=%s\n' % walltime)
-        f.write('#SBATCH --mem=%d\n' % max_memory)
+        f.write('#SBATCH --mem %d\n' % max_memory)
         if queue_id is not None:
             f.write('#SBATCH -p %s\n' % queue_id)
         if email is not None:
