@@ -25,7 +25,7 @@ def generate_slurm_script(file_name, run_id, command_str, queue_id=None, out_fil
             f.write('#SBATCH -p %s\n' % queue_id)
         if email is not None:
             f.write('#SBATCH --mail-type=ALL\n')
-            f.write('#SBATCH --mail-user=%s %s\n' % (email, out_file))
+            f.write('#SBATCH --mail-user=%s\n' % (email))
         f.write('\n')
         f.write(command_str)
         f.write('\n')
