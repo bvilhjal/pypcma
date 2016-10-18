@@ -78,7 +78,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         X = norm_snps[start_i: stop_i]
         D_i = sp.dot(X, snp.T) / n
         r2s = D_i ** 2
-        assert r2s.max() <= 1.0 and r2s.min() >= 0
+        assert r2s.max() <= 1.00001 and r2s.min() >= -0.00001
         lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
         ld_scores[snp_i] = lds_i
 
