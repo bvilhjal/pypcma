@@ -277,7 +277,7 @@ def main():
         # Calculate LD...
         local_ld_dict_file = '%s_chrom%d_ldradius%d.pickled.gz' % (p_dict['local_ld_file_prefix'], p_dict['chrom'], p_dict['ld_radius'])
         calculate_ld_tables(p_dict['genotype_file'], p_dict['chrom'], local_ld_dict_file,
-                            p_dict['ld_radius'], min_r2=0.1, maf_thres=p_dict['min_maf'])
+                            p_dict['ld_radius'], min_r2=0.2, maf_thres=p_dict['min_maf'])
     else:
         print 'Nothing happened.  What did you expect?'
     
