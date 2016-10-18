@@ -230,7 +230,8 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
 
 def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
                         snp_filter=None, randomize_sign=True, snps_signs=None,
-                        return_raw_snps=False, return_snps_info=False):
+                        return_raw_snps=False, return_snps_info=False,
+                        return_normalized_snps=True):
         
     chrom_str = 'chr%d' % chrom_i                    
     print 'Loading SNPs'
@@ -268,15 +269,16 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
             snp_ids = snp_ids[maf_filter]
             nts = nts[maf_filter]
     
-    print '%d SNPs remaining' % len(snps)
+    print '%d SNPs remaining after all filtering steps.' % len(snps)    
     
-    print 'Normalizing SNPs'
-    norm_snps = sp.array((snps - snp_means) / snp_stds)
+    
+    ret_dict = {'snp_stds':snp_stds, 'snp_means':snp_means}
+    
+    if return_normalized_snps:
+        print 'Normalizing SNPs'
+        norm_snps = sp.array((snps - snp_means) / snp_stds)
+        ret_dict['norm_snps'] = norm_snps
 
-    print '%d SNPs remaining after all filtering steps.' % len(norm_snps)    
-    
-    ret_dict = {'norm_snps':norm_snps, 'snp_stds':snp_stds, 'snp_means':snp_means}
-    
     if randomize_sign:
         if snps_signs is None:
             snps_signs = 2 * sp.array(sp.random.random(len(norm_snps)) < 0.5, dtype='int8') - 1
