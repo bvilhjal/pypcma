@@ -160,7 +160,7 @@ def get_pruning_filter_dict(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5', max_
     pass
 
 def _get_sub_run_id_(run_id, chrom_i, ld_radius):
-    return 'rid%s_chr%i_ldr%i' % (run_id, chrom_i, ld_radius)
+    return 'rid%s_chr%d_ldr%d' % (run_id, chrom_i, ld_radius)
 
 def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
                   min_maf=0.01, walltime='12:00:00', queue_id='normal', max_memory=8000, num_cores=4,
@@ -191,8 +191,9 @@ def submit_all_ld_jobs(genotype_file, ld_file_prefix, run_id, min_maf=0.01, ld_r
                        max_memory=8000, email='bjarni.vilhjalmsson@gmail.com'):
     
     for chrom_i in range(1, 23):
-        submit_ld_job(run_id, min_maf, genotype_file, chrom_i, ld_radius, ld_file_prefix,
-                      walltime=walltime, queue_id='normal', max_memory=max_memory, num_cores=num_cores,
+        submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
+                      min_maf=min_maf, walltime=walltime, queue_id='normal',
+                      max_memory=max_memory, num_cores=num_cores,
                       job_dir=job_dir, script_dir=script_dir, email=email)
 
 
