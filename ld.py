@@ -180,7 +180,6 @@ def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
     python_command = '%s --ld_radius=%d' % (python_command, ld_radius)
     python_command = '%s --genotype_file=%s' % (python_command, genotype_file)
     python_command = '%s --min_maf=%0.3f' % (python_command, min_maf)
-    python_command = '%s --ld_file_prefix=%s' % (python_command, ld_file_prefix)
 
     slurm.submit_job(run_id, python_command, out_file=out_file, err_file=err_file,
                walltime=walltime, queue_id=queue_id, num_cores=num_cores, max_memory=max_memory,
