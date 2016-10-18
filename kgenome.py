@@ -6,9 +6,11 @@ from itertools import izip
 import cPickle
 import gzip
 import os
+import ld
 
 from scipy import linalg
 import h5py
+import h5py_util as hu
 
 import scipy as sp
 import time
@@ -20,28 +22,7 @@ opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 Kg_nt_decoder = {1:'A', 2:'T', 3:'C', 4:'G', }
 ok_nts = sp.array(['A', 'T', 'G', 'C'])
  
-def dict_to_hdf5(input_dict, hdf5_group):
-    """
-    Recursively constructs HDF5 file groups from dictionaries.  
-    
-    Assumes that the data can be undestood by h5py create_dataset function.
-    """
-    for key in input_dict:
-        if isinstance(input_dict[key], dict):
-            new_hdf5_group = hdf5_group.create_group(key)
-            dict_to_hdf5(input_dict[key], new_hdf5_group)
-        else:
-            hdf5_group.create_dataset(key, data=input_dict[key])
-            
-def hdf5_to_dict(hdf5_group):
-    output_dict = {}
-    for key in hdf5_group.keys():
-        if isinstance(hdf5_group[key], h5py._hl.group.Group):
-            output_dict[key] = hdf5_to_dict(hdf5_group[key])
-        else:
-            output_dict[key] = hdf5_group[key][...]
-    return output_dict
-    
+
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/phase3/1k_genomes_hg.hdf5' ,
                               out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
@@ -237,7 +218,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
-        kinship_pca_dict = hdf5_to_dict(k_h5f)
+        kinship_pca_dict = hu.hdf5_to_dict(k_h5f)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
                                                 maf_thres=maf_thres, figure_dir=None, snp_filter_frac=debug_filter)
@@ -247,29 +228,45 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug
 
 
 
-def get_genotype_data(in_h5f, chrom_i, maf_thres, indiv_filter=None,
-                        snp_filter=None, randomize_sign=True, snps_signs=None):
+def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
+                        snp_filter=None, randomize_sign=True, snps_signs=None,
+                        return_raw_snps=False, return_snps_info=False):
         
     chrom_str = 'chr%d' % chrom_i                    
     print 'Loading SNPs'
     snps = in_h5f[chrom_str]['snps'][...]
+    
+    if return_snps_info:
+        positions = in_h5f[chrom_str]['positions'][...]
+        snp_ids = in_h5f[chrom_str]['snp_ids'][...]
+        nts = in_h5f[chrom_str]['nts'][...]
+        
     if indiv_filter is not None:
         snps = snps[:, indiv_filter]
     
     if snp_filter is not None:
         snps = snps[snp_filter]        
+        if return_snps_info:
+            positions = positions[snp_filter]
+            snp_ids = snp_ids[snp_filter]
+            nts = nts[snp_filter]
     
     snp_means = sp.mean(snps, 1)
     snp_means.shape = (len(snp_means), 1)
     snp_stds = sp.std(snps, 1)
     snp_stds.shape = (len(snp_stds), 1)
     
-    print 'Filtering SNPs with MAF <', maf_thres
-    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
-    maf_filter = snp_stds.flatten() > std_thres
-    snps = snps[maf_filter]
-    snp_stds = snp_stds[maf_filter]
-    snp_means = snp_means[maf_filter]
+    if maf_thres > 0:
+        print 'Filtering SNPs with MAF <', maf_thres
+        std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
+        maf_filter = snp_stds.flatten() > std_thres
+        snps = snps[maf_filter]
+        snp_stds = snp_stds[maf_filter]
+        snp_means = snp_means[maf_filter]
+        if return_snps_info:
+            positions = positions[maf_filter]
+            snp_ids = snp_ids[maf_filter]
+            nts = nts[maf_filter]
     
     print '%d SNPs remaining' % len(snps)
     
@@ -287,6 +284,14 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres, indiv_filter=None,
         norm_snps = norm_snps * snps_signs
         ret_dict['snps_signs'] = snps_signs
     
+    if return_raw_snps:
+        ret_dict['snps'] = snps
+    
+    if return_snps_info:
+        ret_dict['positions'] = positions
+        ret_dict['snp_ids'] = snp_ids
+        ret_dict['nts'] = nts
+
     return ret_dict
     
     
@@ -307,7 +312,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     assert len(sp.unique(indiv_ids)) == len(indiv_ids)
     num_indivs = len(indiv_ids) 
     
-    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
     ok_chromosome_dict = {}
 
@@ -327,35 +331,16 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
             print 'Working on Chromosome %d' % chrom
             chrom_str = 'chr%d' % chrom
             
-            print 'Loading SNPs'
-            snps = in_h5f[chrom_str]['snps'][...]
-            if indiv_filter_frac < 1:
-                snps = snps[:, indiv_filter]
-            
+            snp_filter = None
             if snp_filter_frac < 1:
-                snp_filter = sp.random.random(len(snps)) < snp_filter_frac
-            snps = snps[snp_filter]        
+                snp_filter = sp.random.random(len(in_h5f[chrom_str]['snps'])) < snp_filter_frac
+
+            g_dict = get_genotype_data(in_h5f, chrom, maf_thres, indiv_filter=indiv_filter,
+                        snp_filter=snp_filter, randomize_sign=True, snps_signs=None)
             
-            snp_means = sp.mean(snps, 1)
-            snp_means.shape = (len(snp_means), 1)
-            snp_stds = sp.std(snps, 1)
-            snp_stds.shape = (len(snp_stds), 1)
+            norm_snps = g_dict['norm_snps']
             
-            print 'Filtering SNPs with MAF <', maf_thres
-            maf_filter = snp_stds.flatten() > std_thres
-            snps = snps[maf_filter]
-            snp_stds = snp_stds[maf_filter]
-            snp_means = snp_means[maf_filter]
-            
-            print '%d SNPs remaining' % len(snps)
-            
-            print 'Normalizing SNPs'
-            norm_snps = sp.array((snps - snp_means) / snp_stds)
-            signs = 2 * sp.array(sp.random.random(len(norm_snps)) < 0.5, dtype='int8') - 1
-            signs.shape = (len(signs), 1)
-            norm_snps = norm_snps * signs
-            
-            sum_indiv_genotypes = sp.sum(norm_snps, 0)
+            sum_indiv_genotypes = sp.sum(g_dict['norm_snps'], 0)
             sum_indiv_genotypes_all_chrom += sum_indiv_genotypes
             
             print 'Calculating chromosome kinship'
@@ -378,8 +363,10 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
             print 'Storing and updating things'
             chromosome_dict[chrom_str] = {'K_unscaled':K_unscaled, 'num_snps':len(norm_snps),
                                           'sum_indiv_genotypes':sum_indiv_genotypes,
-                                          'snp_cov_unscaled':snp_cov_unscaled, 'signs':signs}
-            if snp_filter_frac:
+                                          'snp_cov_unscaled':snp_cov_unscaled,
+                                          'snps_signs':g_dict['snps_signs']}
+            
+            if snp_filter_frac < 1:
                 chromosome_dict[chrom_str]['snp_filter'] = snp_filter
     
 #         snp_cov_all_snps = snp_cov_all_snps / float(num_all_snps)
@@ -405,7 +392,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 K_leave_one_out = sp.zeros((num_indivs, num_indivs), dtype='float32')
                 num_snps_used = 0 
                 
-                sum_indiv_genotypes = sp.zeros(num_indivs, dtype='float64')
+                sum_indiv_genotypes = sp.zeros(num_indivs, dtype='float32')
                 
                 for chrom2 in range(1, 23):
                     chrom2_str = 'chr%d' % chrom2
@@ -421,36 +408,16 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                     chrom2_str = 'chr%d' % chrom2
                     if chrom2 != chrom: 
                         print 'Loading SNPs'
-                        snps = in_h5f[chrom2_str]['snps'][...]
-                        if indiv_filter_frac < 1:
-                            snps = snps[:, indiv_filter]
-                        
-                        if snp_filter_frac < 1:
-                            snp_filter = chromosome_dict[chrom2_str]['snp_filter']
-                        snps = snps[snp_filter]
-                        snp_means = sp.mean(snps, 1, dtype='float64')
-                        snp_means.shape = (len(snp_means), 1)
-                        snp_stds = sp.std(snps, 1, dtype='float64')
-                        snp_stds.shape = (len(snp_stds), 1)
-                        
-                        print 'Filtering SNPs with MAF <', maf_thres
-                        maf_filter = snp_stds.flatten() > std_thres
-                        snps = snps[maf_filter]
-                        snp_stds = snp_stds[maf_filter]
-                        snp_means = snp_means[maf_filter]
-                        
-                        print '%d SNPs remaining' % len(snps)
-                        
-                        print 'Normalizing SNPs'
-                        norm_snps = sp.array((snps - snp_means) / snp_stds, dtype='float64')
-                        
+                        snps_signs = chromosome_dict[chrom2_str]['snps_signs']
+                        g_dict = get_genotype_data(in_h5f, chrom2, maf_thres, indiv_filter=indiv_filter,
+                                                   snp_filter=snp_filter, randomize_sign=True,
+                                                   snps_signs=snps_signs)
+                        norm_snps = g_dict['norm_snps']
                         print 'SNP-cov normalisation'
                         norm_snps = norm_snps - mean_indiv_genotypes
-                        signs = chromosome_dict[chrom2_str]['signs']
-                        norm_snps = norm_snps * signs
                         
                         print 'Calculating SNP covariance unscaled'
-                        snp_cov_unscaled = sp.array(sp.dot(norm_snps.T, norm_snps), dtype='float64')
+                        snp_cov_unscaled = sp.dot(norm_snps.T, norm_snps)
                         snp_cov_leave_one_out += snp_cov_unscaled
                   
                 snp_cov_leave_one_out = snp_cov_leave_one_out / num_snps_used
@@ -464,7 +431,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 except:
                     try: 
                         cholesky_decomp = linalg.cholesky(sp.array(snp_cov_leave_one_out, dtype='float32')) 
-                        evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float34')) 
+                        evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float32')) 
                     except:
                         print 'Failed when obtaining the Cholesky decomposotion or eigen decomposition'
                         print 'Moving on, trying again later.'
@@ -520,164 +487,64 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     
     out_h5f = h5py.File(out_file)
     
-    dict_to_hdf5(chromosome_dict, out_h5f)
+    hu.dict_to_hdf5(chromosome_dict, out_h5f)
     out_h5f.close()
     
     return chromosome_dict
 
+def calc_structure_covar():
+    pass
+
+
+def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_ld=0.2):
+    # Open input and output file
+    ih5f = h5py.File(in_hdf5_file)
+    oh5f = h5py.File(out_hdf5_file)
     
-   
-def gen_1k_test_genotypes(kg_file='Data/1Kgenomes/1K_genomes_v3_EUR_unrelated2.hdf5',
-                          nt_map_file='tmp/nt_map.pickled', out_prefix='tmp/1k_ind'):
-    """
-    Generates 1K genotypes in the internal genotype format for validation and other purposes.
-    """
-    print 'Loading NT map from file: %s' % nt_map_file
-    f = open(nt_map_file, 'r')
-    snp_map_dict = cPickle.load(f)
-    f.close()
-    
-    h5f = h5py.File(kg_file)
-    kg_indivs = h5f['indiv_ids'][...]
-    chromosomes = range(1, 23) 
-    
-    
-    # Figure out 1K SNP filter
-    chrom_filter_dict = {}
-    
-    for chrom in chromosomes:
-        kg_chrom_str = 'chr%d' % chrom
-        cg = h5f[kg_chrom_str]
-        sids = cg['snp_ids'][...]
+    for chrom_i in range(1, 23):
+        print 'Working on Chromosome %d' % chrom_i
+        chrom_str = 'chr%d' % chrom_i
+          
+        g_dict = get_genotype_data(ih5f, chrom_i, randomize_sign=False, snps_signs=None,
+                                   return_raw_snps=True, return_snps_info=True)
+        snps = g_dict['snps']
+        snp_means = g_dict['snp_means']
+        snp_stds = g_dict['snp_stds']
+        snp_ids = g_dict['snp_ids'] 
+        positions = g_dict['positions']
+        nts = g_dict['nts']
+
+        local_ld_dict_file = '%s_chrom%d_ldradius%d.pickled.gz' % (local_ld_file_prefix, chrom_i, ld_radius)
+        f = gzip.open(local_ld_dict_file, 'r')
+        ld_dict = cPickle.load(f)
+        f.close()
+
+        ld_snp_filter = ld.ld_pruning(ld_dict['ld_table'], max_ld=max_ld, verbose=True)
         
-        # Get the nucleotides coding map (from 1K genomes project).
-        chrom_dict = snp_map_dict[kg_chrom_str]
-        ok_sids = chrom_dict['sids']
-        snps_filter = sp.in1d(sids, ok_sids)
-        chrom_filter_dict[chrom] = snps_filter
+        assert ld_dict['num_snps'] == len(snps)
+        assert ld_dict['num_snps'] == len(ld_snp_filter)
         
-        reorder_snps = False
-        filtered_sids = sids[snps_filter]
-        assert len(filtered_sids) == len(ok_sids), '.... bug'
-        if not sp.all(filtered_sids == ok_sids):
-            sids_indices_dict = {}
-            for i, sid in enumerate(sids):
-                sids_indices_dict[sid] = i
-            snp_order = []
-            for sid in ok_sids:
-                snp_order.append(sids_indices_dict[sid])
-            filtered_sids = filtered_sids[snp_order]
-            assert sp.all(filtered_sids == ok_sids), '... bug'
-            reorder_snps = True
-    
-    
-    for ind_i in range(10):  # len(kg_indivs)):
-        print 'Generating genotype for individual: %d ' % ind_i
-        
-        # prepare output file
-        out_h5fn = out_prefix + '_%d.hdf5' % ind_i
-        out_h5f = h5py.File(out_h5fn)
-        
-        for chrom in chromosomes:
-#             print '\nWorking on chromosome %d'%chrom
-            kg_chrom_str = 'chr%d' % chrom
-            chrom_str = 'Chr%d' % chrom
-            cg = h5f[kg_chrom_str]
-            
-            snps_filter = chrom_filter_dict[chrom]
+        # Pruning SNPs in LD
+        snps = snps[ld_snp_filter]
+        snp_means = snp_means[ld_snp_filter]
+        snp_stds = snp_stds[ld_snp_filter]
+        snp_ids = snp_ids[ld_snp_filter]
+        positions = positions[ld_snp_filter]
+        nts = nts[ld_snp_filter]
 
-            sids = (cg['snp_ids'][...])[snps_filter]
-            snps = (cg['snps'][...])[:, ind_i]
-            snps = snps[snps_filter]
-            positions = (cg['positions'][...])[snps_filter]
-            nts = (cg['nts'][...])[snps_filter]
-            
-            if reorder_snps:
-                snps = snps[snp_order]
-                positions = positions[snp_order]
-                nts = nts[snp_order]
-                sids = sids[snp_order]
-            
-            assert len(snps) == len(sids) == len(positions) == len(nts), '..bug'
-            # Store information
-            ocg = out_h5f.create_group  (chrom_str)
-            ocg.create_dataset('snps', data=snps)
-            ocg.create_dataset('sids', data=sids)
-            ocg.create_dataset('positions', data=positions)
-            ocg.create_dataset('nts', data=nts)
+        print 'Out of %d SNPs %d were retained' % (ld_dict['num_snps'], len(snps))
 
-        out_h5f.close()
-    h5f.close()
-        # return genome_dict        
+        cg = oh5f.create_group(chrom_str)
+        cg.create_dataset('snps', data=sp.array(snps, dtype='int8'))
+        cg.create_dataset('snp_means', data=snp_means)
+        cg.create_dataset('snp_stds', data=snp_stds)
+        cg.create_dataset('snp_ids', data=snp_ids)
+        cg.create_dataset('positions', data=positions)
+        cg.create_dataset('nts', data=nts)
 
+    ih5f.close()
+    oh5f.close()
 
-
-# Coding key
-# def prepare_nt_coding_key(K_genomes_snps_map, indiv_genot_file, nt_map_file):
-#     """
-#     Determines the nucleotide coding for the genotype using the 1K genome  the 10KUK
-#     """
-#     gf = h5py.File(indiv_genot_file,'r')
-#     kgf = h5py.File(K_genomes_snps_map,'r')
-#     chromosomes = range(1,23) 
-#     snp_map_dict = {}
-#     num_snps = 0
-#     for chrom in chromosomes:
-#         print 'Working on chromosome %d'%chrom
-#         kg_chrom_str = 'chr%d'%chrom
-#         chrom_str = 'Chr%d'%chrom
-#         
-#         #Get SNPs from genotype
-#         cg = gf[chrom_str]
-#         sids = cg['ids'][...]
-#         snps = cg['snps'][...]
-#         sid_dict = dict(zip(sids, snps))
-#         
-#         #Get SNP IDs from 1K genomes
-#         kcg = kgf[kg_chrom_str]
-#         kg_sids = kcg['snp_ids'][...]
-#         
-#         #Determine overlap between SNPs..
-#         kg_filter = sp.in1d(kg_sids,sids)
-#         kg_sids = kg_sids[kg_filter]
-#         kg_nts = (kcg['nts'][...])[kg_filter]
-#         kg_positions = (kcg['positions'][...])[kg_filter]
-#         
-#         #Check that nt are ok in genotype data, otherwise filter.
-#         sid_nt_map = {}
-#         positions = []
-#         ok_sids = []
-#         nts = []
-#         snp_i = 0
-#         for sid, kg_nt, kg_pos in izip(kg_sids, kg_nts, kg_positions):
-#             snp = sid_dict[sid]
-#             if tuple(kg_nt) not in ambig_nts:
-#                 # All possible (and allowed) nucleotides strings 
-#                 ntm = {}
-#                 ntm['--']=-9
-#                 ntm['-'+kg_nt[0]]=-9
-#                 ntm['-'+kg_nt[1]]=-9
-#                 ntm[kg_nt[0]+'-']=-9
-#                 ntm[kg_nt[1]+'-']=-9
-#                 ntm[kg_nt[0]+kg_nt[0]]=0
-#                 ntm[kg_nt[1]+kg_nt[0]]=1
-#                 ntm[kg_nt[0]+kg_nt[1]]=1
-#                 ntm[kg_nt[1]+kg_nt[1]]=2
-#                 sid_nt_map[sid]={'ntm':ntm, 'snp_i':snp_i}
-#                 positions.append(kg_pos)
-#                 nts.append(kg_nt)
-#                 ok_sids.append(sid)
-#                 snp_i += 1
-#         
-#         num_snps += len(sid_nt_map)
-#         snp_map_dict[kg_chrom_str]={'sid_nt_map':sid_nt_map, 'positions':positions, 'nts':nts, 'sids':ok_sids}
-#     
-#     print 'Found %d SNPs'%num_snps
-#     print 'Writing to file'
-#     f = open(nt_map_file, 'wb')
-#     cPickle.dump(snp_map_dict, f, protocol=2)
-#     f.close()
-#     return snp_map_dict
         
 # For debugging purposes
 if __name__ == '__main__':        
