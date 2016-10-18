@@ -120,7 +120,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
             'num_snps':len(norm_snps)}
 
 
-def ld_pruning(ld_dict, ld_snp_indices, max_ld=0.5, verbose=False):
+def ld_pruning(ld_dict, max_ld=0.5, verbose=False):
     """
     Prunes SNPs in LD, in random order. 
     """
@@ -130,6 +130,7 @@ def ld_pruning(ld_dict, ld_snp_indices, max_ld=0.5, verbose=False):
     t0 = time.time()
     indices_to_keep = set([])
     ld_pairs = ld_dict['ld_pairs']
+    ld_snp_indices = ld_dict['ld_snp_indices']
     ld_pair_r2s = ld_dict['ld_pair_r2s']
     num_snps = ld_dict['num_snps']
     random_indices = sp.random.permutation(sp.arange(len(ld_pairs)))
