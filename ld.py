@@ -227,7 +227,6 @@ def _parse_parameters_():
                 sys.exit(0)
             elif opt == "--ld_radius": p_dict['ld_radius'] = int(arg)
             elif opt == "--local_ld_file_prefix": p_dict['local_ld_file_prefix'] = arg
-            elif opt == "--run_id": p_dict['run_id'] = arg
             elif opt == "--sub_run_id": p_dict['sub_run_id'] = arg
             elif opt == "--chrom": p_dict['chrom'] = int(arg)
             elif opt == "--genotype_file": p_dict['genotype_file'] = arg
@@ -245,7 +244,7 @@ def _parse_parameters_():
 
 def main():
     p_dict = _parse_parameters_()
-    if p_dict['sub_run_id'] is not None:
+    if p_dict['sub_run_id'] is None:
         # Calculate LD...
         local_ld_dict_file = '%s_ldradius%d.pickled.gz' % (p_dict['local_ld_file_prefix'], p_dict['ld_radius'])
         calculate_ld_tables(p_dict['genotype_file'], p_dict['chrom'], local_ld_dict_file,
