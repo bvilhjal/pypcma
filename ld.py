@@ -133,21 +133,19 @@ def ld_pruning(ld_dict, max_ld=0.5, verbose=False):
     ld_pair_r2s = ld_dict['ld_pair_r2s']
     num_snps = ld_dict['num_snps']
     random_indices = sp.random.permutation(sp.arange(len(ld_pairs)))
-    indices_to_keep = set([])
-    remaining_indices = set(ld_snp_indices)
+    indices_to_keep = set(ld_snp_indices)
     for pair_index in random_indices:
         (i, j) = ld_pairs[pair_index]
-        if len(remaining_indices) == 0:
+        
+        if len(indices_to_keep) == 0:
             break
-        elif not (i in remaining_indices and j in remaining_indices):
-            continue
-        elif ld_pair_r2s[pair_index] > max_ld:
-            if random.random() > 0.5:
-                indices_to_keep.add(i)
-                remaining_indices.remove(j)
-            else:
-                indices_to_keep.add(j)
-                remaining_indices.remove(i)
+        
+        if (i in indices_to_keep and j in indices_to_keep):
+            if ld_pair_r2s[pair_index] > max_ld:
+                if random.random() > 0.5:
+                    indices_to_keep.remove(i)
+                else:
+                    indices_to_keep.remove(j)
                     
     filter_vector = sp.zeros(num_snps, dtype='bool')
     filter_vector[list(indices_to_keep)] = 1
