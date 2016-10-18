@@ -116,7 +116,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     ld_snp_indices.sort()
     return {'ld_scores': sp.array(ld_scores, dtype='float32'), 'ld_pairs':sp.array(ld_pairs, dtype='int8'),
             'ld_pair_r2s':sp.array(ld_pair_r2s, dtype='float32'),
-            'ld_snp_indices': sp.array(ld_snp_indices, dtype='int8'),
+            'ld_snp_indices': sp.array(ld_snp_indices, dtype='int32'),
             'num_snps':len(norm_snps)}
 
 
