@@ -94,7 +94,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
                     ld_table[snp_j][snp_i] = r2s[ld_vec_i]
                     num_stored += 1
             
-        if verbose and snp_i % 1000 == 0:
+        if verbose and snp_i % 10000 == 0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
     if verbose:
