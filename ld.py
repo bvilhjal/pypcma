@@ -216,7 +216,7 @@ def submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
 
 def submit_all_ld_jobs(genotype_file, ld_file_prefix, run_id, min_maf=0.01, ld_radius=100,
                        job_dir='.', script_dir='.', walltime='6:00:00', num_cores=4,
-                       max_memory='8g', email='bjarni.vilhjalmsson@gmail.com'):
+                       max_memory='16g', email='bjarni.vilhjalmsson@gmail.com'):
     
     for chrom_i in range(1, 23):
         submit_ld_job(run_id, genotype_file, chrom_i, ld_radius, ld_file_prefix,
