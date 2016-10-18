@@ -5,22 +5,22 @@ SLURM related code
 import os
 
 def generate_slurm_script(file_name, run_id, command_str, queue_id=None, out_file=None,
-                          err_file=None, walltime='24:00:00', num_cores=1, max_memory=4000,
+                          err_file=None, walltime='24:00:00', num_cores=1, max_memory='4g',
                           work_dir=None, email=None):
     
     
     with open(file_name, 'w') as f:
         f.write('#!/bin/bash\n') 
+        f.write('#SBATCH --job-name=%s\n' % run_id) 
         f.write('#SBATCH -c %d\n' % num_cores)
+        f.write('#SBATCH --mem %s\n' % max_memory)
+        f.write('#SBATCH --time=%s\n' % walltime)
         if work_dir is not None:
             f.write('#SBATCH --workdir=%s\n' % work_dir)
-        f.write('#SBATCH --job-name=%s\n' % run_id) 
         if out_file is not None:
             f.write('#SBATCH --output=%s\n' % out_file)
         if err_file is not None:
             f.write('#SBATCH --error=%s\n' % err_file)
-        f.write('#SBATCH --time=%s\n' % walltime)
-        f.write('#SBATCH --mem %d\n' % max_memory)
         if queue_id is not None:
             f.write('#SBATCH -p %s\n' % queue_id)
         if email is not None:
