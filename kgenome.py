@@ -516,12 +516,13 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         positions = g_dict['positions']
         nts = g_dict['nts']
 
-        local_ld_dict_file = '%s_chrom%d_ldradius%d.pickled.gz' % (local_ld_file_prefix, chrom_i, ld_radius)
-        f = gzip.open(local_ld_dict_file, 'r')
-        ld_dict = cPickle.load(f)
-        f.close()
+        local_ld_hdf5_file = '%s_chrom%d_ldradius%d.hdf5' % (local_ld_file_prefix, chrom_i, ld_radius)
+        print 'Loading LD information from file: %s' % local_ld_hdf5_file
+        oh5f = h5py.File(local_ld_hdf5_file, 'r')
+        ld_dict = hu.hdf5_to_dict(oh5f)
+        oh5f.close()
 
-        ld_snp_filter = ld.ld_pruning(ld_dict['ld_table'], max_ld=max_ld, verbose=True)
+        ld_snp_filter = ld.ld_pruning(ld_dict, max_ld=max_ld, verbose=True)
         print ld_snp_filter
         
         assert ld_dict['num_snps'] == len(snps)
