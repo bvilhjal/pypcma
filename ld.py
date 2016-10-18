@@ -78,13 +78,14 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         X = norm_snps[start_i: stop_i]
         D_i = sp.dot(X, snp.T) / n
         r2s = D_i ** 2
+        assert r2s.max() <= 1.0 and r2s.min() >= 0
         lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
         ld_scores[snp_i] = lds_i
 
         if snp_i < stop_i - 1:
-            D_shift = min(ld_radius, snp_i) + 1
-            D_i = D_i[D_shift:]
-            shift_start_i = D_shift + start_i
+            shift = min(ld_radius, snp_i) + 1
+            r2s = r2s[shift:]
+            shift_start_i = shift + start_i
             for k in range(shift_start_i, stop_i):
                 ld_vec_i = k - shift_start_i
                 if r2s[ld_vec_i] > min_r2:
