@@ -496,7 +496,7 @@ def calc_structure_covar():
     pass
 
 
-def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_ld=0.2):
+def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_ld=0.2, maf_thres=0.01):
     # Open input and output file
     ih5f = h5py.File(in_hdf5_file)
     oh5f = h5py.File(out_hdf5_file)
@@ -505,7 +505,7 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         print 'Working on Chromosome %d' % chrom_i
         chrom_str = 'chr%d' % chrom_i
           
-        g_dict = get_genotype_data(ih5f, chrom_i, randomize_sign=False, snps_signs=None,
+        g_dict = get_genotype_data(ih5f, chrom_i, maf_thres=maf_thres, randomize_sign=False, snps_signs=None,
                                    return_raw_snps=True, return_snps_info=True)
         snps = g_dict['snps']
         snp_means = g_dict['snp_means']
