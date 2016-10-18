@@ -21,7 +21,7 @@ __updated__ = '2016-10-18'
 
 
 
-def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
+def get_ld_scores(snps, ld_radius=500, gm=None, gm_ld_radius=None):
     """
     Calculates LD tables, and the LD scores in one go, with or without a genetic map.
     
@@ -32,55 +32,78 @@ def get_ld_tables(snps, ld_radius=500, gm=None, gm_ld_radius=None):
     print m, n
     ld_scores = sp.ones(m)
     ret_dict = {}
-    if gm_ld_radius is None:
-        for snp_i, snp in enumerate(snps):
-            # Calculate D
-            start_i = max(0, snp_i - ld_radius)
-            stop_i = min(m, snp_i + ld_radius + 1)
-            X = snps[start_i: stop_i]
-            D_i = sp.dot(snp, X.T) / n
-            r2s = D_i ** 2
-            lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
-            # lds_i = sp.sum(r2s - (1-r2s)*empirical_null_r2)
-            ld_scores[snp_i] = lds_i
-    else:
-        assert gm is not None, 'Genetic map is missing.'
-        window_sizes = []
-        ld_boundaries = []
-        for snp_i, snp in enumerate(snps):
-            curr_cm = gm[snp_i] 
-            
-            # Now find lower boundary
-            start_i = snp_i
-            min_cm = gm[snp_i]
-            while start_i > 0 and min_cm > curr_cm - gm_ld_radius:
-                start_i = start_i - 1
-                min_cm = gm[start_i]
-            
-            # Now find the upper boundary
-            stop_i = snp_i
-            max_cm = gm[snp_i]
-            while stop_i > 0 and max_cm < curr_cm + gm_ld_radius:
-                stop_i = stop_i + 1
-                max_cm = gm[stop_i]
-            
-            ld_boundaries.append([start_i, stop_i])    
-            curr_ws = stop_i - start_i
-            window_sizes.append(curr_ws)
-            assert curr_ws > 0, 'Some issues with the genetic map'
-
-            X = snps[start_i: stop_i]
-            D_i = sp.dot(snp, X.T) / n
-            r2s = D_i ** 2
-            lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
-            ld_scores[snp_i] = lds_i
-        
-        avg_window_size = sp.mean(window_sizes)
-        print 'Average # of SNPs in LD window was %0.2f' % avg_window_size
-        ret_dict['ld_boundaries'] = ld_boundaries
+    for snp_i, snp in enumerate(snps):
+        # Calculate D
+        start_i = max(0, snp_i - ld_radius)
+        stop_i = min(m, snp_i + ld_radius + 1)
+        X = snps[start_i: stop_i]
+        D_i = sp.dot(snp, X.T) / n
+        r2s = D_i ** 2
+        lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
+        # lds_i = sp.sum(r2s - (1-r2s)*empirical_null_r2)
+        ld_scores[snp_i] = lds_i
     ret_dict['ld_scores'] = ld_scores
     
     return ret_dict
+
+
+def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
+    """
+    Calculate LD between all SNPs using a sliding LD square
+    
+    This function only retains r^2 values above the given threshold
+    """
+    # Normalize SNPs (perhaps not necessary, but cheap)    
+    if verbose:
+        print 'Calculating LD table'
+    t0 = time.time()
+    m, n = norm_snps.shape
+    a = min(ld_radius, m)
+    num_pairs = (a * (a - 1) * 0.5) * (m - 1)
+    if verbose:
+        print 'Correlation between %d pairs will be tested' % num_pairs
+
+    ld_table = {}
+    for i in range(m):
+        ld_table[i] = {}
+
+    print m, n
+    ld_scores = sp.ones(m)
+    num_stored = 0
+    
+    for snp_i, snp in enumerate(norm_snps):
+        # Calculate D
+        start_i = max(0, snp_i - ld_radius)
+        stop_i = min(m, snp_i + ld_radius + 1)
+        X = norm_snps[start_i: stop_i]
+        D_i = sp.dot(X, snp.T) / n
+        r2s = D_i ** 2
+        lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
+        ld_scores[snp_i] = lds_i
+
+        if snp_i < stop_i - 1:
+            D_shift = min(ld_radius, snp_i) + 1
+            D_i = D_i[D_shift:]
+            ld_radius
+            for k in range(start_i, stop_i):
+                ld_vec_i = k - start_i
+                if r2s[ld_vec_i] > min_r2:
+                    ld_table[i][k] = r2s[ld_vec_i]
+                    ld_table[k][i] = r2s[ld_vec_i]
+                    num_stored += 1
+    if verbose:
+        sys.stdout.write('Done.\n')
+        if num_pairs > 0:
+            print 'Stored %d (%0.4f%%) correlations that made the cut (r^2>%0.3f).' % (num_stored, 100 * (num_stored / float(num_pairs)), min_r2)
+        else:
+            print '-'
+    t1 = time.time()
+    t = (t1 - t0)
+    if verbose:
+        print '\nIt took %d minutes and %0.2f seconds to calculate the LD table' % (t / 60, t % 60)
+
+    return {'ld_scores': ld_scores, 'ld_table':ld_table}
+
 
 def ld_pruning(ld_table, max_ld=0.5, verbose=False):
     """
@@ -114,8 +137,8 @@ def ld_pruning(ld_table, max_ld=0.5, verbose=False):
 
 
 def calculate_ld_tables(input_genotype_file, chrom_i, local_ld_dict_file, ld_radius,
-                        maf_thres=0.01, gm_ld_radius=None, indiv_filter=None,
-                        snp_filter=None, return_void=True):
+                        min_r2=0.2, maf_thres=0.01, gm_ld_radius=None, indiv_filter=None,
+                        snp_filter=None, return_void=True, verbose=True):
     """
     Calculate the LD tables for the given radius, and store in the given file.
     """
@@ -133,8 +156,7 @@ def calculate_ld_tables(input_genotype_file, chrom_i, local_ld_dict_file, ld_rad
         g_dict = kgenome.get_genotype_data(h5f, chrom_i, maf_thres, indiv_filter=indiv_filter,
                         snp_filter=snp_filter, randomize_sign=False, snps_signs=None)
           
-        
-        ld_dict = get_ld_tables(g_dict['norm_snps'], ld_radius=ld_radius)
+        ld_dict = get_ld_table(g_dict['norm_snps'], ld_radius=ld_radius, min_r2=min_r2, verbose=verbose)
         ld_dict['avg_ld_score'] = sp.mean(ld_dict['ld_scores'])
         ld_dict['num_snps'] = len(g_dict['norm_snps'])
                     
@@ -240,7 +262,6 @@ def _parse_parameters_():
         print __doc__
         sys.exit(0)
     return p_dict
-
 
 
 def main():

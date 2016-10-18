@@ -37,7 +37,7 @@ import getopt
 
 
 
-def calc_ld_table(snps, max_ld_dist=2000, min_r2=0.2, verbose=True, normalize=False):
+def calc_ld_table(norm_snps, max_ld_dist=2000, min_r2=0.2, verbose=True, normalize=False):
     """
     Calculate LD between all SNPs using a sliding LD square
     
@@ -45,15 +45,15 @@ def calc_ld_table(snps, max_ld_dist=2000, min_r2=0.2, verbose=True, normalize=Fa
     """
     # Normalize SNPs (perhaps not necessary, but cheap)
     if normalize:
-        snps = snps.T
-        snps = (snps - sp.mean(snps, 0)) / sp.std(snps, 0)
-        snps = snps.T
+        norm_snps = norm_snps.T
+        norm_snps = (norm_snps - sp.mean(norm_snps, 0)) / sp.std(norm_snps, 0)
+        norm_snps = norm_snps.T
 
     
     if verbose:
         print 'Calculating LD table'
     t0 = time.time()
-    num_snps, num_indivs = snps.shape    
+    num_snps, num_indivs = norm_snps.shape    
     ld_table = {}
     for i in range(num_snps):
         ld_table[i] = {}
@@ -66,7 +66,7 @@ def calc_ld_table(snps, max_ld_dist=2000, min_r2=0.2, verbose=True, normalize=Fa
     for i in range(0, num_snps - 1):
         start_i = i + 1
         end_i = min(start_i + max_ld_dist, num_snps)
-        ld_vec = sp.dot(snps[i], sp.transpose(snps[start_i:end_i])) / float(num_indivs)
+        ld_vec = sp.dot(norm_snps[i], sp.transpose(norm_snps[start_i:end_i])) / float(num_indivs)
         ld_vec = sp.array(ld_vec).flatten()
         for k in range(start_i, end_i):
             ld_vec_i = k - start_i
@@ -89,7 +89,7 @@ def calc_ld_table(snps, max_ld_dist=2000, min_r2=0.2, verbose=True, normalize=Fa
     t = (t1 - t0)
     if verbose:
         print '\nIt took %d minutes and %0.2f seconds to calculate the LD table' % (t / 60, t % 60)
-    del snps
+    del norm_snps
     return ld_table
 
 

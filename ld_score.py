@@ -95,10 +95,10 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
         if gm_ld_radius is not None:
             assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
             gm = in_h5f[chrom_str]['genetic_map'][...]
-            ret_dict = get_ld_tables(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
+            ret_dict = get_ld_scores(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
             chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
         else:
-            ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
+            ret_dict = get_ld_scores(norm_snps, ld_radius=ld_radius)
         chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
         ld_score_sum += sp.sum(ret_dict['ld_scores'])
 
@@ -109,10 +109,10 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
             if gm_ld_radius is not None:
                 assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
                 gm = in_h5f[chrom_str]['genetic_map'][...]
-                ret_dict = get_ld_tables(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
+                ret_dict = get_ld_scores(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
                 chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
             else:
-                ret_dict = get_ld_tables(norm_snps, ld_radius=ld_radius)
+                ret_dict = get_ld_scores(norm_snps, ld_radius=ld_radius)
             
             chrom_ld_scores_dict[chrom_str]['struct_adj_ld_scores'] = ret_dict['ld_scores']
             chrom_ld_scores_dict[chrom_str]['avg_struct_adj_ld_score'] = sp.mean(ret_dict['ld_scores'])
