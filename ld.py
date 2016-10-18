@@ -58,10 +58,6 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         print 'Calculating LD table'
     t0 = time.time()
     m, n = norm_snps.shape
-    a = min(ld_radius, m)
-    num_pairs = (a * (a - 1) * 0.5) * (m - 1)
-    if verbose:
-        print 'Correlation between %d pairs will be tested' % num_pairs
 
     ld_table = {}
     for i in range(m):
@@ -70,9 +66,11 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     print m, n
     ld_scores = sp.ones(m)
     num_stored = 0
-    
+    num_pairs = 0
     for snp_i, snp in enumerate(norm_snps):
         # Calculate D
+        if snp_i == m - 1:
+            continue
         start_i = max(0, snp_i - ld_radius)
         stop_i = min(m, snp_i + ld_radius + 1)
         X = norm_snps[start_i: stop_i]
@@ -82,23 +80,24 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         lds_i = sp.sum(r2s - (1 - r2s) / (n - 2), dtype='float32')
         ld_scores[snp_i] = lds_i
 
-        if snp_i < stop_i - 1:
-            shift = min(ld_radius, snp_i) + 1
-            r2s = r2s[shift:]
-            shift_start_i = shift + start_i
-            for snp_j in range(shift_start_i, stop_i):
-                ld_vec_i = snp_j - shift_start_i
-                if r2s[ld_vec_i] > min_r2:
-                    
-                    ld_table[snp_i][snp_j] = r2s[ld_vec_i]
-                    ld_table[snp_j][snp_i] = r2s[ld_vec_i]
-                    num_stored += 1
+        shift = min(ld_radius, snp_i) + 1
+        r2s = r2s[shift:]
+        shift_start_i = shift + start_i
+        for snp_j in range(shift_start_i, stop_i):
+            num_pairs += 1
+            ld_vec_i = snp_j - shift_start_i
+            if r2s[ld_vec_i] > min_r2:
+                ld_table[snp_i][snp_j] = r2s[ld_vec_i]
+                ld_table[snp_j][snp_i] = r2s[ld_vec_i]
+                num_stored += 1
             
         if verbose and snp_i % 10000 == 0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
     if verbose:
         sys.stdout.write('Done.\n')
+        if verbose:
+            print 'Correlation between %d pairs was tested' % num_pairs
         if num_pairs > 0:
             print 'Stored %d (%0.4f%%) correlations that made the cut (r^2>%0.3f).' % (num_stored, 100 * (num_stored / float(num_pairs)), min_r2)
         else:
