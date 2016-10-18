@@ -84,10 +84,11 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
         if snp_i < stop_i - 1:
             D_shift = min(ld_radius, snp_i) + 1
             D_i = D_i[D_shift:]
-            ld_radius
-            for k in range(start_i, stop_i):
-                ld_vec_i = k - start_i
+            shift_start_i = D_shift + start_i
+            for k in range(shift_start_i, stop_i):
+                ld_vec_i = k - shift_start_i
                 if r2s[ld_vec_i] > min_r2:
+                    
                     ld_table[i][k] = r2s[ld_vec_i]
                     ld_table[k][i] = r2s[ld_vec_i]
                     num_stored += 1
@@ -101,7 +102,8 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     t = (t1 - t0)
     if verbose:
         print '\nIt took %d minutes and %0.2f seconds to calculate the LD table' % (t / 60, t % 60)
-
+    
+    print 'Average LD score was %f' % sp.mean(ld_scores)
     return {'ld_scores': ld_scores, 'ld_table':ld_table}
 
 
