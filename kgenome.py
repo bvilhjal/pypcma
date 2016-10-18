@@ -520,6 +520,7 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         f.close()
 
         ld_snp_filter = ld.ld_pruning(ld_dict['ld_table'], max_ld=max_ld, verbose=True)
+        print ld_snp_filter
         
         assert ld_dict['num_snps'] == len(snps)
         assert ld_dict['num_snps'] == len(ld_snp_filter)
