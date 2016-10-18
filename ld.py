@@ -128,13 +128,13 @@ def ld_pruning(ld_dict, max_ld=0.5, verbose=False):
     if verbose:
         print 'Calculating LD table'
     t0 = time.time()
-    indices_to_keep = set([])
     ld_pairs = ld_dict['ld_pairs']
     ld_snp_indices = ld_dict['ld_snp_indices']
     ld_pair_r2s = ld_dict['ld_pair_r2s']
     num_snps = ld_dict['num_snps']
     random_indices = sp.random.permutation(sp.arange(len(ld_pairs)))
-    remaining_indices = ld_snp_indices.copy()
+    indices_to_keep = set([])
+    remaining_indices = set(ld_snp_indices)
     for pair_index in random_indices:
         (i, j) = ld_pairs[pair_index]
         if len(remaining_indices) == 0:
