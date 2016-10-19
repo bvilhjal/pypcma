@@ -467,6 +467,8 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     # While loop ends here.
     K_all_snps = K_all_snps / float(num_all_snps)
     in_h5f.close()
+    ok_chromosome_dict['K_all_snps'] = K_all_snps
+    ok_chromosome_dict['num_all_snps'] = num_all_snps
 
     assert sp.sum((ok_chromosome_dict['chr1']['K_leave_one_out'] - ok_chromosome_dict['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
         
@@ -478,9 +480,13 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     print ordered_evals[:10] / sp.sum(ordered_evals)
     pcs = evecs[:, sort_indices]
 
+
     tot = sum(evals)
     var_exp = [(i / tot) * 100 for i in sorted(evals, reverse=True)]
     print 'Total variance explained:', sp.sum(var_exp)
+
+    ok_chromosome_dict['pcs'] = pcs
+    ok_chromosome_dict['pcs_var_exp'] = var_exp
 
     if figure_dir is not None:
         plt.clf()    
@@ -492,11 +498,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
         plt.savefig(figure_dir + '/' + figure_fn, format='pdf')
         plt.clf()
     
-    for chrom in range(1, 23):
-        print 'Working on Chromosome %d' % chrom
-        chrom_str = 'chr%d' % chrom
-        K_leave_one_out = ok_chromosome_dict[chrom_str]['K_leave_one_out']
-
     out_h5f = h5py.File(out_file)
     hu.dict_to_hdf5(ok_chromosome_dict, out_h5f)
     out_h5f.close()
