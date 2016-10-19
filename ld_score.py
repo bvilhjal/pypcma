@@ -22,6 +22,7 @@ from plinkio import plinkfile
 import h5py
 import plinkio
 import kgenome
+import h5py_util as hu
 
 
 try: 
@@ -50,7 +51,6 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
     print 'Calculating LD information w. radius %d' % ld_radius
 
     in_h5f = h5py.File(input_genotype_file)
-    indiv_ids = in_h5f['indiv_ids'][...] 
     
 #     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
     
@@ -101,7 +101,9 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
         num_snps += len(norm_snps)
     
     avg_gw_ld_score = ld_score_sum / float(num_snps)
-    ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'chrom_dict':chrom_ld_scores_dict}    
+    avg_gw_struct_adj_ld_score = ld_score_sum / float(num_snps)
+    ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'avg_gw_struct_adj_ld_score':avg_gw_struct_adj_ld_score,
+                      'chrom_dict':chrom_ld_scores_dict}    
     
     print 'Done calculating the LD table and LD scores.'
     if gm_ld_radius is not None:
@@ -110,8 +112,6 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
     return ld_scores_dict
     
     
-def get_popadj_snp_trans_mat(kinship):
-    return 
 
 def calculate(input_genotype_file, input_ld_pruned_genotype_file,
               ld_score_file, kinship_pca_file, ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05, debug_filter_frac=1):
@@ -129,14 +129,15 @@ def calculate(input_genotype_file, input_ld_pruned_genotype_file,
         chrom_snp_trans_mats[chrom_str] = kinship_pca_dict[chrom_str]['cholesky_decomp_inv_snp_cov']    
     
     # bla
-    ld_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
+    lds_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius,
                                     debug_filter_frac=debug_filter_frac)
     
     
     # Store LD scores
     lds_h5f = h5py.File(ld_score_file)
-    
+    hu.dict_to_hdf5(lds_dict, lds_h5f)
+    lds_h5f.close()
     
 
     
