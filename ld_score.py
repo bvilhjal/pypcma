@@ -176,4 +176,4 @@ if __name__ == '__main__':
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
-              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95, debug_filter_frac=0.02)
+              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95, debug_filter_frac=1)
