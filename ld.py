@@ -17,7 +17,7 @@ import h5py
 import scipy as sp
 import time
 
-__updated__ = '2016-10-18'
+__updated__ = '2016-10-19'
 
 
 
@@ -111,7 +111,8 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     if verbose:
         print '\nIt took %d minutes and %0.2f seconds to calculate the LD table' % (t / 60, t % 60)
     
-    print 'Average LD score was %f' % sp.mean(ld_scores)
+    if verbose:
+        print 'Average LD score was %f' % sp.mean(ld_scores)
     ld_snp_indices = list(ld_snp_indices)
     ld_snp_indices.sort()
     return {'ld_scores': sp.array(ld_scores, dtype='float32'), 'ld_pairs':sp.array(ld_pairs, dtype='int32'),

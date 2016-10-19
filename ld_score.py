@@ -93,30 +93,32 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
         print 'Normalizing SNPs'
         norm_snps = (snps - snp_means) / snp_stds
     
-        if gm_ld_radius is not None:
-            assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
-            gm = in_h5f[chrom_str]['genetic_map'][...]
-            ret_dict = ld.get_ld_scores(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
-            chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
-        else:
-            ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
-        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':sp.mean(ret_dict['ld_scores'])}
+        
+        ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
+        avg_ld_score = sp.mean(ret_dict['ld_scores'])
+        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':avg_ld_score}
         ld_score_sum += sp.sum(ret_dict['ld_scores'])
+        
+        print 'Un-adjusted average LD score was: %0.3f' % avg_ld_score
 
         if chrom_snp_trans_mats is not None:
             snp_trans_mat = chrom_snp_trans_mats[chrom_str]
             norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
     
-            if gm_ld_radius is not None:
-                assert 'genetic_map' in in_h5f[chrom_str].keys(), 'Genetic map is missing.'
-                gm = in_h5f[chrom_str]['genetic_map'][...]
-                ret_dict = ld.get_ld_scores(norm_snps, gm=gm, gm_ld_radius=gm_ld_radius)
-                chrom_ld_boundaries[chrom_str] = ret_dict['ld_boundaries']
-            else:
-                ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
+            # Need to re-normalize?
+            snp_means = sp.mean(snps, 1)
+            snp_means.shape = (len(snp_means), 1)
+            snp_stds = sp.std(snps, 1)
+            snp_stds.shape = (len(snp_stds), 1)
+            norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
+
+            ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
             
+            avg_ld_score = sp.mean(ret_dict['ld_scores'])
+            print 'Pop-structure adjusted average LD score was: %0.3f' % avg_ld_score
+
             chrom_ld_scores_dict[chrom_str]['struct_adj_ld_scores'] = ret_dict['ld_scores']
-            chrom_ld_scores_dict[chrom_str]['avg_struct_adj_ld_score'] = sp.mean(ret_dict['ld_scores'])
+            chrom_ld_scores_dict[chrom_str]['avg_struct_adj_ld_score'] = avg_ld_score
             struct_adj_ld_score_sum += sp.sum(ret_dict['ld_scores'])
             
         num_snps += len(norm_snps)
@@ -194,7 +196,7 @@ def get_genotype_cov_mat():
 
 
 if __name__ == '__main__':
-    pre_calculate_everything('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
+    pre_calculate_everything('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
