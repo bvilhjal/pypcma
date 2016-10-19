@@ -36,24 +36,19 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
-                          gm_ld_radius=None, maf_thres=0.01, ld_radius=200,
-                          debug_filter_frac=0.01, indiv_filter=None , snp_filter=None):
+                          maf_thres=0.01, ld_radius=200, debug_filter_frac=0.01,
+                          indiv_filter=None , snp_filter=None):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
     
     chrom_ld_scores_dict = {}
-    if gm_ld_radius is not None:
-        chrom_ld_boundaries = {}
     ld_score_sum = 0
     struct_adj_ld_score_sum = 0
     num_snps = 0
     print 'Calculating LD information w. radius %d' % ld_radius
-
     in_h5f = h5py.File(input_genotype_file)
-    
-#     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
-    
+        
     print 'Calculating local LD'
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
@@ -69,12 +64,10 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
         
         ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
         avg_ld_score = sp.mean(ret_dict['ld_scores'])
-        chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':avg_ld_score}
+        g_dict['ld_scores'] = ret_dict['ld_scores']
+        g_dict['avg_ld_score'] = avg_ld_score
         ld_score_sum += sp.sum(ret_dict['ld_scores'])
         
-        chrom_ld_scores_dict[chrom_str]['positions'] = g_dict['positions']
-        chrom_ld_scores_dict[chrom_str]['snp_ids'] = g_dict['snp_ids']
-        chrom_ld_scores_dict[chrom_str]['nts'] = g_dict['nts']
         
         print 'Un-adjusted average LD score was: %0.3f' % avg_ld_score
 
@@ -83,31 +76,31 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
             norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
             
             # Need to re-normalize?
-#             snp_means = sp.mean(norm_snps, 1)
-#             snp_means.shape = (len(snp_means), 1)
-#             snp_stds = sp.std(norm_snps, 1)
-#             snp_stds.shape = (len(snp_stds), 1)
-#             norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
+            snp_means = sp.mean(norm_snps, 1)
+            snp_means.shape = (len(snp_means), 1)
+            snp_stds = sp.std(norm_snps, 1)
+            snp_stds.shape = (len(snp_stds), 1)
+            norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
 
             ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
             
             avg_ld_score = sp.mean(ret_dict['ld_scores'])
             print 'Pop-structure adjusted average LD score was: %0.3f' % avg_ld_score
 
-            chrom_ld_scores_dict[chrom_str]['struct_adj_ld_scores'] = ret_dict['ld_scores']
-            chrom_ld_scores_dict[chrom_str]['avg_struct_adj_ld_score'] = avg_ld_score
+            g_dict['struct_adj_ld_scores'] = ret_dict['ld_scores']
+            g_dict['avg_struct_adj_ld_score'] = avg_ld_score
             struct_adj_ld_score_sum += sp.sum(ret_dict['ld_scores'])
-            
+        
+        chrom_ld_scores_dict[chrom_str] = g_dict
         num_snps += len(norm_snps)
     
     avg_gw_ld_score = ld_score_sum / float(num_snps)
     avg_gw_struct_adj_ld_score = ld_score_sum / float(num_snps)
-    ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score, 'avg_gw_struct_adj_ld_score':avg_gw_struct_adj_ld_score,
-                      'chrom_dict':chrom_ld_scores_dict}    
+    ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score,
+                      'avg_gw_struct_adj_ld_score':avg_gw_struct_adj_ld_score,
+                      'chrom_ld_scores_dict':chrom_ld_scores_dict}    
     
     print 'Done calculating the LD table and LD scores.'
-    if gm_ld_radius is not None:
-        ld_scores_dict['chrom_ld_boundaries'] = chrom_ld_boundaries 
         
     return ld_scores_dict
     
