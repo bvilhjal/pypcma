@@ -103,7 +103,7 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
 
         if chrom_snp_trans_mats is not None:
             snp_trans_mat = chrom_snp_trans_mats[chrom_str]
-            norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
+            norm_snps = sp.dot(norm_snps, snp_trans_mat)
     
             # Need to re-normalize?
             snp_means = sp.mean(snps, 1)
@@ -138,7 +138,7 @@ def get_popadj_snp_trans_mat(kinship):
 
 def calculate(input_genotype_file, input_ld_pruned_genotype_file,
               pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
-              ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05):
+              ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05, debug_filter=1):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
@@ -152,7 +152,8 @@ def calculate(input_genotype_file, input_ld_pruned_genotype_file,
         chrom_snp_trans_mats[chrom_str] = kinship_pca_dict[chrom_str]['cholesky_decomp_inv_snp_cov']    
     
     ld_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
-                                    maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=1)
+                                    maf_thres=maf_thres, ld_radius=ld_radius,
+                                    debug_filter=debug_filter)
     
     
     # 7. Store everything.  EVERYTHING!
@@ -201,4 +202,4 @@ if __name__ == '__main__':
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
-              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95)
+              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95, debug_filter=0.02)
