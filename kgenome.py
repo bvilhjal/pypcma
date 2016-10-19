@@ -308,6 +308,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
+    indiv_filter = None
     if indiv_filter_frac < 1:
         indiv_filter = sp.array(sp.random.random(len(indiv_ids)) < indiv_filter_frac, dtype='bool8')
         indiv_ids = indiv_ids[indiv_filter]
