@@ -35,7 +35,8 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
-                          gm_ld_radius=None, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
+                          gm_ld_radius=None, maf_thres=0.01, ld_radius=200,
+                          debug_filter=0.01, indiv_filter=None , snp_filter=None):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
@@ -51,7 +52,7 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
     in_h5f = h5py.File(input_genotype_file)
     indiv_ids = in_h5f['indiv_ids'][...] 
     
-    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
+#     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
     
     print 'Calculating local LD'
     for chrom in range(1, 23):
@@ -60,44 +61,20 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
         
         
         print 'Loading SNPs'
-        snps = in_h5f[chrom_str]['snps'][...]
-        snp_stds = in_h5f[chrom_str]['snp_stds'][...]
-        snp_means = in_h5f[chrom_str]['snp_means'][...]
-        nts = in_h5f[chrom_str]['nts'][...]
-        print 'snps.shape: %s, snp_stds.shape: %s, snp_means.shape: %s' % (str(snps.shape), str(snp_stds.shape), str(snp_means.shape))
+        g_dict = kgenome.get_genotype_data(in_h5f, chrom, maf_thres, indiv_filter=indiv_filter,
+                                   snp_filter=snp_filter, randomize_sign=False, snps_signs=None,
+                                   return_snps_info=True)
         
-        if debug_filter < 1:
-            debug_snp_filter = sp.random.random(len(snps)) < debug_filter
-            snps = snps[debug_snp_filter]
-            snp_stds = snp_stds[debug_snp_filter]
-            snp_means = snp_means[debug_snp_filter]
-            nts = nts[debug_snp_filter]
-
-        
-        print 'Filtering SNPs with MAF <', maf_thres
-        maf_filter = snp_stds.flatten() > std_thres
-        snps = snps[maf_filter]
-        snp_stds = snp_stds[maf_filter]
-        snp_means = snp_means[maf_filter]
-        nts = nts[maf_filter]
-        
-        nt_filter = sp.in1d(nts, ok_nts)
-        if not sp.all(nt_filter):
-            print 'Removing SNPs with missing NT information'
-            snps = snps[nt_filter]
-            snp_stds = snp_stds[nt_filter]
-            snp_means = snp_means[nt_filter]
-        
-        print '%d SNPs remaining' % len(snps)
-        
-        print 'Normalizing SNPs'
-        norm_snps = (snps - snp_means) / snp_stds
-    
+        norm_snps = g_dict['norm_snps']
         
         ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
         avg_ld_score = sp.mean(ret_dict['ld_scores'])
         chrom_ld_scores_dict[chrom_str] = {'ld_scores':ret_dict['ld_scores'], 'avg_ld_score':avg_ld_score}
         ld_score_sum += sp.sum(ret_dict['ld_scores'])
+        
+        chrom_ld_scores_dict[chrom_str]['positions'] = g_dict['positions']
+        chrom_ld_scores_dict[chrom_str]['snp_ids'] = g_dict['snp_ids']
+        chrom_ld_scores_dict[chrom_str]['nts'] = g_dict['nts']
         
         print 'Un-adjusted average LD score was: %0.3f' % avg_ld_score
 
@@ -106,11 +83,11 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
             norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
             
             # Need to re-normalize?
-            snp_means = sp.mean(norm_snps, 1)
-            snp_means.shape = (len(snp_means), 1)
-            snp_stds = sp.std(norm_snps, 1)
-            snp_stds.shape = (len(snp_stds), 1)
-            norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
+#             snp_means = sp.mean(norm_snps, 1)
+#             snp_means.shape = (len(snp_means), 1)
+#             snp_stds = sp.std(norm_snps, 1)
+#             snp_stds.shape = (len(snp_stds), 1)
+#             norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
 
             ret_dict = ld.get_ld_scores(norm_snps, ld_radius=ld_radius)
             
@@ -137,12 +114,13 @@ def get_popadj_snp_trans_mat(kinship):
     return 
 
 def calculate(input_genotype_file, input_ld_pruned_genotype_file,
-              pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
+              ld_score_file, kinship_pca_file,
               ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05, debug_filter=1):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
+    # Kinship
     kinship_pca_dict = kgenome.get_kinship_pca_dict(input_ld_pruned_genotype_file, kinship_pca_file,
                                                     maf_thres=maf_thres, snp_filter_frac=snp_filter_frac)
     chrom_snp_trans_mats = {}
@@ -151,12 +129,14 @@ def calculate(input_genotype_file, input_ld_pruned_genotype_file,
         chrom_str = 'chr%d' % chrom
         chrom_snp_trans_mats[chrom_str] = kinship_pca_dict[chrom_str]['cholesky_decomp_inv_snp_cov']    
     
+    # bla
     ld_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius,
                                     debug_filter=debug_filter)
     
     
-    # 7. Store everything.  EVERYTHING!
+    # Store LD scores
+    lds_h5f = h5py.File(ld_score_file)
     
     
 
