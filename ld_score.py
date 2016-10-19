@@ -197,7 +197,7 @@ def get_genotype_cov_mat():
 
 if __name__ == '__main__':
     calculate('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
-              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5'
+              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
