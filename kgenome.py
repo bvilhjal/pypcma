@@ -214,14 +214,14 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     
     
     
-def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, debug_filter):
+def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, snp_filter_frac):
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
         kinship_pca_dict = hu.hdf5_to_dict(k_h5f)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
-                                                maf_thres=maf_thres, figure_dir=None, snp_filter_frac=debug_filter)
+                                                maf_thres=maf_thres, figure_dir=None, snp_filter_frac=snp_filter_frac)
     return kinship_pca_dict
 
     
@@ -552,9 +552,9 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         
 # For debugging purposes
 if __name__ == '__main__':        
-    kinship_pca_dict = calc_kinship('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
+    kinship_pca_dict = calc_kinship('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
-                         maf_thres=0.01, snp_filter_frac=0.05, indiv_filter_frac=1)
+                         maf_thres=0.01, snp_filter_frac=1, indiv_filter_frac=1)
 
 

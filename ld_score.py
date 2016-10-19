@@ -135,12 +135,12 @@ def get_popadj_snp_trans_mat(kinship):
     return 
 
 def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
-                             ld_radius=200, maf_thres=0.01, debug_filter=0.05):
+                             ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, debug_filter=debug_filter)
+    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, snp_filter_frac=snp_filter_frac)
     chrom_snp_trans_mats = {}
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
@@ -197,8 +197,8 @@ def get_genotype_cov_mat():
 
 
 if __name__ == '__main__':
-    pre_calculate_everything('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
+    pre_calculate_everything('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pca_adj_ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
                              '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.02.hdf5',
-                             ld_radius=1000, maf_thres=0.01, debug_filter=0.02)
+                             ld_radius=1000, maf_thres=0.01, snp_filter_frac=1)
