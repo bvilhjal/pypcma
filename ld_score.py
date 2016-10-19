@@ -136,13 +136,15 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
 def get_popadj_snp_trans_mat(kinship):
     return 
 
-def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
-                             ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05):
+def calculate(input_genotype_file, input_ld_pruned_genotype_file, pca_adj_ld_score_file,
+              ld_score_file, kinship_pca_file, ld_radius=200, maf_thres=0.01,
+              snp_filter_frac=0.05):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
     
-    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres=maf_thres, snp_filter_frac=snp_filter_frac)
+    kinship_pca_dict = kgenome.get_kinship_pca_dict(input_ld_pruned_genotype_file, kinship_pca_file,
+                                                    maf_thres=maf_thres, snp_filter_frac=snp_filter_frac)
     chrom_snp_trans_mats = {}
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
@@ -152,9 +154,7 @@ def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_scor
     ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=1)
     
-
-    # 6. a) Calculate LD score.
-    # 6. b) Calculate population structure adjusted LD score.
+    
     # 7. Store everything.  EVERYTHING!
     
     
