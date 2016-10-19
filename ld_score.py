@@ -98,10 +98,9 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
     avg_gw_struct_adj_ld_score = ld_score_sum / float(num_snps)
     ld_scores_dict = {'avg_gw_ld_score': avg_gw_ld_score,
                       'avg_gw_struct_adj_ld_score':avg_gw_struct_adj_ld_score,
-                      'chrom_ld_scores_dict':chrom_ld_scores_dict}    
+                      'chrom_dict':chrom_ld_scores_dict}    
     
     print 'Done calculating the LD table and LD scores.'
-        
     return ld_scores_dict
     
     
