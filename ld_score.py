@@ -91,6 +91,9 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
             g_dict['avg_struct_adj_ld_score'] = avg_ld_score
             struct_adj_ld_score_sum += sp.sum(ret_dict['ld_scores'])
         
+        del g_dict['norm_snps']
+        del g_dict['snp_means']
+        del g_dict['snp_stds']
         chrom_ld_scores_dict[chrom_str] = g_dict
         num_snps += len(norm_snps)
     
