@@ -546,6 +546,9 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         cg.create_dataset('positions', data=positions)
         cg.create_dataset('nts', data=nts)
 
+    indiv_ids = ih5f['indiv_ids'][...]
+    oh5f.create_dataset('indiv_ids', data=indiv_ids)    
+    
     ih5f.close()
     oh5f.close()
 
