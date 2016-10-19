@@ -145,10 +145,7 @@ def pre_calculate_everything(input_genotype_file, pca_adj_ld_score_file, ld_scor
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        snp_cov = kinship_pca_dict[chrom_str]['snp_cov_leave_one_out']
-        T = linalg.cholesky(linalg.pinv(snp_cov))
-        chrom_snp_trans_mats[chrom_str] = T
-    
+        chrom_snp_trans_mats[chrom_str] = kinship_pca_dict[chrom_str]['cholesky_decomp_inv_snp_cov']    
     
     ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=1)

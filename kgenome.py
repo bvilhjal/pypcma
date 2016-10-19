@@ -430,11 +430,11 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 assert (K_leave_one_out - sp.diag(K_leave_one_out)).max() < 0.1, '..bug' 
                 
                 try:
-                    cholesky_decomp = linalg.cholesky(sp.array(snp_cov_leave_one_out, dtype='float64'))  
+                    cholesky_decomp_inv_snp_cov = linalg.cholesky(linalg.pinv(sp.array(snp_cov_leave_one_out, dtype='float64')))  
                     evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float64')) 
                 except:
                     try: 
-                        cholesky_decomp = linalg.cholesky(sp.array(snp_cov_leave_one_out, dtype='float32')) 
+                        cholesky_decomp_inv_snp_cov = linalg.cholesky(linalg.pinv(sp.array(snp_cov_leave_one_out, dtype='float32')))
                         evals, evecs = linalg.eig(sp.array(K_leave_one_out, dtype='float32')) 
                     except:
                         print 'Failed when obtaining the Cholesky decomposotion or eigen decomposition'
@@ -448,7 +448,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 d = {}
                 d['evecs_leave_one_out'] = ordered_evecs
                 d['evals_leave_one_out'] = ordered_evals
-                d['cholesky_decomp'] = cholesky_decomp
+                d['cholesky_decomp_inv_snp_cov'] = cholesky_decomp_inv_snp_cov
                 d['K_leave_one_out'] = K_leave_one_out
                 d['K_unscaled'] = chromosome_dict[chrom_str]['K_unscaled']
                 d['num_snps'] = chromosome_dict[chrom_str]['num_snps']
