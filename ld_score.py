@@ -104,11 +104,11 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
         if chrom_snp_trans_mats is not None:
             snp_trans_mat = chrom_snp_trans_mats[chrom_str]
             norm_snps = sp.dot(norm_snps, snp_trans_mat.T)
-    
+            
             # Need to re-normalize?
-            snp_means = sp.mean(snps, 1)
+            snp_means = sp.mean(norm_snps, 1)
             snp_means.shape = (len(snp_means), 1)
-            snp_stds = sp.std(snps, 1)
+            snp_stds = sp.std(norm_snps, 1)
             snp_stds.shape = (len(snp_stds), 1)
             norm_snps = sp.array((norm_snps - snp_means) / snp_stds)
 
