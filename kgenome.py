@@ -15,7 +15,7 @@ import h5py_util as hu
 import scipy as sp
 import time
 
-__updated__ = '2016-10-18'
+__updated__ = '2016-10-19'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -412,6 +412,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                     if chrom2 != chrom: 
                         print 'Loading SNPs'
                         snps_signs = chromosome_dict[chrom2_str]['snps_signs']
+                        snp_filter = chromosome_dict[chrom2_str]['snp_filter']
                         g_dict = get_genotype_data(in_h5f, chrom2, maf_thres, indiv_filter=indiv_filter,
                                                    snp_filter=snp_filter, randomize_sign=True,
                                                    snps_signs=snps_signs)
