@@ -458,10 +458,9 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 
     # While loop ends here.
     K_all_snps = K_all_snps / float(num_all_snps)
-
     in_h5f.close()
 
-    assert sp.sum((chromosome_dict['chr1']['K_leave_one_out'] - chromosome_dict['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
+    assert sp.sum((ok_chromosome_dict['chr1']['K_leave_one_out'] - ok_chromosome_dict['chr2']['K_leave_one_out']) ** 2) != 0 , 'Kinships are probably too similar.'
         
     print 'Calculating PCAs'
     evals, evecs = linalg.eigh(sp.array(K_all_snps, dtype='float64'))  # PCA via eigen decomp
@@ -488,15 +487,15 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        K_leave_one_out = chromosome_dict[chrom_str]['K_leave_one_out']
+        K_leave_one_out = ok_chromosome_dict[chrom_str]['K_leave_one_out']
 
-    
     out_h5f = h5py.File(out_file)
-    
-    hu.dict_to_hdf5(chromosome_dict, out_h5f)
+    hu.dict_to_hdf5(ok_chromosome_dict, out_h5f)
     out_h5f.close()
     
-    return chromosome_dict
+    return ok_chromosome_dict
+
+
 
 def calc_structure_covar():
     pass
