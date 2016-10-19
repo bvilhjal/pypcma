@@ -36,7 +36,7 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                           gm_ld_radius=None, maf_thres=0.01, ld_radius=200,
-                          debug_filter=0.01, indiv_filter=None , snp_filter=None):
+                          debug_filter_frac=0.01, indiv_filter=None , snp_filter=None):
     """
     Generates 1k genomes LD scores and stores in the given file
     """
@@ -63,7 +63,7 @@ def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
         print 'Loading SNPs'
         g_dict = kgenome.get_genotype_data(in_h5f, chrom, maf_thres, indiv_filter=indiv_filter,
                                    snp_filter=snp_filter, randomize_sign=False, snps_signs=None,
-                                   return_snps_info=True)
+                                   return_snps_info=True, debug_filter_frac=debug_filter_frac)
         
         norm_snps = g_dict['norm_snps']
         
@@ -114,8 +114,7 @@ def get_popadj_snp_trans_mat(kinship):
     return 
 
 def calculate(input_genotype_file, input_ld_pruned_genotype_file,
-              ld_score_file, kinship_pca_file,
-              ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05, debug_filter=1):
+              ld_score_file, kinship_pca_file, ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05, debug_filter_frac=1):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
@@ -132,7 +131,7 @@ def calculate(input_genotype_file, input_ld_pruned_genotype_file,
     # bla
     ld_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius,
-                                    debug_filter=debug_filter)
+                                    debug_filter_frac=debug_filter_frac)
     
     
     # Store LD scores
@@ -181,4 +180,4 @@ if __name__ == '__main__':
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/ld_scores.hdf5',
               '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
-              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95, debug_filter=0.02)
+              ld_radius=1000, maf_thres=0.01, snp_filter_frac=0.95, debug_filter_frac=0.02)

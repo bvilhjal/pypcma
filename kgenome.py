@@ -231,7 +231,7 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, snp_f
 def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
                         snp_filter=None, randomize_sign=True, snps_signs=None,
                         return_raw_snps=False, return_snps_info=False,
-                        return_normalized_snps=True):
+                        return_normalized_snps=True, debug_filter_frac=1):
         
     chrom_str = 'chr%d' % chrom_i                    
     print 'Loading SNPs'
@@ -251,6 +251,14 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
             positions = positions[snp_filter]
             snp_ids = snp_ids[snp_filter]
             nts = nts[snp_filter]
+
+    if debug_filter_frac < 1:
+        debug_filter = sp.random.random(len(snps)) < debug_filter_frac
+        snps = snps[debug_filter]        
+        if return_snps_info:
+            positions = positions[debug_filter]
+            snp_ids = snp_ids[debug_filter]
+            nts = nts[debug_filter]
     
     snp_means = sp.mean(snps, 1)
     snp_means.shape = (len(snp_means), 1)
