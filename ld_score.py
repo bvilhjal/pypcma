@@ -34,7 +34,7 @@ ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
 
 
-def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats,
+def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                           gm_ld_radius=None, maf_thres=0.01, ld_radius=200, debug_filter=0.01):
     """
     Generates 1k genomes LD scores and stores in the given file
@@ -136,9 +136,9 @@ def generate_1k_LD_scores(input_genotype_file, output_file, chrom_snp_trans_mats
 def get_popadj_snp_trans_mat(kinship):
     return 
 
-def calculate(input_genotype_file, input_ld_pruned_genotype_file, pca_adj_ld_score_file,
-              ld_score_file, kinship_pca_file, ld_radius=200, maf_thres=0.01,
-              snp_filter_frac=0.05):
+def calculate(input_genotype_file, input_ld_pruned_genotype_file,
+              pca_adj_ld_score_file, ld_score_file, kinship_pca_file,
+              ld_radius=200, maf_thres=0.01, snp_filter_frac=0.05):
     """
     Generates population structure adjusted 1k genomes LD scores and stores in the given file.
     """
@@ -151,7 +151,7 @@ def calculate(input_genotype_file, input_ld_pruned_genotype_file, pca_adj_ld_sco
         chrom_str = 'chr%d' % chrom
         chrom_snp_trans_mats[chrom_str] = kinship_pca_dict[chrom_str]['cholesky_decomp_inv_snp_cov']    
     
-    ld_dict = generate_1k_LD_scores(input_genotype_file, ld_score_file, chrom_snp_trans_mats,
+    ld_dict = generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,
                                     maf_thres=maf_thres, ld_radius=ld_radius, debug_filter=1)
     
     
