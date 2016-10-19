@@ -444,13 +444,15 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                 ordered_evals = evals[sort_indices]
                 print ordered_evals[-10:] / sp.sum(ordered_evals)
                 ordered_evecs = evecs[:, sort_indices]
-                ok_chromosome_dict[chrom_str]['evecs_leave_one_out'] = ordered_evecs
-                ok_chromosome_dict[chrom_str]['evals_leave_one_out'] = ordered_evals
-                ok_chromosome_dict[chrom_str]['cholesky_decomp'] = cholesky_decomp
-                ok_chromosome_dict[chrom_str]['K_leave_one_out'] = K_leave_one_out
-                ok_chromosome_dict[chrom_str]['K_unscaled'] = chromosome_dict[chrom_str]['K_unscaled']
-                ok_chromosome_dict[chrom_str]['num_snps'] = chromosome_dict[chrom_str]['num_snps']
-                ok_chromosome_dict[chrom_str]['snp_cov_leave_one_out'] = snp_cov_leave_one_out
+                d = {}
+                d['evecs_leave_one_out'] = ordered_evecs
+                d['evals_leave_one_out'] = ordered_evals
+                d['cholesky_decomp'] = cholesky_decomp
+                d['K_leave_one_out'] = K_leave_one_out
+                d['K_unscaled'] = chromosome_dict[chrom_str]['K_unscaled']
+                d['num_snps'] = chromosome_dict[chrom_str]['num_snps']
+                d['snp_cov_leave_one_out'] = snp_cov_leave_one_out
+                ok_chromosome_dict[chrom_str] = d
                 not_done.remove(chrom)
 
     # While loop ends here.
