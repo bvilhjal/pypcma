@@ -89,7 +89,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
             num_pairs += 1
             ld_vec_i = snp_j - shift_start_i
             if r2s[ld_vec_i] > min_r2:
-                ld_pairs.append(sp.array([snp_i, snp_j], dtype='int8')) 
+                ld_pairs.append(sp.array([snp_i, snp_j], dtype='int32')) 
                 ld_pair_r2s.append(r2s[ld_vec_i])
                 ld_snp_indices.add(snp_i)
                 ld_snp_indices.add(snp_j)
@@ -114,7 +114,7 @@ def get_ld_table(norm_snps, ld_radius=1000, min_r2=0.2, verbose=True):
     print 'Average LD score was %f' % sp.mean(ld_scores)
     ld_snp_indices = list(ld_snp_indices)
     ld_snp_indices.sort()
-    return {'ld_scores': sp.array(ld_scores, dtype='float32'), 'ld_pairs':sp.array(ld_pairs, dtype='int8'),
+    return {'ld_scores': sp.array(ld_scores, dtype='float32'), 'ld_pairs':sp.array(ld_pairs, dtype='int32'),
             'ld_pair_r2s':sp.array(ld_pair_r2s, dtype='float32'),
             'ld_snp_indices': sp.array(ld_snp_indices, dtype='int32'),
             'num_snps':len(norm_snps)}
