@@ -442,6 +442,7 @@ def parse_PCMA_comb_results(res_file, num_traits):
     # Parse ss file, get various information
     print 'Starting to load data...'
     df = pandas.read_table(res_file, delim_whitespace=True)
+    print df.columns
     print 'Parsed p-value file'
     ss_ps_ids = list(df.columns)[-num_traits:]
     pc_ids = ['pvPC%d' % i for i in range(1, num_traits + 1)]
