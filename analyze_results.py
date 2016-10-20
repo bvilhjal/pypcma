@@ -437,10 +437,38 @@ def parse_PCMA_results(ss_ps_file, res_file):
     return chrom_res_dict
 
 
-def count_ld_indep_regions(ss_file, res_file, ld_reg_map='/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
+def parse_PCMA_comb_results(res_file, num_traits):
+# def parse_PCMA_results(ss_ps_file, ss_zs_file, ss_wt_file, res_file):
+    # Parse ss file, get various information
+    print 'Starting to load data...'
+    df = pandas.read_table(res_file, delim_whitespace=True)
+    print 'Parsed p-value file'
+    ss_ps_ids = list(df.columns)[-num_traits:]
+    pc_ids = ['pvPC%d' % i for i in range(1, num_traits + 1)]
+    
+    # Partition things by chromosome
+    chrom_res_dict = {}
+    for chrom in range(1, 23):
+        print 'Working on chromosome %d' % chrom
+        chrom_str = 'chr%d' % chrom
+        df = df.loc[df['Chromosome'] == chrom]
+        
+        marg_ps = df[ss_ps_ids]
+        min_marg_ps = marg_ps.min(1)
+        chrom_res_dict[chrom_str] = {'ps':df[ss_ps_ids], 'positions':df['Position'],
+                                     'sids':df['SID'], 'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps,
+                                     'comb_ps':df['pvCHI2'], 'pc_ps':df[pc_ids]}
+
+    
+    return chrom_res_dict
+
+def count_ld_indep_regions(res_file, num_traits=None, ss_file=None, ld_reg_map='/project/PCMA/faststorage/1_DATA/fourier_ls.hdf5'):
     # parse results..
     print 'Parsing PCMA results'
-    chrom_res_dict = parse_PCMA_results(ss_file, res_file)
+    if ss_file is not None:
+        chrom_res_dict = parse_PCMA_results(ss_file, res_file)
+    else:
+        chrom_res_dict = parse_PCMA_comb_results(res_file, num_traits)
     
     # Filter for good SNPs?
     
