@@ -45,7 +45,8 @@ def plot_manhattan(result_file, fig_filename='/project/PCMA/faststorage/2_RESULT
     """
     Generates a Manhattan plot for the PCMA results...
     """
-    res = pandas.read_csv(result_file)
+#     res = pandas.read_csv(result_file)
+    res = pandas.read_table(result_file, delim_whitespace=True)
     sids = list(res.SID)
     print 'Getting SNP positions from 1K Genomes data'
     d = get_sid_pos_map(sids)
