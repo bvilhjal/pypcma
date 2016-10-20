@@ -10,11 +10,11 @@ import pylab
 
 import itertools as it
 import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import scipy as sp
 
 
-mpl.use('Agg')
 # import matplotlib
 
 
