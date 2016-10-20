@@ -6,7 +6,6 @@ import gzip
 
 import h5py
 import pandas
-import pylab
 
 import itertools as it
 import matplotlib as mpl
@@ -103,18 +102,18 @@ def plot_manhattan(result_file, fig_filename='/project/PCMA/faststorage/2_RESULT
                 color_map[4]['ps'].append(lps)
         
     print 'Filtering and plotting'
-    with pylab.style.context('fivethirtyeight'):
-        pylab.figure(figsize=(14, 5))
-        pylab.plot(color_map[1]['x_pos'], color_map[1]['ps'], '.', color='#1199EE', alpha=0.2)
-        pylab.plot(color_map[2]['x_pos'], color_map[2]['ps'], '.', color='#11BB00', alpha=0.2)
-        pylab.plot(color_map[3]['x_pos'], color_map[3]['ps'], '.', color='#AA99EE', alpha=0.7)
-        pylab.plot(color_map[4]['x_pos'], color_map[4]['ps'], '.', color='#AABB00', alpha=0.7)
-        pylab.ylabel('-log(P-value)')
-        pylab.xlabel('Chromosomes')
-        pylab.xticks(x_tick_pos, x_tick_lab)
-        pylab.tight_layout()
-        pylab.savefig(fig_filename)
-    pylab.clf()
+    with plt.style.context('fivethirtyeight'):
+        plt.figure(figsize=(14, 5))
+        plt.plot(color_map[1]['x_pos'], color_map[1]['ps'], '.', color='#1199EE', alpha=0.2)
+        plt.plot(color_map[2]['x_pos'], color_map[2]['ps'], '.', color='#11BB00', alpha=0.2)
+        plt.plot(color_map[3]['x_pos'], color_map[3]['ps'], '.', color='#AA99EE', alpha=0.7)
+        plt.plot(color_map[4]['x_pos'], color_map[4]['ps'], '.', color='#AABB00', alpha=0.7)
+        plt.ylabel('-log(P-value)')
+        plt.xlabel('Chromosomes')
+        plt.xticks(x_tick_pos, x_tick_lab)
+        plt.tight_layout()
+        plt.savefig(fig_filename)
+    plt.clf()
 
 
 def get_log_quantiles(scores, num_dots=1000, max_val=8):
@@ -133,9 +132,9 @@ def _log_qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=N
             max_val=5, title=None, text=None, plot_label=None, ax=None, **kwargs):
     storeFig = False
     if ax is None:
-        f = pylab.figure(figsize=(5.4, 5))
+        f = plt.figure(figsize=(5.4, 5))
         storeFig = True
-    pylab.plot([0, max_val], [0, max_val], 'k--', alpha=0.5, linewidth=2.0)
+    plt.plot([0, max_val], [0, max_val], 'k--', alpha=0.5, linewidth=2.0)
     num_dots = len(quantiles_list[0])
     exp_quantiles = sp.arange(1, num_dots + 1, dtype='single') / (num_dots + 1) * max_val
     for i, quantiles in enumerate(quantiles_list):
@@ -144,25 +143,25 @@ def _log_qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=N
         else:
             c = 'b'
         if quantile_labels:
-            pylab.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
+            plt.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
         else:
-            pylab.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
-    pylab.ylabel("Observed $-log_{10}(P$-value$)$")
-    pylab.xlabel("Expected $-log_{10}(P$-value$)$")
+            plt.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
+    plt.ylabel("Observed $-log_{10}(P$-value$)$")
+    plt.xlabel("Expected $-log_{10}(P$-value$)$")
     if title:
-        pylab.title(title)
+        plt.title(title)
     max_x = max_val
     max_y = max(map(max, quantiles_list))
-    pylab.axis([-0.025 * max_x, 1.025 * max_x, -0.025 * max_y, 1.025 * max_y])
+    plt.axis([-0.025 * max_x, 1.025 * max_x, -0.025 * max_y, 1.025 * max_y])
     if quantile_labels:
-        fontProp = matplotlib.font_manager.FontProperties(size=10)
-        pylab.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
-    y_min, y_max = pylab.ylim()
+        fontProp = mpl.font_manager.FontProperties(size=10)
+        plt.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
+    y_min, y_max = plt.ylim()
     if text:
         f.text(0.05 * max_val, y_max * 0.9, text)
     if plot_label:
         f.text(-0.138 * max_val, y_max * 1.01, plot_label, fontsize=14)
-    pylab.tight_layout()
+    plt.tight_layout()
     if storeFig == False:
         return
     if png_file != None:
@@ -186,9 +185,9 @@ def _qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None,
             title=None, text=None, ax=None, plot_label=None, **kwargs):
     storeFig = False
     if ax is None:
-        f = pylab.figure(figsize=(5.4, 5))
+        f = plt.figure(figsize=(5.4, 5))
         storeFig = True
-    pylab.plot([0, 1], [0, 1], 'k--', alpha=0.5, linewidth=2.0)
+    plt.plot([0, 1], [0, 1], 'k--', alpha=0.5, linewidth=2.0)
     num_dots = len(quantiles_list[0])
     exp_quantiles = sp.arange(1, num_dots + 1, dtype='single') / (num_dots + 1)
     for i, quantiles in enumerate(quantiles_list):
@@ -197,22 +196,22 @@ def _qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None,
         else:
             c = 'b'
         if quantile_labels:
-            pylab.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
+            plt.plot(exp_quantiles, quantiles, label=quantile_labels[i], c=c, alpha=0.5, linewidth=2.2)
         else:
-            pylab.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
-    pylab.ylabel("Observed $P$-value")
-    pylab.xlabel("Expected $P$-value")
+            plt.plot(exp_quantiles, quantiles, c=c, alpha=0.5, linewidth=2.2)
+    plt.ylabel("Observed $P$-value")
+    plt.xlabel("Expected $P$-value")
     if title:
-        pylab.title(title)
-    pylab.axis([-0.025, 1.025, -0.025, 1.025])
+        plt.title(title)
+    plt.axis([-0.025, 1.025, -0.025, 1.025])
     if quantile_labels:
-        fontProp = matplotlib.font_manager.FontProperties(size=10)
-        pylab.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
+        fontProp = mpl.font_manager.FontProperties(size=10)
+        plt.legend(loc=2, numpoints=2, markerscale=1, prop=fontProp)
     if text:
         f.text(0.05, 0.9, text)
     if plot_label:
         f.text(-0.151, 1.04, plot_label, fontsize=14)
-    pylab.tight_layout()
+    plt.tight_layout()
     if storeFig == False:
         return
     if png_file != None:
@@ -289,17 +288,17 @@ def plot_overlap_ps(result_file, ss_file='/Users/bjarnivilhjalmsson/data/GIANT/G
     marg_ps = -sp.log10(marg_ps[ss_index])
     comb_ps = -sp.log10(comb_ps[res_index])
     
-    with pylab.style.context('fivethirtyeight'):
-        pylab.plot(marg_ps, comb_ps, 'b.', alpha=0.2)
-        (x_min, x_max) = pylab.xlim()
-        (y_min, y_max) = pylab.ylim()
+    with plt.style.context('fivethirtyeight'):
+        plt.plot(marg_ps, comb_ps, 'b.', alpha=0.2)
+        (x_min, x_max) = plt.xlim()
+        (y_min, y_max) = plt.ylim()
         
-        pylab.plot([x_min, x_max], [x_min, x_max], 'k--', alpha=0.2)
-        pylab.ylabel(ylabel)
-        pylab.xlabel(xlabel)
-        pylab.tight_layout()
-        pylab.savefig(fig_filename)
-    pylab.clf()
+        plt.plot([x_min, x_max], [x_min, x_max], 'k--', alpha=0.2)
+        plt.ylabel(ylabel)
+        plt.xlabel(xlabel)
+        plt.tight_layout()
+        plt.savefig(fig_filename)
+    plt.clf()
         
         
 # def plot_overlap_ps(result_file, ss_files=['/Users/bjarnivilhjalmsson/data/GIANT/GIANT_HEIGHT_Wood_et_al_2014_publicrelease_HapMapCeuFreq.txt',
@@ -353,17 +352,17 @@ def plot_overlap_ps(result_file, ss_file='/Users/bjarnivilhjalmsson/data/GIANT/G
 #     marg_ps=-sp.log10(marg_ps[ss_index])
 #     comb_ps=-sp.log10(comb_ps[res_index])
 #     
-#     with pylab.style.context('fivethirtyeight'):
-#         pylab.plot(marg_ps,comb_ps,'b.',alpha=0.2)
-#         (x_min,x_max) = pylab.xlim()
-#         (y_min,y_max) = pylab.ylim()
+#     with plt.style.context('fivethirtyeight'):
+#         plt.plot(marg_ps,comb_ps,'b.',alpha=0.2)
+#         (x_min,x_max) = plt.xlim()
+#         (y_min,y_max) = plt.ylim()
 #         
-#         pylab.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
-#         pylab.ylabel(ylabel)
-#         pylab.xlabel(xlabel)
-#         pylab.tight_layout()
-#         pylab.savefig(fig_filename)
-#     pylab.clf()
+#         plt.plot([x_min,x_max],[x_min,x_max],'k--',alpha=0.2)
+#         plt.ylabel(ylabel)
+#         plt.xlabel(xlabel)
+#         plt.tight_layout()
+#         plt.savefig(fig_filename)
+#     plt.clf()
         
 
 def parse_ldetect_map(file_prefix='/Users/bjarnivilhjalmsson/REPOS/others/ldetect-data/EUR/fourier_ls-',
