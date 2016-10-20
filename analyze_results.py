@@ -452,13 +452,13 @@ def parse_PCMA_comb_results(res_file, num_traits):
     for chrom in range(1, 23):
         print 'Working on chromosome %d' % chrom
         chrom_str = 'chr%d' % chrom
-        df = df.loc[df['Chromosome'] == chrom]
+        chrom_df = df.loc[df['Chromosome'] == chrom]
         
-        marg_ps = df[ss_ps_ids]
+        marg_ps = chrom_df[ss_ps_ids]
         min_marg_ps = marg_ps.min(1)
-        chrom_res_dict[chrom_str] = {'ps':df[ss_ps_ids], 'positions':df['Position'],
-                                     'sids':df['SID'], 'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps,
-                                     'comb_ps':df['pvCHI2'], 'pc_ps':df[pc_ids]}
+        chrom_res_dict[chrom_str] = {'ps':chrom_df[ss_ps_ids], 'positions':chrom_df['Position'],
+                                     'sids':chrom_df['SID'], 'marg_ps':marg_ps, 'min_marg_ps':min_marg_ps,
+                                     'comb_ps':chrom_df['pvCHI2'], 'pc_ps':chrom_df[pc_ids]}
 
     
     return chrom_res_dict
