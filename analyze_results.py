@@ -129,7 +129,7 @@ def get_log_quantiles(scores, num_dots=1000, max_val=8):
 
 
 def _log_qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None, line_colors=None,
-            max_val=5, title=None, text=None, plot_label=None, ax=None, **kwargs):
+            max_val=5, title=None, text=None, plot_label=None, ax=None):
     storeFig = False
     if ax is None:
         f = plt.figure(figsize=(5.4, 5))
@@ -182,7 +182,7 @@ def get_quantiles(scores, num_dots=1000):
 
 
 def _qqplot_(quantiles_list, png_file=None, pdf_file=None, quantile_labels=None, line_colors=None,
-            title=None, text=None, ax=None, plot_label=None, **kwargs):
+            title=None, text=None, ax=None, plot_label=None):
     storeFig = False
     if ax is None:
         f = plt.figure(figsize=(5.4, 5))
@@ -293,7 +293,7 @@ def plot_overlap_ps(result_file, ss_file='/Users/bjarnivilhjalmsson/data/GIANT/G
         (x_min, x_max) = plt.xlim()
         (y_min, y_max) = plt.ylim()
         
-        plt.plot([x_min, x_max], [x_min, x_max], 'k--', alpha=0.2)
+        plt.plot([x_min, x_max], [y_min, y_max], 'k--', alpha=0.2)
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.tight_layout()
@@ -591,7 +591,6 @@ def run_t(pruned_file, ss_file, name, out_prefix, t=1):
 def parse_corr_matrices(ss_file, res_prefix, ts=[0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2, 2.2, 2.4]):
     """
     """
-    import os
     with open(ss_file, 'r') as f:
         header = f.next()
         l = header.split()

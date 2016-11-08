@@ -3,7 +3,6 @@ Methods for analysing 1000 genomes data.
 """
 
 from itertools import izip
-import cPickle
 import gzip
 import os
 import ld
@@ -13,15 +12,84 @@ import h5py
 import h5py_util as hu
 
 import scipy as sp
-import time
+# import time
 
-__updated__ = '2016-10-19'
+__updated__ = '2016-11-08'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 Kg_nt_decoder = {1:'A', 2:'T', 3:'C', 4:'G', }
 ok_nts = sp.array(['A', 'T', 'G', 'C'])
+valid_nts = set(ok_nts)
+
+
+__default_kgenomes_file__ = '/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5'
  
+def get_sid_pos_map(sids, hdf5_kgenomes_file=None):
+    """
+    Returns a SNP map, with information for each SNP
+    """
+    if hdf5_kgenomes_file is None:
+        hdf5_kgenomes_file = __default_kgenomes_file__
+    h5f = h5py.File(hdf5_kgenomes_file, 'r')
+    snp_info_map = {}
+    for chrom_i in range(1, 23):
+        cg = h5f['chrom_%d' % chrom_i]
+        sids_1k = cg['sids'][...]
+        sids_filter_1k = sp.in1d(sids_1k, sp.array(sids))
+        common_sids = sids_1k[sids_filter_1k]
+        common_positions = cg['positions'][sids_filter_1k]
+        eur_mafs = cg['eur_mafs'][sids_filter_1k]
+        nts = cg['nts'][sids_filter_1k]
+        for sid, pos, eur_maf, nt in izip(common_sids, common_positions, eur_mafs, nts):
+            snp_info_map[sid] = {'pos':pos, 'chrom':chrom_i, 'eur_maf':eur_maf, 'nts':nt}
+    return snp_info_map
+
+
+
+def parse_1KG_snp_info(KGenomes_prefix='/Users/bjarnivilhjalmsson/data/1Kgenomes/',
+                       outfile='/Users/bjarnivilhjalmsson/data/1Kgenomes/snps2.hdf5',
+                       filter_ambiguous=True):
+    of = h5py.File(outfile)
+    for chrom_i in range(1, 23):
+        print 'Chromosome %d' % chrom_i
+        sids = []
+        positions = []
+        chromosomes = []
+        nts = []
+        eur_mafs = []
+        fn = '%sALL_1000G_phase1integrated_v3_chr%d_impute.legend.gz' % (KGenomes_prefix, chrom_i)
+        with gzip.open(fn) as f:
+            f.next()
+            line_i = 0
+            for line in f:
+                l = line.split()
+                nt1 = l[2]
+                nt2 = l[3]
+                if nt1 not in valid_nts:
+                    continue
+                if nt2 not in valid_nts:
+                    continue
+                if filter_ambiguous and (nt1, nt2) in ambig_nts:
+                    continue
+                line_i += 1
+                sids.append(l[0])
+                positions.append(int(l[1]))
+                chromosomes.append(chrom_i)
+                nts.append([nt1, nt2])
+                eur_mafs.append(float(l[11]))
+                if line_i % 100000 == 0:
+                    print line_i
+        nts = sp.array(nts)
+        print 'Constructed nts'
+        g = of.create_group('chrom_%d' % chrom_i)
+        g.create_dataset('sids', data=sids)
+        g.create_dataset('positions', data=positions)
+        g.create_dataset('chromosomes', data=chromosomes)
+        g.create_dataset('eur_mafs', data=eur_mafs)
+        g.create_dataset('nts', data=nts)
+        of.flush()
+    of.close()
 
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/phase3/1k_genomes_hg.hdf5' ,
@@ -510,7 +578,7 @@ def calc_structure_covar():
     pass
 
 
-def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_ld=0.2, maf_thres=0.01):
+def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_r2=0.2, maf_thres=0.01):
     # Open input and output file
     ih5f = h5py.File(in_hdf5_file)
     oh5f = h5py.File(out_hdf5_file)
@@ -534,7 +602,7 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         ld_dict = hu.hdf5_to_dict(ldh5f)
         ldh5f.close()
 
-        ld_snp_filter = ld.ld_pruning(ld_dict, max_ld=max_ld, verbose=True)
+        ld_snp_filter = ld.ld_pruning(ld_dict, max_r2=max_r2, verbose=True)
         print ld_snp_filter
         
         assert ld_dict['num_snps'] == len(snps)

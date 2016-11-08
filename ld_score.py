@@ -8,19 +8,9 @@ Re-implementation of LD score regression (Bulik-Sullivan et al., Nat Genet 2015)
 3. Implement heritability estimation.
 4. Implement genetic correlation estimation.
 """
-from itertools import izip
-import cPickle
-import os
-import pdb
-import random
-import sys
 import ld
-import time
 
-from numpy import linalg 
-from plinkio import plinkfile
 import h5py
-import plinkio
 import kgenome
 import h5py_util as hu
 
