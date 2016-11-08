@@ -45,8 +45,8 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
         
         norm_snps = g_dict['norm_snps']
         
-        evecs = pcs_h5f[chrom_str]['evecs_leave_one_out']
-        evals = pcs_h5f[chrom_str]['evals_leave_one_out']
+        evecs = pcs_h5f[chrom_str]['evecs_leave_one_out'][...]
+        evals = pcs_h5f[chrom_str]['evals_leave_one_out'][...]
         sort_indices = sp.argsort(evals,)[::-1]
         ordered_evals = evals[sort_indices]
         print ordered_evals[:10] / sp.sum(ordered_evals)
