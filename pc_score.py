@@ -17,8 +17,8 @@ def pc_score_regression(sum_stats_file, pc_file):
 
 def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
                         pc_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
-                        out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pc_snp_weights.hdf5',
-                        snp_filter_frac=1, maf_thres=0.01):
+                        out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pc_snp_weights_top20.hdf5',
+                        snp_filter_frac=1, maf_thres=0.01, num_pcs=20):
     pcs_h5f = h5py.File(pc_file)
     
     print 'Loading Genotype from '
@@ -51,6 +51,8 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
         ordered_evals = evals[sort_indices]
         pcs_var_expl = sp.array(ordered_evals / sp.sum(ordered_evals), dtype='double')
         pcs = evecs[:, sort_indices]
+        pcs = pcs[:, :num_pcs]
+        ordered_evals = ordered_evals[:num_pcs]
         norm_pcs = pcs - sp.mean(pcs, axis=1)
         pcs_std = sp.std(norm_pcs, axis=1)
         norm_pcs = norm_pcs / pcs_std
