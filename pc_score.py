@@ -23,6 +23,7 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
     
     print 'Loading Genotype from '
     in_h5f = h5py.File(input_file)
+    out_h5f = h5py.File(out_file, 'w')
 #     eur_filter = in_h5f['indivs']['continent'][...] == 'EUR'
 #     num_indivs = sp.sum(eur_filter)
     indiv_ids = in_h5f['indiv_ids'][...] 
@@ -30,7 +31,6 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
     assert len(sp.unique(indiv_ids)) == len(indiv_ids)
     num_indivs = len(indiv_ids) 
     
-    chrom_pc_snp_weights_dict = {}
 
     for chrom in range(1, 23):
         print 'Working on Chromosome %d' % chrom
@@ -49,14 +49,16 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
         evals = pcs_h5f[chrom_str]['evals_leave_one_out'][...]
         sort_indices = sp.argsort(evals,)[::-1]
         ordered_evals = evals[sort_indices]
-        print ordered_evals[:10] / sp.sum(ordered_evals)
+        pcs_var_expl = sp.array(ordered_evals / sp.sum(ordered_evals), dtype='double')
         pcs = evecs[:, sort_indices]
         norm_pcs = pcs - sp.mean(pcs, axis=1)
         pcs_std = sp.std(norm_pcs, axis=1)
         norm_pcs = norm_pcs / pcs_std
-        chrom_pc_snp_weights_dict[chrom_str] = sp.dot(norm_snps, norm_pcs) / num_indivs
-    
-    hdf5_group = h5py.File(out_file, 'w')
-    h5py_util.dict_to_hdf5(chrom_pc_snp_weights_dict, hdf5_group)
-    
+        
+        cg = out_h5f.create_group(chrom_str)
+        cg.create_dataset('snp_pc_weights', data=sp.dot(norm_snps, norm_pcs) / num_indivs) 
+        cg.create_dataset('pcs_var_expl', data=pcs_var_expl)
+        out_h5f.flush()
+    in_h5f.close()
+    out_h5f.close()
             
