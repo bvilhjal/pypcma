@@ -324,6 +324,10 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
             nts = nts[snp_filter]
     
     if chrom_ok_snp_dict is not None:
+        if not return_snps_info:
+            snp_ids = in_h5f[chrom_str]['snp_ids'][...]
+            if snp_filter is not None:
+                snp_ids = snp_ids[snp_filter]
         ok_snp_filter = sp.in1d(snp_ids, chrom_ok_snp_dict[chrom_str])
         snps = snps[ok_snp_filter]        
         if return_snps_info:
