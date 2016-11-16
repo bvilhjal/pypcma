@@ -13,6 +13,7 @@ import ld
 import h5py
 import kgenome
 import h5py_util as hu
+import pandas
 
 
 try: 
@@ -23,6 +24,17 @@ except Exception:
     
 ok_nts = sp.array(['A', 'T', 'G', 'C'])
 
+
+
+def get_bulik_sullivan_15_sids(sids_dir='/project/HeritPartition/faststorage/ld_scores_bulik_sullivan_2015/eur_w_ld_chr'):
+    chrom_ok_sids_dict = {}
+    for chrom in range(1, 23):
+        chrom_str = 'chr%d' % chrom
+        filename = '%s/%d.l2.ldscore' % (sids_dir, chrom)
+        ld_score_table = pandas.read_table(filename)
+        sids = sp.array(ld_score_table['SNP'])
+        chrom_ok_sids_dict[chrom_str] = sids
+    return chrom_ok_sids_dict
 
 
 def generate_1k_LD_scores(input_genotype_file, chrom_snp_trans_mats,

@@ -12,9 +12,10 @@ import h5py
 import h5py_util as hu
 
 import scipy as sp
+import ld_score
 # import time
 
-__updated__ = '2016-11-08'
+__updated__ = '2016-11-16'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -282,14 +283,15 @@ def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage
     
     
     
-def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, snp_filter_frac):
+def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, snp_filter_frac, chrom_ok_snp_dict=None):
     if os.path.isfile(kinship_pca_file):
         print ':Loading Kinship and PCA information from %s' % kinship_pca_file
         k_h5f = h5py.File(kinship_pca_file)
         kinship_pca_dict = hu.hdf5_to_dict(k_h5f)
     else:
         kinship_pca_dict = calc_kinship(input_file=input_genotype_file , out_file=kinship_pca_file,
-                                                maf_thres=maf_thres, figure_dir=None, snp_filter_frac=snp_filter_frac)
+                                                maf_thres=maf_thres, figure_dir=None, snp_filter_frac=snp_filter_frac,
+                                                chrom_ok_snp_dict=chrom_ok_snp_dict)
     return kinship_pca_dict
 
     
@@ -299,7 +301,8 @@ def get_kinship_pca_dict(input_genotype_file, kinship_pca_file, maf_thres, snp_f
 def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
                         snp_filter=None, randomize_sign=True, snps_signs=None,
                         return_raw_snps=False, return_snps_info=False,
-                        return_normalized_snps=True, debug_filter_frac=1):
+                        return_normalized_snps=True, debug_filter_frac=1,
+                        chrom_ok_snp_dict=None):
         
     chrom_str = 'chr%d' % chrom_i                    
     print 'Loading SNPs'
@@ -319,6 +322,14 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
             positions = positions[snp_filter]
             snp_ids = snp_ids[snp_filter]
             nts = nts[snp_filter]
+    
+    if chrom_ok_snp_dict is not None:
+        ok_snp_filter = sp.in1d(snp_ids, chrom_ok_snp_dict[chrom_str])
+        snps = snps[ok_snp_filter]        
+        if return_snps_info:
+            positions = positions[ok_snp_filter]
+            snp_ids = snp_ids[ok_snp_filter]
+            nts = nts[ok_snp_filter]
 
     if debug_filter_frac < 1:
         debug_filter = sp.random.random(len(snps)) < debug_filter_frac
@@ -374,7 +385,8 @@ def get_genotype_data(in_h5f, chrom_i, maf_thres=0, indiv_filter=None,
     
     
 def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data/1Kgenomes/kinship.hdf5',
-                  maf_thres=0.01, figure_dir='', figure_fn='', snp_filter_frac=1, indiv_filter_frac=1):
+                  maf_thres=0.01, figure_dir='', figure_fn='', snp_filter_frac=1, indiv_filter_frac=1,
+                  chrom_ok_snp_dict=None):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -413,9 +425,9 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
             snp_filter = None
             if snp_filter_frac < 1:
                 snp_filter = sp.random.random(len(in_h5f[chrom_str]['snps'])) < snp_filter_frac
-
+                            
             g_dict = get_genotype_data(in_h5f, chrom, maf_thres, indiv_filter=indiv_filter,
-                        snp_filter=snp_filter, randomize_sign=True, snps_signs=None)
+                        snp_filter=snp_filter, randomize_sign=True, snps_signs=None, chrom_ok_snp_dict=chrom_ok_snp_dict)
             
             norm_snps = g_dict['norm_snps']
             
@@ -491,7 +503,7 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
                         snp_filter = chromosome_dict[chrom2_str]['snp_filter']
                         g_dict = get_genotype_data(in_h5f, chrom2, maf_thres, indiv_filter=indiv_filter,
                                                    snp_filter=snp_filter, randomize_sign=True,
-                                                   snps_signs=snps_signs)
+                                                   snps_signs=snps_signs, chrom_ok_snp_dict=chrom_ok_snp_dict)
                         norm_snps = g_dict['norm_snps']
                         print 'SNP-cov normalisation'
                         norm_snps = norm_snps - mean_indiv_genotypes
@@ -578,7 +590,7 @@ def calc_structure_covar():
     pass
 
 
-def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_r2=0.2, maf_thres=0.01):
+def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_r2=0.2, maf_thres=0.01, chrom_ok_snp_dict=None):
     # Open input and output file
     ih5f = h5py.File(in_hdf5_file)
     oh5f = h5py.File(out_hdf5_file)
@@ -588,7 +600,8 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         chrom_str = 'chr%d' % chrom_i
           
         g_dict = get_genotype_data(ih5f, chrom_i, maf_thres=maf_thres, randomize_sign=False, snps_signs=None,
-                                   return_raw_snps=True, return_snps_info=True, return_normalized_snps=False)
+                                   return_raw_snps=True, return_snps_info=True, return_normalized_snps=False,
+                                   chrom_ok_snp_dict=chrom_ok_snp_dict)
         snps = g_dict['snps']
         snp_means = g_dict['snp_means']
         snp_stds = g_dict['snp_stds']
@@ -635,9 +648,10 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
         
 # For debugging purposes
 if __name__ == '__main__':        
+    chrom_ok_snp_dict = ld_score.get_bulik_sullivan_15_sids()
     kinship_pca_dict = calc_kinship('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
-                         out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca.hdf5',
+                         out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_bs15SNPs.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
-                         maf_thres=0.01, snp_filter_frac=1, indiv_filter_frac=1)
+                         maf_thres=0.01, snp_filter_frac=1, indiv_filter_frac=1, chrom_ok_snp_dict=chrom_ok_snp_dict)
 
 
