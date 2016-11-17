@@ -653,7 +653,7 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
 # For debugging purposes
 if __name__ == '__main__':        
     chrom_ok_snp_dict = ld_score.get_bulik_sullivan_15_sids()
-    kinship_pca_dict = calc_kinship('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated_ld_pruned.hdf5',
+    kinship_pca_dict = calc_kinship('/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
                          out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_bs15SNPs.hdf5',
                          figure_dir='/home/bjarni/tmp', figure_fn='test.pdf',
                          maf_thres=0.01, snp_filter_frac=1, indiv_filter_frac=1, chrom_ok_snp_dict=chrom_ok_snp_dict)
