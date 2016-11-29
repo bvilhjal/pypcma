@@ -41,9 +41,10 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
             snp_filter = sp.random.random(len(in_h5f[chrom_str]['snps'])) < snp_filter_frac
 
         g_dict = kgenome.get_genotype_data(in_h5f, chrom, maf_thres, indiv_filter=indiv_filter,
-                    snp_filter=snp_filter, randomize_sign=True, snps_signs=None)
+                    snp_filter=snp_filter, randomize_sign=True, snps_signs=None, return_snps_info=True)
         
         norm_snps = g_dict['norm_snps']
+        snp_ids = g_dict['snp_ids']
         
         evecs = pcs_h5f[chrom_str]['evecs_leave_one_out'][...]
         evals = pcs_h5f[chrom_str]['evals_leave_one_out'][...]
@@ -60,6 +61,7 @@ def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_geno
         cg = out_h5f.create_group(chrom_str)
         cg.create_dataset('snp_pc_weights', data=sp.dot(norm_snps, norm_pcs) / num_indivs) 
         cg.create_dataset('pcs_var_expl', data=pcs_var_expl)
+        cg.create_dataset('snp_ids', data=snp_ids)
         out_h5f.flush()
     in_h5f.close()
     out_h5f.close()
