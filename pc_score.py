@@ -15,9 +15,9 @@ def pc_score_regression(sum_stats_file, pc_file):
     pass
 
 
-def calc_pc_snp_weights(input_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
-                        pc_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
-                        out_file='/home/bjarni/PCMA/faststorage/1_DATA/1k_genomes/pc_snp_weights_top20.hdf5',
+def calc_pc_snp_weights(input_file='/project/PCMA/faststorage/1_DATA/1k_genomes/1K_genomes_phase3_EUR_unrelated.hdf5',
+                        pc_file='/project/PCMA/faststorage/1_DATA/1k_genomes/1kgenomes_kinship_pca_f0.95.hdf5',
+                        out_file='/project/PCMA/faststorage/1_DATA/1k_genomes/pc_snp_weights_top20.hdf5',
                         snp_filter_frac=1, maf_thres=0.01, num_pcs=20):
     pcs_h5f = h5py.File(pc_file)
     
