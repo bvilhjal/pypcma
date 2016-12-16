@@ -15,7 +15,7 @@ import scipy as sp
 import ld_score
 # import time
 
-__updated__ = '2016-11-16'
+__updated__ = '2016-12-16'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -48,49 +48,75 @@ def get_sid_pos_map(sids, hdf5_kgenomes_file=None):
 
 
 
-def parse_1KG_snp_info(KGenomes_prefix='/Users/bjarnivilhjalmsson/data/1Kgenomes/',
-                       outfile='/Users/bjarnivilhjalmsson/data/1Kgenomes/snps2.hdf5',
-                       filter_ambiguous=True):
-    of = h5py.File(outfile)
-    for chrom_i in range(1, 23):
-        print 'Chromosome %d' % chrom_i
-        sids = []
-        positions = []
-        chromosomes = []
-        nts = []
-        eur_mafs = []
-        fn = '%sALL_1000G_phase1integrated_v3_chr%d_impute.legend.gz' % (KGenomes_prefix, chrom_i)
-        with gzip.open(fn) as f:
-            f.next()
-            line_i = 0
-            for line in f:
-                l = line.split()
-                nt1 = l[2]
-                nt2 = l[3]
-                if nt1 not in valid_nts:
-                    continue
-                if nt2 not in valid_nts:
-                    continue
-                if filter_ambiguous and (nt1, nt2) in ambig_nts:
-                    continue
-                line_i += 1
-                sids.append(l[0])
-                positions.append(int(l[1]))
-                chromosomes.append(chrom_i)
-                nts.append([nt1, nt2])
-                eur_mafs.append(float(l[11]))
-                if line_i % 100000 == 0:
-                    print line_i
-        nts = sp.array(nts)
-        print 'Constructed nts'
-        g = of.create_group('chrom_%d' % chrom_i)
-        g.create_dataset('sids', data=sids)
+def parse_1KG_snp_info(input_file='/project/TheHonestGene/faststorage/1Kgenomes/phase3/1k_genomes_hg.hdf5' ,
+                       out_file='/project/PCMA/faststorage/1_DATA/1k_genomes/1K_SNP_INFO_EUR_MAF0.05.hdf5',
+                       filter_ambiguous=True,
+                       maf_thres=0.05):
+    print 'Generating a SNP info file'
+    ih5f = h5py.File(input_file)
+    oh5f = h5py.File(out_file)
+    num_indivs = len(ih5f['indivs']['continent'])
+    eur_filter = ih5f['indivs']['continent'][...] == 'EUR'
+    num_eur_indivs = sp.sum(eur_filter)
+    print 'Number of European individuals: %d \nTotal number of individuals: %d', num_eur_indivs, num_indivs
+    std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
+
+    for chrom in range(1, 23):
+        print 'Working on Chromosome %d' % chrom
+        chrom_str = 'chr%d' % chrom
+        
+        print 'Loading SNPs and data'
+        snps = sp.array(ih5f[chrom_str]['calldata']['snps'][...], dtype='int8')
+        print 'Excluding non-European individuals'
+        snps = snps[:, eur_filter]
+
+        print "Loading other SNP information"
+        snp_ids = ih5f[chrom_str]['variants']['ID'][...]
+        positions = ih5f[chrom_str]['variants']['POS'][...]
+
+        print 'Loading NTs'
+        ref_nts = ih5f[chrom_str]['variants']['REF'][...]
+        alt_nts = ih5f[chrom_str]['variants']['ALT'][...]
+        
+        print 'Filtering multi-allelic SNPs'
+        multi_allelic_filter = sp.negative(ih5f[chrom_str]['variants']['MULTI_ALLELIC'][...])
+        snps = snps[multi_allelic_filter]
+        ref_nts = ref_nts[multi_allelic_filter]
+        alt_nts = alt_nts[multi_allelic_filter]
+        snp_ids = snp_ids[multi_allelic_filter]
+        positions = positions[multi_allelic_filter]
+        
+        print 'Filter SNPs with missing NT information'
+        nt_filter = sp.in1d(ref_nts, ok_nts)
+        nt_filter = nt_filter * sp.in1d(alt_nts, ok_nts)
+        if sp.sum(nt_filter) < len(nt_filter):
+            snps = snps[nt_filter]
+            ref_nts = ref_nts[nt_filter]
+            alt_nts = alt_nts[nt_filter]
+            snp_ids = snp_ids[nt_filter]
+            positions = positions[nt_filter]
+
+        print 'Filtering SNPs with MAF <', maf_thres
+        afs = sp.sum(snps, axis=1) / num_eur_indivs
+        assert sp.all(0 <= afs <= 2), 'AF is out of range' 
+        mafs = sp.minimum(afs, 1 - afs)
+        maf_filter = mafs < maf_thres
+        snps = snps[maf_filter]
+        ref_nts = ref_nts[maf_filter]
+        alt_nts = alt_nts[maf_filter]
+        snp_ids = snp_ids[maf_filter]
+        positions = positions[maf_filter]
+        mafs = mafs[maf_filter]
+        
+    
+        g = oh5f.create_group(chrom_str)
+        g.create_dataset('sids', data=snp_ids)
         g.create_dataset('positions', data=positions)
-        g.create_dataset('chromosomes', data=chromosomes)
-        g.create_dataset('eur_mafs', data=eur_mafs)
-        g.create_dataset('nts', data=nts)
-        of.flush()
-    of.close()
+        g.create_dataset('eur_mafs', data=mafs)
+        g.create_dataset('ref', data=ref_nts)
+        g.create_dataset('alt', data=alt_nts)
+        oh5f.flush()
+    oh5f.close()
 
     
 def gen_unrelated_eur_1k_data(input_file='/home/bjarni/TheHonestGene/faststorage/1Kgenomes/phase3/1k_genomes_hg.hdf5' ,
@@ -590,9 +616,6 @@ def calc_kinship(input_file='Data/1Kgenomes/1K_genomes_v3.hdf5' , out_file='Data
 
 
 
-def calc_structure_covar():
-    pass
-
 
 def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_radius, max_r2=0.2, maf_thres=0.01, chrom_ok_snp_dict=None):
     # Open input and output file
@@ -649,7 +672,9 @@ def ld_prune_1k_genotypes(in_hdf5_file, out_hdf5_file, local_ld_file_prefix, ld_
     ih5f.close()
     oh5f.close()
 
+
         
+    
 # For debugging purposes
 if __name__ == '__main__':        
     chrom_ok_snp_dict = ld_score.get_bulik_sullivan_15_sids()
