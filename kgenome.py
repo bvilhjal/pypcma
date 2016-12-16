@@ -58,7 +58,7 @@ def parse_1KG_snp_info(input_file='/project/TheHonestGene/faststorage/1Kgenomes/
     num_indivs = len(ih5f['indivs']['continent'])
     eur_filter = ih5f['indivs']['continent'][...] == 'EUR'
     num_eur_indivs = sp.sum(eur_filter)
-    print 'Number of European individuals: %d \nTotal number of individuals: %d', num_eur_indivs, num_indivs
+    print 'Number of European individuals: %d \nTotal number of individuals: %d' % (num_eur_indivs, num_indivs)
     std_thres = sp.sqrt(2.0 * (1 - maf_thres) * (maf_thres))
 
     for chrom in range(1, 23):
@@ -98,7 +98,7 @@ def parse_1KG_snp_info(input_file='/project/TheHonestGene/faststorage/1Kgenomes/
 
         print 'Filtering SNPs with MAF <', maf_thres
         afs = sp.sum(snps, axis=1) / num_eur_indivs
-        assert sp.all(0 <= afs <= 2), 'AF is out of range' 
+        assert sp.all(0 <= afs) and sp.all(afs <= 2), 'AF is out of range' 
         mafs = sp.minimum(afs, 1 - afs)
         maf_filter = mafs < maf_thres
         snps = snps[maf_filter]
