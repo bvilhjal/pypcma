@@ -55,7 +55,7 @@ def calc_pc_snp_weights(input_file='/project/PCMA/faststorage/1_DATA/1k_genomes/
         pcs = pcs[:, :num_pcs]
         ordered_evals = ordered_evals[:num_pcs]
         norm_pcs = pcs - sp.mean(pcs, axis=0)
-        pcs_std = sp.std(norm_pcs, axis=0)
+        pcs_std = sp.std(norm_pcs, axis=0)æ
         norm_pcs = norm_pcs / pcs_std
         
         cg = out_h5f.create_group(chrom_str)

@@ -2,7 +2,7 @@
 A bunch of mehtod for parsing and handling GWAS summary statistics
 
 """
-__updated__ = '2016-10-22'
+__updated__ = '2017-01-12'
 
 import kgenome
 import scipy as sp
@@ -22,7 +22,9 @@ opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 ok_nts = set([('A', 'G'), ('G', 'A'), ('A', 'C'), ('C', 'A'), ('G', 'T'), ('T', 'G'), ('C', 'T'), ('T', 'C')])
 
 
-headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta', 'SE', 'Pvalue'],
+headers = {'SS1':['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf'],
+           'SS2':['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf'],
+           'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta', 'SE', 'Pvalue'],
            'SSGAC2':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'OR', 'SE', 'Pvalue'],
            'CHIC':['SNP', 'CHR', 'BP', 'A1', 'A2', 'FREQ_A1', 'EFFECT_A1', 'SE', 'P'],
            'GCAN':['chromosome', 'position', 'SNP', 'reference_allele', 'other_allele', 'eaf', 'OR',
@@ -47,6 +49,70 @@ headers = {'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta
            'GLC': ['SNP_hg18', 'SNP_hg19', 'rsid', 'A1', 'A2', 'beta', 'se', 'N', 'P-value', 'Freq.A1.1000G.EUR'],
            }
 
+def _get_format_(header):
+    for k,v in headers:
+        if v==header:
+            return k
+    raise Exception('File format unknown')
+
+column_maps = {
+    'SS1':{'delimiter':'','sid':0, 'pval':5, 'odds_ratio':7, 'nt1':3, 'nt1':4,
+           'stat_type':'OR', 'nt_type':'CAPS', 'weights_type':'AVAIL', }
+    }
+
+
+def _parse_sum_stats_file_(f, column_map, sid_map, chrom_dict, print_mod_size=100000):
+    line_i = 0
+    for line in f:
+        line_i += 1
+        l = line.split(column_map['delimiter'])
+        sid = l[column_map['sid']]
+        d = sid_map.get(sid, None)
+        if d is not None:
+            pos = d['pos']
+            chrom = d['chrom']
+            eur_maf = d['eur_maf']
+            if not chrom in chrom_dict.keys():
+                chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [],
+                                     'positions': [], 'eur_maf':[], 'weights':[]}
+            chrom_dict[chrom]['sids'].append(sid)
+            chrom_dict[chrom]['positions'].append(pos)
+            chrom_dict[chrom]['eur_maf'].append(eur_maf)
+            pval = float(l[column_map['pval']])
+            chrom_dict[chrom]['ps'].append(pval)
+            if column_map['stat_type']=='OR':
+                raw_beta = -sp.log(float(l[column_map['odds_ratio']]))
+            elif column_map['stat_type']=='LOR':
+                raw_beta = float(l[column_map['log_odds_ratio']])
+            elif column_map['stat_type']=='Z':
+                raw_beta = float(l[column_map['z_stat']])
+                
+            if random.random() > 0.5:
+                if column_map['nt_type']=='CAPS':
+                    nt = [l[column_map['nt1']], l[column_map['nt2']]]
+                elif column_map['nt_type']=='LOWERCAPS':
+                    nt = [lc_2_cap_map[l[column_map['nt1']]], lc_2_cap_map[l[column_map['nt2']]]]
+            else:
+                if column_map['nt_type']=='CAPS':
+                    nt = [l[column_map['nt2']], l[column_map['nt1']]]
+                elif column_map['nt_type']=='LOWERCAPS':
+                    nt = [lc_2_cap_map[l[column_map['nt2']]], lc_2_cap_map[l[column_map['nt1']]]]
+                raw_beta = -raw_beta
+    
+            chrom_dict[chrom]['nts'].append(nt)                
+            z = sp.sign(raw_beta) * stats.norm.ppf(pval / 2.0)
+            chrom_dict[chrom]['zs'].append(z)     
+            
+            if column_map['weights_type']=='FROM_Z_SCORE':
+                weight = z ** 2 / ((raw_beta ** 2) * 2 * eur_maf * (1 - eur_maf))
+            elif column_map['weights_type']=='AVAIL':
+                weight = l[column_map['weight']]
+            chrom_dict[chrom]['weights'].append(weight)
+        if line_i % print_mod_size == 0:
+            print line_i
+    
+    
+
 def parse_sum_stats(filename,
                         comb_hdf5_file,
                         ss_id,
@@ -69,68 +135,23 @@ def parse_sum_stats(filename,
     print 'Retrieving 1K genomes positions..'
     sids = []
     with open(filename) as f:
-        
         line = f.next()
-        header = line.split()        
-        if header == ['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'] or header == headers['TAG'] or header == headers['CD'] or header == headers['UC'] or header == headers['IBD'] or header == headers['ASTHMA']:
-            for line in f:
-                l = line.split()
-                sids.append(l[1])
-        elif header == ['Chromosome', 'Position', 'MarkerName', 'Effect_allele', 'Non_Effect_allele', 'Beta', 'SE', 'Pvalue'] or header == headers['GCAN'] or header == headers['GEFOS'] or header == headers['ICBP'] or header == headers['GLC']:
-#             line_count =0
-            for line in f:
-#                 line_count +=1
-#                 if line_count<100000:
-                l = line.split()
-                sids.append(l[2])
-#                 elif random.random()<0.1:
-#                     l = line.split()
-#                     sids.append(l[2])
-                        
-        else:
-            for line in f:
-                l = line.split()
-                sids.append(l[0])
+        header = line.split()  
+        file_format = _get_format_(header)
+        column_map = column_maps[file_format]
+        for line in f:
+            l = line.split(column_map['delimiter'])
+            sids.append(l[column_map['sid']])
     sid_map = kgenome.get_sid_pos_map(sids, KGpath)
-    assert len(sid_map) > 0, 'WTF?'
+    if len(sid_map) > 0:
+        raise Exception('Unable to find SNP IDs')
 
     print 'Parsing the file: %s' % filename
     with open(filename) as f:
         line = f.next()
         header = line.split()
-        line_i = 0
-        if header == ['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf']:
-            for line in f:
-                line_i += 1
-                l = line.split()
-                sid = l[0]
-                d = sid_map.get(sid, None)
-                if d is not None:
-                    pos = d['pos']
-                    chrom = d['chrom']
-                    eur_maf = d['eur_maf']
-                    if not chrom in chrom_dict.keys():
-                        chrom_dict[chrom] = {'ps':[], 'zs':[], 'nts': [], 'sids': [],
-                                             'positions': [], 'eur_maf':[], 'weights':[]}
-                    chrom_dict[chrom]['sids'].append(sid)
-                    chrom_dict[chrom]['positions'].append(pos)
-                    chrom_dict[chrom]['eur_maf'].append(eur_maf)
-                    pval = float(l[7])
-                    chrom_dict[chrom]['ps'].append(pval)
-                    raw_beta = -sp.log(float(l[5]))
-                    if random.random() > 0.5:
-                        nt = [l[3], l[4]]
-                    else:
-                        nt = [l[4], l[3]]
-                        raw_beta = -raw_beta
-    
-                    chrom_dict[chrom]['nts'].append(nt)                
-                    z = sp.sign(raw_beta) * stats.norm.ppf(pval / 2.0)
-                    chrom_dict[chrom]['zs'].append(z)     
-                    weight = z ** 2 / ((raw_beta ** 2) * 2 * eur_maf * (1 - eur_maf))
-                    chrom_dict[chrom]['weights'].append(weight)
-                if line_i % 100000 == 0:
-                    print line_i
+        file_format = _get_format_(header)
+        _parse_sum_stats_file_(f, column_maps[file_format], sid_map, chrom_dict)
         
         elif header == ['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt']:    
             for line in f:
