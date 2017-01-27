@@ -35,7 +35,7 @@ python coordinate_data.py --ssfiles=SUM_STATS_FILE1,SUM_STATS_FILE2,... --combfi
           Hugues Aschard: haschard@hsph.harvard.edu
 """
 
-__updated__ = '2016-10-21'
+__updated__ = '2017-01-24'
 
 
 
@@ -46,7 +46,7 @@ __updated__ = '2016-10-21'
 import sum_stats
 
 
-ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
+ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')]) 
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 
 

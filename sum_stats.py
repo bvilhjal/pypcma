@@ -22,8 +22,12 @@ opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
 ok_nts = set([('A', 'G'), ('G', 'A'), ('A', 'C'), ('C', 'A'), ('G', 'T'), ('T', 'G'), ('C', 'T'), ('T', 'C')])
 
 
-headers = {'SS1':['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf'],
-           'SS2':['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf'],
+file_format_maps = {'SS1':{'header':['snpid', 'hg18chr', 'bp', 'a1', 'a2', 'or', 'se', 'pval', 'info', 'ngt', 'CEUaf'], 
+                           'column_map':{'delimiter':'','sid':0, 'pval':7, 'odds_ratio':5, 'nt1':3, 'nt1':4,
+                                         'stat_type':'OR', 'nt_type':'CAPS', 'weights_type':'AVAIL', }},
+           'SS2':{'header':['hg19chrc', 'snpid', 'a1', 'a2', 'bp', 'info', 'or', 'se', 'p', 'ngt'], 
+                           'column_map':{'delimiter':'','sid':1, 'pval':8, 'odds_ratio':6, 'nt1':3, 'nt1':4,
+                                         'stat_type':'OR', 'nt_type':'CAPS', 'weights_type':'AVAIL', }},
            'SSGAC1':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'Beta', 'SE', 'Pvalue'],
            'SSGAC2':['MarkerName', 'Effect_Allele', 'Other_Allele', 'EAF', 'OR', 'SE', 'Pvalue'],
            'CHIC':['SNP', 'CHR', 'BP', 'A1', 'A2', 'FREQ_A1', 'EFFECT_A1', 'SE', 'P'],
@@ -57,6 +61,8 @@ def _get_format_(header):
 
 column_maps = {
     'SS1':{'delimiter':'','sid':0, 'pval':5, 'odds_ratio':7, 'nt1':3, 'nt1':4,
+           'stat_type':'OR', 'nt_type':'CAPS', 'weights_type':'AVAIL', },
+    'SS2':{'delimiter':'','sid':1, 'pval':8, 'odds_ratio':6, 'nt1':3, 'nt1':4,
            'stat_type':'OR', 'nt_type':'CAPS', 'weights_type':'AVAIL', }
     }
 

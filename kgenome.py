@@ -15,7 +15,7 @@ import scipy as sp
 import ld_score
 # import time
 
-__updated__ = '2016-12-16'
+__updated__ = '2017-01-27'
 
 ambig_nts = set([('A', 'T'), ('T', 'A'), ('G', 'C'), ('C', 'G')])
 opp_strand_dict = {'A':'T', 'G':'C', 'T':'A', 'C':'G'}
@@ -97,9 +97,9 @@ def parse_1KG_snp_info(input_file='/project/TheHonestGene/faststorage/1Kgenomes/
             positions = positions[nt_filter]
 
         print 'Filtering SNPs with MAF <', maf_thres
-        afs = sp.sum(snps, axis=1) / num_eur_indivs
-        assert sp.all(0 <= afs) and sp.all(afs <= 2), 'AF is out of range' 
-        mafs = sp.minimum(afs, 1 - afs)
+        afs = sp.sum(snps, axis=1) / float(num_eur_indivs)
+        assert sp.all(0.0 <= afs) and sp.all(afs <= 2.0), 'AF is out of range' 
+        mafs = sp.minimum(afs, 1.0 - afs)
         maf_filter = mafs < maf_thres
         snps = snps[maf_filter]
         ref_nts = ref_nts[maf_filter]
